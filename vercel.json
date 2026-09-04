@@ -9,6 +9,7 @@
       "root": ".",
       "framework": "fastapi",
       "entrypoint": "services.api.main:app",
+      "installCommand": "pip install fastapi 'pydantic>=2.7' uvicorn",
       "functions": {
         "services/api/main.py": {
           "maxDuration": 30,
