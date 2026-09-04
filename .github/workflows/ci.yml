@@ -13,3 +13,21 @@ jobs:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
       - run: pytest
+      - run: PYTHONPATH=packages/core/src python -m evals.harness validate-seed
+      - run: PYTHONPATH=packages/core/src python -m evals.harness run-cases
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web
+        env:
+          API_ORIGIN: http://127.0.0.1:8472

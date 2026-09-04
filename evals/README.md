@@ -1,26 +1,11 @@
-# Evaluations
+# Eval harness
 
-This directory stores dated evaluations of products and models.
-
-```text
-evals/
-  harness.py
-  cases/
-    coding/
-    research/
-    multimodal/
-    agentic/
-  runs/
-    YYYY-MM-DD-provider-target/
-      run.json
-  rubrics/
-```
-
-Each run records provider, product/model, exact version, date, settings, evaluator, raw outputs, rubric scores, human review, and notes.
-
-Do not silently convert benchmark results into registry updates. Use:
+Cases in `evals/cases/` are scored against the deterministic engine. They do not
+promote registry rows. Human review is still required before treating seed
+evidence as launch-ready.
 
 ```bash
 PYTHONPATH=packages/core/src python -m evals.harness validate-seed
-PYTHONPATH=packages/core/src python -m evals.harness init-run anthropic claude-fable-5-1 coding
+PYTHONPATH=packages/core/src python -m evals.harness run-cases
+PYTHONPATH=packages/core/src python -m evals.harness init-run ollama ollama coding
 ```

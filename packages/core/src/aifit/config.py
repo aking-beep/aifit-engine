@@ -12,6 +12,7 @@ DEFAULT_WEIGHTS: dict[str, float] = {
     "multimodal_preference": 0.8,
     "code_comfort": 1.0,
     "automation_appetite": 0.9,
+    "integration_appetite": 0.8,
     "local_control_preference": 1.0,
     "budget_sensitivity": 0.8,
 }
@@ -31,6 +32,7 @@ TARGET_OBSERVATIONS: dict[str, int] = {
     "multimodal_preference": 4,
     "code_comfort": 3,
     "automation_appetite": 3,
+    "integration_appetite": 3,
     "speed_preference": 3,
     "depth_preference": 3,
     "local_control_preference": 3,
@@ -55,6 +57,7 @@ EVENT_TO_METRICS: dict[str, tuple[str, ...]] = {
     "requested_visual": ("multimodal_preference",),
     "requested_code": ("code_comfort",),
     "requested_automation": ("automation_appetite",),
+    "requested_integration": ("integration_appetite",),
     "chose_fast_path": ("speed_preference",),
     "chose_deep_path": ("depth_preference",),
     "chose_local_control": ("local_control_preference",),

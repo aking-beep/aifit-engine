@@ -1,0 +1,5 @@
+{
+  "id": "code-heavy",
+  "description": "Code + tool use should keep coding products in the ranked list.",
+  "notes": "Use a session built from the code-debug scenario once captured via the API."
+}

@@ -48,6 +48,10 @@ def _passes_filters(product: ProductRecord, filters: FitFilters | None) -> bool:
     if filters.max_technical_level is not None:
         if product.technical_level > filters.max_technical_level:
             return False
+    if filters.local_only:
+        local_modes = {"local", "self_hosted", "on_prem"}
+        if not set(product.deployment) & local_modes:
+            return False
     return True
 
 
@@ -140,15 +144,28 @@ def relevant_categories(user: UserFitVector) -> list[str]:
     categories = ["general_assistant"]
     if values.get("code_comfort", 0) >= 0.45:
         categories.append("ide")
+        categories.append("coding_agent")
     if values.get("evidence_seeking", 0) >= 0.55:
         categories.append("research")
+        categories.append("knowledge")
     if values.get("automation_appetite", 0) >= 0.55:
         categories.append("automation")
+    if values.get("integration_appetite", 0) >= 0.55:
+        categories.append("enterprise_search")
     if values.get("multimodal_preference", 0) >= 0.55:
-        categories.append("writing")
+        categories.extend(["writing", "image", "design", "presentation", "video"])
+    if values.get("structure_preference", 0) >= 0.65 and values.get("evidence_seeking", 0) >= 0.5:
+        categories.append("data_analysis")
     if values.get("local_control_preference", 0) >= 0.6:
         categories.append("local_open_source")
-    return categories
+    # Preserve order while dropping duplicates.
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for category in categories:
+        if category not in seen:
+            seen.add(category)
+            ordered.append(category)
+    return ordered
 
 
 def _pick_by_category(recs: list[Recommendation], category: str, skip_ids: set[str]) -> Recommendation | None:

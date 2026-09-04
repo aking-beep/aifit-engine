@@ -20,6 +20,7 @@ EventType = Literal[
     "requested_visual",
     "requested_code",
     "requested_automation",
+    "requested_integration",
     "chose_fast_path",
     "chose_deep_path",
     "chose_local_control",
@@ -122,6 +123,7 @@ class FitFilters(BaseModel):
     max_pricing_tier: str | None = None
     deployment: list[str] = Field(default_factory=list)
     max_technical_level: float | None = Field(default=None, ge=0, le=1)
+    local_only: bool = False
 
 
 class Choice(BaseModel):

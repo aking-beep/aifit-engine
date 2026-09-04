@@ -1,8 +1,30 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function HomePage() {
+  const router = useRouter();
+  const [demoError, setDemoError] = useState<string | null>(null);
+  const [demoLoading, setDemoLoading] = useState(false);
+
+  async function runDemo() {
+    setDemoLoading(true);
+    setDemoError(null);
+    try {
+      const demo = await api.demoSession();
+      router.push(`/results/${demo.session_id}`);
+    } catch (err) {
+      setDemoError(err instanceof Error ? err.message : "Demo failed.");
+    } finally {
+      setDemoLoading(false);
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12">
       <section className="space-y-5">
@@ -11,18 +33,21 @@ export default function HomePage() {
           Which AI products fit how you actually work?
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
-          This measures how you interact with AI, not your personality. Eight short scenarios observe
-          evidence-seeking, collaboration, and workflow preferences, then match you to products, models,
-          and a portable working configuration.
+          This measures how you interact with AI, not your personality. Eight scenarios observe evidence-seeking,
+          collaboration, and workflow preferences, then match you to products, models, and a portable working configuration.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Button asChild size="lg">
-            <Link href="/assessment">Start the assessment</Link>
+          <Button render={<Link href="/assessment" />} size="lg">
+            Start the assessment
           </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/methodology">How scoring works</Link>
+          <Button size="lg" variant="outline" onClick={runDemo} disabled={demoLoading}>
+            {demoLoading ? "Scoring sample…" : "See a scored sample"}
+          </Button>
+          <Button render={<Link href="/methodology" />} variant="ghost" size="lg">
+            How scoring works
           </Button>
         </div>
+        {demoError ? <p className="text-sm text-destructive">{demoError}</p> : null}
       </section>
       <section className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -38,7 +63,7 @@ export default function HomePage() {
             <CardTitle>Separate registries</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Products and models stay distinct. Every recommendation carries a last-evaluated date.
+            Products and models stay distinct across every launch category. Each entry carries a last-evaluated date.
           </CardContent>
         </Card>
         <Card>
@@ -46,7 +71,7 @@ export default function HomePage() {
             <CardTitle>Explainable fit</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Scores are normalized similarity, not probabilities. You can inspect evidence and export the persona.
+            Scores are normalized similarity, not probabilities. Inspect evidence, share anonymously, or delete the session.
           </CardContent>
         </Card>
       </section>

@@ -9,7 +9,9 @@ from rich.table import Table
 
 from .engine import registry_errors, repo_root, score_session
 from .exports import export_persona
+from .freshness import freshness_report
 from .models import AssessmentSession
+from .registry import load_models, load_products
 
 app = typer.Typer(no_args_is_help=True)
 console = Console()
@@ -67,6 +69,17 @@ def validate_registry():
         for row in rows:
             console.print(f"[red]{kind}[/red] {row}")
     raise typer.Exit(1)
+
+
+@app.command("freshness")
+def freshness():
+    """Show registry age bands. Stale records lose confidence, not rank-as-bad."""
+    root = repo_root()
+    report = freshness_report(
+        load_products(root / "data/registry/products.json"),
+        load_models(root / "data/registry/models.json"),
+    )
+    console.print_json(data=report)
 
 
 @app.command()

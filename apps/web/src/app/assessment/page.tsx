@@ -14,6 +14,7 @@ export default function AssessmentPage() {
   const router = useRouter();
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [started, setStarted] = useState(false);
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [turnIndex, setTurnIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -90,24 +91,37 @@ export default function AssessmentPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-3xl px-4 py-16 text-muted-foreground">
-        Loading scenarios…
-      </div>
-    );
-  }
-
   if (error && !scenario) {
     return (
       <div className="mx-auto max-w-3xl space-y-4 px-4 py-16">
         <h1 className="text-2xl font-semibold">Assessment unavailable</h1>
         <p className="text-muted-foreground">{error}</p>
-        <p className="text-sm text-muted-foreground">
-          The scoring API needs to be running so the game can load scenarios without duplicating engine logic in the browser.
-        </p>
       </div>
     );
+  }
+
+  if (!started) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 px-4 py-12">
+        <h1 className="text-3xl font-semibold tracking-tight">Before you start</h1>
+        <p className="text-muted-foreground">
+          This measures how you interact with AI, not your personality. Eight scenarios, three rounds each.
+          There are no right answers. Optional notes are scored with keyword heuristics, not a hidden psych test.
+        </p>
+        <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+          <li>No name, employer, or demographic questions.</li>
+          <li>You can delete the session from the results page.</li>
+          <li>Recommendations come from dated product and model registries, not one model vote.</li>
+        </ul>
+        <Button onClick={() => setStarted(true)} disabled={!sessionId || loading}>
+          {loading ? "Preparing…" : "Begin scenario 1"}
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return <div className="mx-auto max-w-3xl px-4 py-16 text-muted-foreground">Loading scenarios…</div>;
   }
 
   if (!scenario || !turn) {
@@ -150,9 +164,7 @@ export default function AssessmentPage() {
               type="button"
               onClick={() => setSelected(choice.id)}
               className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition ${
-                selected === choice.id
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:bg-muted/50"
+                selected === choice.id ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
               }`}
             >
               {choice.label}
@@ -162,12 +174,16 @@ export default function AssessmentPage() {
             <Textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Optional: add a note. Keywords like compare, sources, automate, or local are scored as extra evidence."
+              placeholder="Optional note. Words like compare, sources, automate, or local can add evidence."
             />
           ) : null}
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button className="w-full sm:w-auto" onClick={advance} disabled={!selected || submitting}>
-            {submitting ? "Saving…" : scenarioIndex === scenarios.length - 1 && turnIndex === scenario.turns.length - 1 ? "See results" : "Continue"}
+            {submitting
+              ? "Saving…"
+              : scenarioIndex === scenarios.length - 1 && turnIndex === scenario.turns.length - 1
+                ? "See results"
+                : "Continue"}
           </Button>
         </CardContent>
       </Card>

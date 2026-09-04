@@ -9,3 +9,7 @@ coverage/
 dist/
 build/
 *.sqlite3
+playwright-report/
+test-results/
+apps/web/test-results/
+apps/web/playwright-report/

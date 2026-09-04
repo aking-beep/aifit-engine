@@ -3,11 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from .config import MODEL_WORKLOADS
-from .events import classify_free_text
+from .classifier import classify_text
 from .fit import build_stacks, rank_models_by_workload, rank_products
 from .metrics import build_user_vector, score_metrics
 from .models import AssessmentSession, FitFilters, InteractionEvent
 from .persona import generate_persona
+from .freshness import freshness_report
 from .registry import load_models, load_products, validate_models, validate_products
 
 
@@ -43,12 +44,19 @@ def score_session(
         "primary_stack": primary.model_dump(),
         "alternative_stack": alternative.model_dump(),
         "persona": persona,
+        "freshness": freshness_report(products, models),
+        "privacy": {
+            "mode": "anonymous",
+            "stores_name": False,
+            "stores_employer": False,
+            "retention": "In-memory session until delete or process restart. Share snapshots contain scores only.",
+        },
         "disclaimer": "Fit scores are normalized similarity scores, not scientifically validated probabilities.",
     }
 
 
 def normalize_free_text(text: str, scenario_id: str, turn_id: str | None = None) -> list[InteractionEvent]:
-    return classify_free_text(text, scenario_id, turn_id)
+    return classify_text(text, scenario_id, turn_id)
 
 
 def registry_errors(root: Path | None = None) -> dict[str, list[str]]:

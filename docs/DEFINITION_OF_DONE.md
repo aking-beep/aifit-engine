@@ -2,23 +2,25 @@
 
 A public beta is ready only when:
 
-- [ ] 8 scenarios exist
-- [ ] each major interaction metric has >=2 scenario opportunities
-- [ ] behavioral evidence is shown in results
-- [ ] product and model registries are separate
-- [ ] all public registry entries include evaluation date
-- [ ] recommendation score breakdown works
-- [ ] at least 5 product categories are supported
-- [ ] at least 4 model workload categories are supported
-- [ ] persona generator works
-- [ ] generic persona export works
-- [ ] CLAUDE.md export works
-- [ ] AGENTS.md export works
-- [ ] Cursor rules export works
-- [ ] no sensitive attribute inference exists
-- [ ] delete/export functionality is designed before storing identifiable profiles
-- [ ] engine tests pass
-- [ ] API tests pass
-- [ ] frontend end-to-end happy path passes
-- [ ] README explains methodology and limitations
+- [x] 8 scenarios exist
+- [x] each major interaction metric has >=2 scenario opportunities
+- [x] behavioral evidence is shown in results
+- [x] product and model registries are separate
+- [x] all public registry entries include evaluation date
+- [x] recommendation score breakdown works
+- [x] at least 5 product categories are supported
+- [x] at least 4 model workload categories are supported
+- [x] persona generator works
+- [x] generic persona export works
+- [x] CLAUDE.md export works
+- [x] AGENTS.md export works
+- [x] Cursor rules export works
+- [x] no sensitive attribute inference exists
+- [x] delete/export functionality is designed before storing identifiable profiles
+- [x] engine tests pass
+- [x] API tests pass
+- [x] frontend end-to-end happy path passes
+- [x] README explains methodology and limitations
 - [ ] seed registry has been manually revalidated immediately before launch
+
+The seed catalog in `data/registry/` is **illustrative**. See `docs/REGISTRY_SEED_REVIEW.md` before treating rows as public recommendations.

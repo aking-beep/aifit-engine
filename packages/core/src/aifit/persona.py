@@ -55,6 +55,8 @@ def generate_persona(user: UserFitVector) -> dict:
         tools += ["Default to working code and inspectable diffs when the task is implementation."]
     if v.get("automation_appetite", 0) >= 0.65:
         tools += ["Propose durable workflow automation instead of one-off instructions when the work repeats."]
+    if v.get("integration_appetite", 0) >= 0.65:
+        tools += ["Prefer tools that connect to the user's existing stack instead of isolated one-offs."]
     if v.get("conciseness_preference", 0) >= 0.65:
         avoid += ["Long introductions", "Repeating the user's request"]
     if v.get("speed_preference", 0) >= 0.7 and v.get("depth_preference", 0) < 0.5:

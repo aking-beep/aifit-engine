@@ -147,7 +147,7 @@ def test_eight_scenarios_have_multiple_opportunities():
     scenarios = load_scenarios()
     assert len(scenarios) == 8
     for scenario in scenarios:
-        assert len(scenario.turns) >= 2
+        assert len(scenario.turns) >= 3
         for turn in scenario.turns:
             assert len(turn.choices) >= 2
 
@@ -189,3 +189,122 @@ def test_api_health_and_score():
     assert "CLAUDE.md" in exported.json()["filename"]
     deleted = client.delete(f"/v1/sessions/{session_id}")
     assert deleted.json()["deleted"] is True
+
+
+def test_major_metrics_have_two_scenario_opportunities():
+    from collections import defaultdict
+
+    from aifit.config import EVENT_TO_METRICS
+
+    hits: dict[str, set[str]] = defaultdict(set)
+    for scenario in load_scenarios():
+        for turn in scenario.turns:
+            for choice in turn.choices:
+                for event in choice.events:
+                    for metric in EVENT_TO_METRICS.get(event.event_type, ()):
+                        hits[metric].add(scenario.id)
+    majors = set(EVENT_TO_METRICS.values())
+    flattened = {metric for group in majors for metric in group}
+    missing = [metric for metric in flattened if len(hits.get(metric, set())) < 2]
+    assert missing == [], f"metrics without two scenario opportunities: {missing}"
+
+
+def test_registry_covers_pack_categories_and_workloads():
+    from aifit.config import MODEL_WORKLOADS
+    from aifit.registry import load_models, load_products
+
+    products = load_products("data/registry/products.json")
+    models = load_models("data/registry/models.json")
+    required_categories = {
+        "general_assistant",
+        "research",
+        "coding_agent",
+        "ide",
+        "automation",
+        "knowledge",
+        "writing",
+        "image",
+        "video",
+        "presentation",
+        "design",
+        "data_analysis",
+        "enterprise_search",
+        "local_open_source",
+    }
+    assert required_categories <= {p.category for p in products}
+    for workload in MODEL_WORKLOADS:
+        assert any(workload in model.workload_scores for model in models), workload
+
+
+def test_local_only_filter_drops_cloud_products():
+    session = AssessmentSession.model_validate_json(Path("examples/sample_session.json").read_text())
+    result = score_session(session, filters=FitFilters(local_only=True))
+    from aifit.registry import load_products
+
+    by_id = {p.id: p for p in load_products("data/registry/products.json")}
+    assert result["products"]
+    for rec in result["products"]:
+        deployment = set(by_id[rec["id"]].deployment)
+        assert deployment & {"local", "self_hosted", "on_prem"}
+
+
+def test_api_demo_share_feedback_freshness_and_scenarios():
+    from services.api.main import FEEDBACK, app
+
+    client = TestClient(app)
+    demo = client.post("/v1/sessions/demo")
+    assert demo.status_code == 200
+    session_id = demo.json()["session_id"]
+    scored = demo.json()["result"]
+    assert scored["products_by_category"]
+    assert scored["primary_stack"]["slots"]
+    shared = client.post(f"/v1/sessions/{session_id}/share")
+    assert shared.status_code == 200
+    share_id = shared.json()["share_id"]
+    snapshot = client.get(f"/v1/share/{share_id}")
+    assert snapshot.status_code == 200
+    assert snapshot.json()["persona"]
+    filtered = client.post(
+        f"/v1/sessions/{session_id}/score",
+        json={"filters": {"local_only": True}},
+    )
+    assert filtered.status_code == 200
+    feedback = client.post("/v1/feedback", json={"session_id": session_id, "rating": 5, "comment": "useful"})
+    assert feedback.json()["ok"] is True
+    assert FEEDBACK
+    freshness = client.get("/v1/registry/freshness")
+    assert "needs_review" in freshness.json()
+    classified = client.post(
+        "/v1/classify",
+        json={"text": "compare sources and automate the local workflow", "scenario_id": "launch-risk", "turn_id": "lr-1"},
+    )
+    types = {row["event_type"] for row in classified.json()["events"]}
+    assert "requested_comparison" in types
+    analytics = client.get("/v1/analytics/summary")
+    assert analytics.json()["event_count"] >= 1
+    exported = client.get(f"/v1/sessions/{session_id}/export")
+    assert exported.status_code == 200
+
+    scenarios = client.get("/v1/scenarios").json()
+    assert len(scenarios) == 8
+    walk = client.post("/v1/sessions").json()["session_id"]
+    for scenario in scenarios:
+        for turn in scenario["turns"]:
+            choice = turn["choices"][0]
+            added = client.post(
+                f"/v1/sessions/{walk}/events",
+                json={
+                    "scenario_id": scenario["id"],
+                    "turn_id": turn["id"],
+                    "events": choice["events"],
+                    "free_text": "compare sources",
+                },
+            )
+            assert added.status_code == 200
+    walked = client.post(f"/v1/sessions/{walk}/score")
+    assert walked.status_code == 200
+    body = walked.json()
+    assert body["metrics"]
+    assert body["persona"]["disclaimer"]
+    assert client.delete(f"/v1/sessions/{walk}").json()["deleted"] is True
+

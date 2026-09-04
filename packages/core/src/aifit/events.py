@@ -22,6 +22,7 @@ KEYWORD_RULES: list[tuple[str, str, float]] = [
     (r"\b(visual|image|mockup|diagram|storyboard)\b", "requested_visual", 0.85),
     (r"\b(code|implement|scaffold|repo|function)\b", "requested_code", 0.85),
     (r"\b(automat(e|ion)|orchestrat|workflow|n8n|zapier)\b", "requested_automation", 0.9),
+    (r"\b(integrat|connect (it|this) to|api|slack|github)\b", "requested_integration", 0.85),
     (r"\b(local|self[- ]host|on[- ]prem|ollama)\b", "chose_local_control", 0.9),
     (r"\b(cloud|saas|hosted)\b", "chose_cloud_service", 0.7),
     (r"\b(cheap|cost|budget|lower[- ]cost|price)\b", "chose_lower_cost", 0.8),

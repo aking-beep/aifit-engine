@@ -78,5 +78,8 @@ export type ScoreResult = {
   primary_stack: Stack;
   alternative_stack: Stack;
   persona: Persona;
+  freshness?: { needs_review: { id: string; name: string; band: string }[] };
+  privacy?: { mode: string; retention: string };
   disclaimer: string;
+  share_id?: string;
 };

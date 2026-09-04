@@ -1,55 +1,64 @@
 import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function MethodologyPage() {
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-12">
-      <div className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">Methodology and limits</h1>
-        <p className="text-muted-foreground">
-          AI Fit Engine is a workflow preference system. It is not a clinical assessment, intelligence test,
-          or hiring screen.
-        </p>
+    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+        Methodology
+      </p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        How AI Fit Engine scores interaction
+      </h1>
+      <p className="mt-4 text-muted-foreground">
+        This is not a personality test. We score how you actually use AI —
+        what you ask, how you steer, and how much evidence you demand — then
+        rank products and models against that vector.
+      </p>
+
+      <section className="mt-10 space-y-6 text-sm leading-6">
+        <div>
+          <h2 className="text-lg font-semibold">1. Observable events</h2>
+          <p className="mt-2 text-muted-foreground">
+            Each round logs a structured event: task type, revision, verification,
+            source request, tool request, and more. The classifier is keyword-first.
+            An optional LLM adapter can label text, but it never ranks products.
+          </p>
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold">2. Metric vector</h2>
+          <p className="mt-2 text-muted-foreground">
+            Events become a 0–1 vector (task diversity, revision rate, verification
+            rate, tool use, source demand, and so on). Weights live in code and
+            are versioned. The ranker is deterministic math, not a chat model.
+          </p>
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold">3. Registries</h2>
+          <p className="mt-2 text-muted-foreground">
+            Products and models are separate catalogs. Products have dated
+            evidence; stale rows are penalized, not deleted. Models are tagged
+            by workload (coding, research, writing, image, video, audio, data).
+          </p>
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold">4. Stacks, not a winner</h2>
+          <p className="mt-2 text-muted-foreground">
+            Results are a primary stack and an alternative stack, plus ranked
+            products by category and models by workload. You can filter by cost
+            and local-only before ranking. Stale registry rows lose confidence;
+            they are not marked “bad.”
+          </p>
+        </div>
+      </section>
+
+      <div className="mt-10 flex gap-3">
+        <Button render={<Link href="/assessment" />}>Take the assessment</Button>
+        <Button variant="outline" render={<Link href="/registry" />}>
+          Open registry
+        </Button>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>What is observed</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>Each scenario choice emits typed interaction events such as requested_evidence or delegated_action.</p>
-          <p>Optional free text is classified with keyword heuristics. The original wording is kept as evidence.</p>
-          <p>Timing is captured in later versions only; fast clicks are not treated as a decision style in v0.1.</p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>How fit is computed</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>Metrics are averages of event strengths on a 0–1 scale. Confidence grows with observations and distinct scenarios.</p>
-          <p>
-            Product fit is one minus a weighted distance between your vector and the product preference vector,
-            then adjusted for registry freshness and metric confidence.
-          </p>
-          <p>
-            UI percentages are rounded for readability. Internally this is a normalized fit score, not a validated probability.
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>What we do not infer</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>No race, religion, health, politics, or other protected attributes. No MBTI, Enneagram, or IQ labels.</p>
-          <p>Vendor winners are not hard-coded into assessment logic. Adding a product is a registry change.</p>
-          <p>v0.1 sessions are in-memory. Delete is available on the API; no identifiable profile is stored by default.</p>
-        </CardContent>
-      </Card>
-      <Button asChild className="w-fit">
-        <Link href="/assessment">Start the assessment</Link>
-      </Button>
     </div>
   );
 }

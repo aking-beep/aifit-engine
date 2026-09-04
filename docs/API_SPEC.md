@@ -29,8 +29,33 @@ Accepts a user fit vector and returns ranked products/models.
 ### POST /v1/persona
 Generates a portable persona payload from metrics.
 
-### POST /v1/export/{target}
-Returns an export artifact.
+### POST /v1/sessions/demo
+Loads the sample session, scores it, and returns `{session_id, result}`.
+
+### POST /v1/sessions/{id}/share
+Stores an anonymous score snapshot (no raw prompts).
+
+### GET /v1/share/{share_id}
+Returns that snapshot.
+
+### GET /v1/sessions/{id}/export
+Exports the anonymous session record.
+
+### DELETE /v1/sessions/{id}
+Deletes in-memory events and scores.
+
+### POST /v1/classify
+Keyword (and optional LLM) event labels. Not a recommendation.
+
+### GET /v1/registry/freshness
+Age bands. Stale rows lose confidence.
+
+### POST /v1/feedback
+1–5 rating and optional comment. No identity fields.
+
+### GET /v1/analytics/summary
+Anonymous in-memory event counts.
+
 
 ## Response requirement
 

@@ -19,6 +19,7 @@ export const api = {
   health: () => request<{ ok: boolean }>("/health"),
   scenarios: () => request<Scenario[]>("/v1/scenarios"),
   createSession: () => request<{ session_id: string }>("/v1/sessions", { method: "POST" }),
+  demoSession: () => request<{ session_id: string; result: ScoreResult }>("/v1/sessions/demo", { method: "POST" }),
   addEvents: (
     sessionId: string,
     body: {
@@ -28,11 +29,26 @@ export const api = {
       turn_id: string;
     },
   ) => request<{ event_count: number }>(`/v1/sessions/${sessionId}/events`, { method: "POST", body: JSON.stringify(body) }),
-  score: (sessionId: string) =>
-    request<ScoreResult>(`/v1/sessions/${sessionId}/score`, { method: "POST" }),
+  score: (sessionId: string, filters?: { local_only?: boolean; max_pricing_tier?: string | null }) =>
+    request<ScoreResult>(`/v1/sessions/${sessionId}/score`, {
+      method: "POST",
+      body: JSON.stringify({ filters: filters ?? null }),
+    }),
+  share: (sessionId: string) =>
+    request<{ share_id: string; path: string }>(`/v1/sessions/${sessionId}/share`, { method: "POST" }),
+  getShare: (shareId: string) => request<ScoreResult>(`/v1/share/${shareId}`),
+  exportSession: (sessionId: string) =>
+    request<{ session: unknown; result: ScoreResult | null }>(`/v1/sessions/${sessionId}/export`),
+  deleteSession: (sessionId: string) =>
+    request<{ deleted: boolean }>(`/v1/sessions/${sessionId}`, { method: "DELETE" }),
   exportPersona: (target: string, persona: ScoreResult["persona"]) =>
     request<{ filename: string; content: string }>(`/v1/export/${target}`, {
       method: "POST",
       body: JSON.stringify({ persona }),
     }),
+  products: () => request<Record<string, unknown>[]>("/v1/registry/products"),
+  models: () => request<Record<string, unknown>[]>("/v1/registry/models"),
+  freshness: () => request<{ needs_review: unknown[]; products: unknown[]; models: unknown[] }>("/v1/registry/freshness"),
+  feedback: (body: { session_id?: string; share_id?: string; rating: number; comment: string; useful?: boolean }) =>
+    request<{ ok: boolean }>("/v1/feedback", { method: "POST", body: JSON.stringify(body) }),
 };
