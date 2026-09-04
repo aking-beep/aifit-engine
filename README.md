@@ -24,7 +24,7 @@ Generic “best AI” lists ignore how a person actually works. AI Fit Engine sc
 
 Scoring stays server-side. The Next.js app proxies `/v1` and `/health` to the API.
 
-## Limitations (v0.1)
+## Limitations (v0.2)
 
 - The catalog in `data/registry/` is **illustrative seed data**. Re-validate every row before public recommendations (`docs/REGISTRY_SEED_REVIEW.md`).
 - Sessions are **in-memory**. Restarting the API drops them. There are no accounts.
@@ -79,52 +79,45 @@ Import the Git repo in the Vercel dashboard if you prefer. Leave the root direct
 
 On Vercel, assessment events are buffered in the browser and scored in one request. Share links include a compressed snapshot in the URL hash because serverless functions do not share memory.
 
-## v0.1 outputs
+## v0.2 outputs
 
-- Interaction signature with evidence and confidence
-- Top products by category
-- Top models by workload
-- Primary and alternative AI stacks
-- Generated working persona
-- Exports: generic prompt, `CLAUDE.md`, `AGENTS.md`, Cursor rules, JSON
+The result is an AI operating profile you can save, install, or send:
+
+- **AI workstyle** — named interaction profile, behavioral dimensions, and an AI Fit Score (retest later)
+- **AI stack** — primary assistant, research, coding, automation, creative, local/private
+- **Model router** — which model handles strategy, research, coding, multimodal, fast answers, agents, local
+- **Working persona** — how AI should interact with you, plus installable instructions
+- **Portable pack** — `ai-profile.zip` with PROFILE.md, CLAUDE.md, AGENTS.md, ChatGPT, Gemini, Cursor rules, model-routing.json
 - Anonymous share link, session export, and delete
-- Feedback on recommendations
+- Feedback on whether you actually installed or changed something
 
 ## Architecture
 
 ```text
-Assessment Game
-      │
-      ▼
-Interaction Event Engine
-      │
-      ▼
-InteractionBench
-      │
-      ├── behavioral signals
-      ├── evidence
-      └── confidence
-      │
-      ▼
-User Fit Vector
-      │
-      ├───────────────┐
-      ▼               ▼
+Interactive scenarios
+        │
+        ▼
+Behavioral signals
+        │
+        ▼
+AI Workstyle Vector
+        │
+        ▼
+Capability requirements
+        │
+        ├───────────────┐
+        ▼               ▼
 Product Registry   Model Registry
-      │               │
-      └───────┬───────┘
-              ▼
-          Fit Engine
-              │
-      ┌───────┼───────────┐
-      ▼       ▼           ▼
- Products   Models      AI Stack
-              │
-              ▼
-        Persona Generator
-              │
-              ▼
-          Export Layer
+        │               │
+        └───────┬───────┘
+                ▼
+           AI Stack
+                │
+                ▼
+      Persona configuration
+                │
+                ▼
+ Portable AI operating profile
 ```
 
 ## Pack docs

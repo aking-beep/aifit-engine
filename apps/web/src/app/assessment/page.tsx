@@ -122,7 +122,7 @@ export default function AssessmentPage() {
         <h1 className="text-3xl font-semibold tracking-tight">Before you start</h1>
         <p className="text-muted-foreground">
           This measures how you interact with AI, not your personality. Eight scenarios, three rounds each.
-          There are no right answers. Optional notes are scored with keyword heuristics, not a hidden psych test.
+          There are no right answers. You leave with a workstyle, a recommended stack, and a configuration you can install.
         </p>
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
           <li>No name, employer, or demographic questions.</li>

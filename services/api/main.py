@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import json
 import os
 import sys
@@ -26,7 +27,7 @@ from aifit.persona import generate_persona
 from aifit.registry import load_models, load_products
 from aifit.scenarios import load_scenarios
 
-app = FastAPI(title="AI Fit Engine API", version="0.1.0")
+app = FastAPI(title="AI Fit Engine API", version="0.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -98,7 +99,8 @@ class EventBatch(BaseModel):
 
 
 class ExportRequest(BaseModel):
-    persona: dict[str, Any]
+    persona: dict[str, Any] = Field(default_factory=dict)
+    result: dict[str, Any] | None = None
 
 
 class ClassifyRequest(BaseModel):
@@ -136,7 +138,7 @@ def _score_and_store(session: AssessmentSession, filters: FitFilters | None = No
 
 @app.get("/health")
 def health():
-    return {"ok": True, "version": "0.1.0", "privacy": "anonymous"}
+    return {"ok": True, "version": "0.2.0", "privacy": "anonymous"}
 
 
 @app.get("/v1/scenarios")
@@ -226,6 +228,11 @@ def _store_share(result: dict[str, Any], session_id: str | None = None) -> dict[
         "primary_stack": result["primary_stack"],
         "alternative_stack": result["alternative_stack"],
         "user_vector": result["user_vector"],
+        "workstyle": result.get("workstyle"),
+        "operating_stack": result.get("operating_stack"),
+        "model_routing": result.get("model_routing"),
+        "workflow": result.get("workflow"),
+        "instructions": result.get("instructions"),
         "disclaimer": result["disclaimer"],
         "privacy": result["privacy"],
     }
@@ -320,11 +327,19 @@ def classify(payload: ClassifyRequest):
 
 @app.post("/v1/export/{target}")
 def export(target: str, payload: ExportRequest):
-    allowed = {"generic", "claude", "agents", "cursor", "json"}
+    from aifit.exports import export_pack_zip
+
+    allowed = {"generic", "claude", "agents", "cursor", "json", "chatgpt", "gemini", "profile", "routing", "pack"}
     if target not in allowed:
         raise HTTPException(status_code=400, detail=f"Unknown export target: {target}")
-    filename, body = export_persona(payload.persona, target)
-    return {"filename": filename, "content": body}
+    result = payload.result or {"persona": payload.persona}
+    if "persona" not in result:
+        result = {**result, "persona": payload.persona}
+    if target == "pack":
+        filename, blob = export_pack_zip(result)
+        return {"filename": filename, "content": base64.b64encode(blob).decode("ascii"), "encoding": "base64"}
+    filename, body = export_persona(payload.persona or result.get("persona") or {}, target, result)
+    return {"filename": filename, "content": body, "encoding": "text"}
 
 
 @app.post("/v1/feedback")

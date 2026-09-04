@@ -52,10 +52,10 @@ export const api = {
     request<{ session: unknown; result: ScoreResult | null }>(`/v1/sessions/${sessionId}/export`),
   deleteSession: (sessionId: string) =>
     request<{ deleted: boolean }>(`/v1/sessions/${sessionId}`, { method: "DELETE" }),
-  exportPersona: (target: string, persona: ScoreResult["persona"]) =>
-    request<{ filename: string; content: string }>(`/v1/export/${target}`, {
+  exportPersona: (target: string, result: ScoreResult) =>
+    request<{ filename: string; content: string; encoding?: string }>(`/v1/export/${target}`, {
       method: "POST",
-      body: JSON.stringify({ persona }),
+      body: JSON.stringify({ persona: result.persona, result }),
     }),
   products: () => request<Record<string, unknown>[]>("/v1/registry/products"),
   models: () => request<Record<string, unknown>[]>("/v1/registry/models"),

@@ -125,11 +125,21 @@ def test_exports_cover_required_targets():
         ("claude", "CLAUDE.md"),
         ("agents", "AGENTS.md"),
         ("cursor", ".cursor/rules/ai-fit.mdc"),
+        ("chatgpt", "chatgpt-instructions.md"),
+        ("gemini", "gemini-instructions.md"),
+        ("profile", "PROFILE.md"),
+        ("routing", "model-routing.json"),
         ("json", "ai-fit-profile.json"),
     ]:
         name, body = export_persona(persona, target)
         assert name == filename
         assert body
+    from aifit.engine import score_session
+    from aifit.exports import export_pack_zip
+
+    packed_name, packed = export_pack_zip(score_session(AssessmentSession(session_id="x", events=[{"event_type": "requested_evidence", "scenario_id": "s", "strength": 1.0}])))
+    assert packed_name == "ai-profile.zip"
+    assert packed[:2] == b"PK"
 
 
 def test_sample_session_scores():
@@ -139,6 +149,13 @@ def test_sample_session_scores():
     assert result["products"]
     assert result["models"]
     assert result["persona"]
+    assert result["workstyle"]["label"] == "Evidence-Driven Builder"
+    assert result["persona"]["label"] == "Critical Technical Partner"
+    assert result["workstyle"]["maturity"]["score"] >= 0
+    assert result["operating_stack"]
+    assert result["model_routing"]
+    assert result["workflow"]
+    assert result["instructions"]
     assert result["primary_stack"]["slots"]
     assert "disclaimer" in result
 
@@ -187,6 +204,10 @@ def test_api_health_and_score():
     exported = client.post("/v1/export/claude", json={"persona": body["persona"]})
     assert exported.status_code == 200
     assert "CLAUDE.md" in exported.json()["filename"]
+    packed = client.post("/v1/export/pack", json={"persona": body["persona"], "result": body})
+    assert packed.status_code == 200
+    assert packed.json()["encoding"] == "base64"
+    assert packed.json()["filename"] == "ai-profile.zip"
     deleted = client.delete(f"/v1/sessions/{session_id}")
     assert deleted.json()["deleted"] is True
 

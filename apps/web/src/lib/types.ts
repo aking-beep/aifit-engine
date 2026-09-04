@@ -61,12 +61,41 @@ export type Stack = {
 export type Persona = {
   label: string;
   purpose: string;
+  traits?: string[];
   interaction_rules: string[];
   response_rules: string[];
   decision_rules: string[];
   tool_rules: string[];
   avoid: string[];
   disclaimer: string;
+};
+
+export type Workstyle = {
+  label: string;
+  summary: string;
+  dimensions: { id: string; label: string; score: number; confidence: number }[];
+  maturity: { score: number; band: string; coverage: number; note: string };
+  disclaimer: string;
+};
+
+export type OperatingSlot = {
+  role: string;
+  label: string;
+  product: Recommendation | null;
+};
+
+export type ModelRoute = {
+  id: string;
+  work: string;
+  workload: string;
+  model: Recommendation | null;
+};
+
+export type WorkflowStep = {
+  id: string;
+  label: string;
+  emphasis: boolean;
+  instruction: string;
 };
 
 export type ScoreResult = {
@@ -77,6 +106,11 @@ export type ScoreResult = {
   models: Record<string, Recommendation[]>;
   primary_stack: Stack;
   alternative_stack: Stack;
+  operating_stack?: OperatingSlot[];
+  model_routing?: ModelRoute[];
+  workflow?: WorkflowStep[];
+  workstyle?: Workstyle;
+  instructions?: string;
   persona: Persona;
   freshness?: { needs_review: { id: string; name: string; band: string }[] };
   privacy?: { mode: string; retention: string };

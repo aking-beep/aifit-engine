@@ -14,8 +14,11 @@ test("landing, privacy, registry, and scored sample", async ({ page }) => {
 
   await page.goto("/");
   await page.getByRole("button", { name: /see a scored sample/i }).click();
-  await expect(page.getByText(/interaction signature/i)).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByText(/Primary stack/i)).toBeVisible();
+    await expect(page.getByText(/ai operating profile/i)).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(/AI Fit Score/i)).toBeVisible();
+    await expect(page.getByRole("button", { name: /export my ai setup/i })).toBeVisible();
+    await expect(page.getByText(/install this configuration/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /working persona/i })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Evidence" })).toBeVisible();
   await page.getByRole("tab", { name: "Evidence" }).click();
   await expect(page.getByText(/observations across/i).first()).toBeVisible();

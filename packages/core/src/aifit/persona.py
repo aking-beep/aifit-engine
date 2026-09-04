@@ -3,16 +3,37 @@ from __future__ import annotations
 from .models import UserFitVector
 
 
-def _label(values: dict[str, float]) -> str:
+def persona_label(values: dict[str, float]) -> str:
+    """How the assistant should behave — distinct from the user's workstyle label."""
+    if values.get("evidence_seeking", 0) >= 0.7 and values.get("code_comfort", 0) >= 0.6:
+        return "Critical Technical Partner"
     if values.get("evidence_seeking", 0) >= 0.7 and values.get("comparison_preference", 0) >= 0.65:
         return "Critical Systems Partner"
-    if values.get("code_comfort", 0) >= 0.7 and values.get("iteration_preference", 0) >= 0.7:
-        return "Build-and-Refine Partner"
-    if values.get("automation_appetite", 0) >= 0.7:
-        return "Workflow Operator"
+    if values.get("autonomy_preference", 0) >= 0.7 and (
+        values.get("automation_appetite", 0) >= 0.55 or values.get("integration_appetite", 0) >= 0.55
+    ):
+        return "Autonomous Operator"
     if values.get("autonomy_preference", 0) <= 0.35:
-        return "Confirm-First Collaborator"
+        return "Confirm-First Analyst"
+    if values.get("conciseness_preference", 0) >= 0.65:
+        return "Concise Working Partner"
+    if values.get("multimodal_preference", 0) >= 0.7:
+        return "Creative Production Partner"
+    if values.get("structure_preference", 0) >= 0.65 and values.get("evidence_seeking", 0) >= 0.55:
+        return "Structured Research Partner"
     return "Adaptive Working Partner"
+
+
+def persona_purpose(values: dict[str, float]) -> str:
+    if values.get("evidence_seeking", 0) >= 0.65 and values.get("code_comfort", 0) >= 0.6:
+        return "Act as a critical technical partner: evidence first, architectures when useful, and working artifacts over commentary."
+    if values.get("evidence_seeking", 0) >= 0.65:
+        return "Help this user make evidence-backed decisions, surface uncertainty, and execute without hiding assumptions."
+    if values.get("autonomy_preference", 0) >= 0.7:
+        return "Move work forward: take reasonable intermediate steps, then show what changed."
+    if values.get("autonomy_preference", 0) <= 0.35:
+        return "Stay inspectable. Ask before material multi-step changes, and keep recommendations reversible."
+    return "Help this user make evidence-backed decisions and execute in a way that matches observed AI interaction preferences."
 
 
 def generate_persona(user: UserFitVector) -> dict:
@@ -71,9 +92,28 @@ def generate_persona(user: UserFitVector) -> dict:
     if not tools:
         tools = ["Use tools when they materially improve accuracy or speed."]
 
+    traits: list[str] = []
+    if v.get("evidence_seeking", 0) >= 0.65:
+        traits += ["evidence-first", "distinguishes fact from inference", "surfaces risks"]
+    if v.get("assumption_challenge", 0) >= 0.55:
+        traits += ["challenges assumptions"]
+    if v.get("conciseness_preference", 0) >= 0.6 or (v.get("speed_preference", 0) >= 0.65 and v.get("depth_preference", 0) < 0.5):
+        traits += ["concise", "doesn't over-explain"]
+    if v.get("structure_preference", 0) >= 0.6:
+        traits += ["uses structured outputs"]
+    if v.get("code_comfort", 0) >= 0.65:
+        traits += ["proposes architectures"]
+    if v.get("autonomy_preference", 0) <= 0.35:
+        traits += ["asks for clarification only when necessary"]
+    elif v.get("autonomy_preference", 0) >= 0.7:
+        traits += ["executes intermediate steps without extra confirmation"]
+    if not traits:
+        traits = ["inspectable", "matches requested depth"]
+
     return {
-        "label": _label(v),
-        "purpose": "Help this user make evidence-backed decisions and execute in a way that matches observed AI interaction preferences.",
+        "label": persona_label(v),
+        "purpose": persona_purpose(v),
+        "traits": list(dict.fromkeys(traits)),
         "interaction_rules": interaction,
         "response_rules": response,
         "decision_rules": decision,

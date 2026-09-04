@@ -31,17 +31,22 @@ def score(session_file: str):
         table.add_row(metric["name"], f"{metric['score']:.2f}", f"{metric['confidence']:.2f}")
     console.print(table)
 
-    ptable = Table(title="Top Product Matches")
+    ptable = Table(title="Operating stack")
+    ptable.add_column("Role")
     ptable.add_column("Product")
-    ptable.add_column("Category")
-    ptable.add_column("Fit")
-    for rec in result["products"][:8]:
-        ptable.add_row(rec["name"], rec.get("category") or "", f"{rec['fit']:.2f}")
+    for slot in result.get("operating_stack") or []:
+        product = slot.get("product") or {}
+        ptable.add_row(slot["label"], product.get("name") or "—")
     console.print(ptable)
 
-    for workload, ranked in result["models"].items():
-        if ranked:
-            console.print(f"[bold]{workload}[/bold]: {ranked[0]['name']} ({ranked[0]['fit']:.2f})")
+    workstyle = result.get("workstyle") or {}
+    maturity = (workstyle.get("maturity") or {})
+    console.print(f"[bold]Workstyle[/bold] {workstyle.get('label')} · AI Fit Score {maturity.get('score')} ({maturity.get('band')})")
+
+    for row in result.get("model_routing") or []:
+        model = row.get("model") or {}
+        if model:
+            console.print(f"[bold]{row['work']}[/bold]: {model.get('name')}")
 
     console.print("\n[bold]Persona[/bold]")
     console.print_json(data=result["persona"])
@@ -52,7 +57,14 @@ def export(session_file: str, target: str = "generic"):
     """Write a persona export from a scored session."""
     session = AssessmentSession.model_validate(json.loads(Path(session_file).read_text()))
     result = score_session(session)
-    filename, body = export_persona(result["persona"], target)
+    if target == "pack":
+        from .exports import export_pack_zip
+
+        filename, blob = export_pack_zip(result)
+        Path(filename).write_bytes(blob)
+        console.print(f"Wrote {filename}")
+        return
+    filename, body = export_persona(result["persona"], target, result)
     Path(filename).write_text(body)
     console.print(f"Wrote {filename}")
 

@@ -36,8 +36,8 @@ export default function HomePage() {
           Which AI products fit how you actually work?
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
-          This measures how you interact with AI, not your personality. Eight scenarios observe evidence-seeking,
-          collaboration, and workflow preferences, then match you to products, models, and a portable working configuration.
+          This measures how you interact with AI, not your personality. Leave with a workstyle, a recommended stack,
+          model routing, and a configuration you can install in Claude, ChatGPT, Gemini, or Cursor.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button render={<Link href="/assessment" />} size="lg">
@@ -74,7 +74,7 @@ export default function HomePage() {
             <CardTitle>Explainable fit</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Scores are normalized similarity, not probabilities. Inspect evidence, share anonymously, or delete the session.
+            Scores are normalized similarity, not probabilities. Export a portable AI setup, share the profile, or delete the session.
           </CardContent>
         </Card>
       </section>

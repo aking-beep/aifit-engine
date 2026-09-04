@@ -9,6 +9,7 @@ from .fit import build_stacks, rank_models_by_workload, rank_products
 from .metrics import build_user_vector, score_metrics
 from .models import AssessmentSession, FitFilters, InteractionEvent
 from .persona import generate_persona
+from .profile import build_model_router, build_operating_stack, build_workflow, build_workstyle, default_instructions
 from .freshness import freshness_report
 from .registry import load_models, load_products, validate_models, validate_products
 
@@ -43,6 +44,7 @@ def score_session(
     model_recs = rank_models_by_workload(models)
     primary, alternative = build_stacks(user, product_recs)
     persona = generate_persona(user)
+    workstyle = build_workstyle(user)
     return {
         "metrics": [m.model_dump() for m in metrics],
         "user_vector": user.model_dump(),
@@ -51,7 +53,12 @@ def score_session(
         "models": {w: [x.model_dump() for x in model_recs[w][:5]] for w in MODEL_WORKLOADS if model_recs[w]},
         "primary_stack": primary.model_dump(),
         "alternative_stack": alternative.model_dump(),
+        "operating_stack": build_operating_stack(product_recs),
+        "model_routing": build_model_router(model_recs),
+        "workflow": build_workflow(user.values),
+        "workstyle": workstyle,
         "persona": persona,
+        "instructions": default_instructions(persona),
         "freshness": freshness_report(products, models),
         "privacy": {
             "mode": "anonymous",

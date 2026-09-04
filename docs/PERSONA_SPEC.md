@@ -63,6 +63,21 @@ If autonomy preference is high:
 ### Cursor
 `.cursor/rules/ai-fit.mdc`
 
+### ChatGPT
+`chatgpt-instructions.md`
+
+### Gemini
+`gemini-instructions.md`
+
+### Operating profile
+`PROFILE.md`
+
+### Model routing
+`model-routing.json`
+
+### Portable pack
+`ai-profile.zip` containing PROFILE.md, CLAUDE.md, AGENTS.md, cursor-rules.md, chatgpt-instructions.md, gemini-instructions.md, and model-routing.json.
+
 ### JSON
 `ai-fit-profile.json`
 
