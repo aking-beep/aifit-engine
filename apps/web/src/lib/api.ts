@@ -1,5 +1,7 @@
 import type { InteractionEvent, Scenario, ScoreResult } from "./types";
 
+export type FitFilterInput = { local_only?: boolean; max_pricing_tier?: string | null };
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -19,7 +21,11 @@ export const api = {
   health: () => request<{ ok: boolean }>("/health"),
   scenarios: () => request<Scenario[]>("/v1/scenarios"),
   createSession: () => request<{ session_id: string }>("/v1/sessions", { method: "POST" }),
-  demoSession: () => request<{ session_id: string; result: ScoreResult }>("/v1/sessions/demo", { method: "POST" }),
+  demoSession: () =>
+    request<{ session_id: string; session: { session_id: string; events: InteractionEvent[] }; result: ScoreResult }>(
+      "/v1/sessions/demo",
+      { method: "POST" },
+    ),
   addEvents: (
     sessionId: string,
     body: {
@@ -29,10 +35,15 @@ export const api = {
       turn_id: string;
     },
   ) => request<{ event_count: number }>(`/v1/sessions/${sessionId}/events`, { method: "POST", body: JSON.stringify(body) }),
-  score: (sessionId: string, filters?: { local_only?: boolean; max_pricing_tier?: string | null }) =>
+  score: (sessionId: string, filters?: FitFilterInput) =>
     request<ScoreResult>(`/v1/sessions/${sessionId}/score`, {
       method: "POST",
       body: JSON.stringify({ filters: filters ?? null }),
+    }),
+  scoreFull: (session: { session_id: string; events: InteractionEvent[] }, filters?: FitFilterInput) =>
+    request<ScoreResult>("/v1/score", {
+      method: "POST",
+      body: JSON.stringify({ ...session, filters: filters ?? null }),
     }),
   share: (sessionId: string) =>
     request<{ share_id: string; path: string }>(`/v1/sessions/${sessionId}/share`, { method: "POST" }),

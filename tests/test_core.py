@@ -308,3 +308,17 @@ def test_api_demo_share_feedback_freshness_and_scenarios():
     assert body["persona"]["disclaimer"]
     assert client.delete(f"/v1/sessions/{walk}").json()["deleted"] is True
 
+
+def test_stateless_score_endpoint_accepts_full_session():
+    from services.api.main import app
+
+    client = TestClient(app)
+    body = {
+        "session_id": "stateless-1",
+        "events": [{"event_type": "requested_evidence", "scenario_id": "launch-risk", "strength": 1.0}],
+        "filters": {"local_only": False},
+    }
+    scored = client.post("/v1/score", json=body)
+    assert scored.status_code == 200
+    assert scored.json()["persona"]
+

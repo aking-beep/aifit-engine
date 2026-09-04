@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from .config import MODEL_WORKLOADS
@@ -13,7 +14,14 @@ from .registry import load_models, load_products, validate_models, validate_prod
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[4]
+    env = os.environ.get("AIFIT_ROOT")
+    if env:
+        return Path(env)
+    here = Path(__file__).resolve()
+    for parent in [here.parent, *here.parents]:
+        if (parent / "data/registry/products.json").exists():
+            return parent
+    return here.parents[4]
 
 
 def data_root(root: Path | None = None) -> Path:

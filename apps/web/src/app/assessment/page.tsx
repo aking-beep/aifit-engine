@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import type { Scenario } from "@/lib/types";
+import type { InteractionEvent, Scenario } from "@/lib/types";
+import { saveResult, saveSession } from "@/lib/session-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -22,15 +23,21 @@ export default function AssessmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [events, setEvents] = useState<InteractionEvent[]>([]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [loaded, session] = await Promise.all([api.scenarios(), api.createSession()]);
+        const loaded = await api.scenarios();
         if (cancelled) return;
         setScenarios(loaded);
-        setSessionId(session.session_id);
+        try {
+          const session = await api.createSession();
+          if (!cancelled) setSessionId(session.session_id);
+        } catch {
+          if (!cancelled) setSessionId(crypto.randomUUID());
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not start the assessment.");
       } finally {
@@ -60,17 +67,25 @@ export default function AssessmentPage() {
     setSubmitting(true);
     setError(null);
     try {
-      await api.addEvents(sessionId, {
+      const mapped = choice.events.map((event) => ({
+        ...event,
         scenario_id: scenario.id,
         turn_id: turn.id,
-        events: choice.events.map((event) => ({
-          ...event,
+        evidence: event.evidence || choice.label,
+      }));
+      const nextEvents = [...events, ...mapped];
+      setEvents(nextEvents);
+      saveSession({ session_id: sessionId, events: nextEvents });
+      try {
+        await api.addEvents(sessionId, {
           scenario_id: scenario.id,
           turn_id: turn.id,
-          evidence: event.evidence || choice.label,
-        })),
-        free_text: note.trim() || undefined,
-      });
+          events: mapped,
+          free_text: note.trim() || undefined,
+        });
+      } catch {
+        // Serverless instances may not share memory. The local buffer is enough to score.
+      }
       const lastTurn = turnIndex >= scenario.turns.length - 1;
       const lastScenario = scenarioIndex >= scenarios.length - 1;
       setSelected(null);
@@ -81,7 +96,8 @@ export default function AssessmentPage() {
         setScenarioIndex((value) => value + 1);
         setTurnIndex(0);
       } else {
-        await api.score(sessionId);
+        const scored = await api.scoreFull({ session_id: sessionId, events: nextEvents });
+        saveResult(sessionId, scored);
         router.push(`/results/${sessionId}`);
       }
     } catch (err) {

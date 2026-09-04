@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { saveResult, saveSession } from "@/lib/session-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -17,6 +18,8 @@ export default function HomePage() {
     setDemoError(null);
     try {
       const demo = await api.demoSession();
+      saveSession(demo.session);
+      saveResult(demo.session_id, demo.result);
       router.push(`/results/${demo.session_id}`);
     } catch (err) {
       setDemoError(err instanceof Error ? err.message : "Demo failed.");

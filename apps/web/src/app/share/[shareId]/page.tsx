@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
+import { decodeSharePayload } from "@/lib/session-store";
 import { Button } from "@/components/ui/button";
 import { ResultsView } from "@/components/results-view";
 
@@ -17,6 +18,14 @@ export default function SharePage() {
     let cancelled = false;
     (async () => {
       try {
+        const hash = window.location.hash.replace(/^#/, "");
+        if (hash) {
+          const decoded = await decodeSharePayload(hash);
+          if (decoded && !cancelled) {
+            setResult(decoded);
+            return;
+          }
+        }
         const snapshot = await api.getShare(params.shareId);
         if (!cancelled) setResult(snapshot);
       } catch (err) {

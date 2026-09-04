@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import uuid
 from pathlib import Path
@@ -39,6 +40,43 @@ SESSIONS: dict[str, AssessmentSession] = {}
 SCORES: dict[str, dict[str, Any]] = {}
 SHARES: dict[str, dict[str, Any]] = {}
 FEEDBACK: list[dict[str, Any]] = []
+STORE = Path(os.environ.get("AIFIT_STORE", "/tmp/aifit-store"))
+
+
+def _persist(kind: str, key: str, payload: dict[str, Any]) -> None:
+    try:
+        folder = STORE / kind
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / f"{key}.json").write_text(json.dumps(payload))
+    except OSError:
+        return
+
+
+def _load_persisted(kind: str, key: str) -> dict[str, Any] | None:
+    path = STORE / kind / f"{key}.json"
+    try:
+        if not path.exists():
+            return None
+        return json.loads(path.read_text())
+    except OSError:
+        return None
+
+
+def _get_session(session_id: str) -> AssessmentSession | None:
+    session = SESSIONS.get(session_id)
+    if session is not None:
+        return session
+    raw = _load_persisted("sessions", session_id)
+    if raw is None:
+        return None
+    session = AssessmentSession.model_validate(raw)
+    SESSIONS[session_id] = session
+    return session
+
+
+def _put_session(session: AssessmentSession) -> None:
+    SESSIONS[session.session_id] = session
+    _persist("sessions", session.session_id, session.model_dump())
 
 
 class FitRequest(BaseModel):
@@ -81,9 +119,17 @@ class ScoreRequest(BaseModel):
     filters: FitFilters | None = None
 
 
+class ScoreBody(BaseModel):
+    session_id: str
+    events: list[InteractionEvent] = Field(default_factory=list)
+    filters: FitFilters | None = None
+
+
 def _score_and_store(session: AssessmentSession, filters: FitFilters | None = None) -> dict[str, Any]:
     result = score_session(session, filters=filters)
     SCORES[session.session_id] = result
+    _put_session(session)
+    _persist("scores", session.session_id, result)
     track("session_scored", session_id=session.session_id)
     return result
 
@@ -101,7 +147,8 @@ def scenarios():
 @app.post("/v1/sessions")
 def create_session():
     session_id = str(uuid.uuid4())
-    SESSIONS[session_id] = AssessmentSession(session_id=session_id, events=[])
+    session = AssessmentSession(session_id=session_id, events=[])
+    _put_session(session)
     track("session_created", session_id=session_id)
     return {"session_id": session_id, "events": []}
 
@@ -111,28 +158,28 @@ def demo_session():
     raw = json.loads((ROOT / "examples/sample_session.json").read_text())
     raw["session_id"] = str(uuid.uuid4())
     session = AssessmentSession.model_validate(raw)
-    SESSIONS[session.session_id] = session
     result = _score_and_store(session)
     track("demo_session", session_id=session.session_id)
-    return {"session_id": session.session_id, "result": result}
+    return {"session_id": session.session_id, "session": session.model_dump(), "result": result}
 
 
 @app.get("/v1/sessions/{session_id}")
 def get_session(session_id: str):
-    session = SESSIONS.get(session_id)
+    session = _get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Unknown session")
+    result = SCORES.get(session_id) or _load_persisted("scores", session_id)
     return {
         "session": session.model_dump(),
-        "result": SCORES.get(session_id),
+        "result": result,
     }
 
 
 @app.post("/v1/sessions/{session_id}/events")
 def add_events(session_id: str, batch: EventBatch):
-    session = SESSIONS.get(session_id)
+    session = _get_session(session_id)
     if session is None:
-        raise HTTPException(status_code=404, detail="Unknown session")
+        session = AssessmentSession(session_id=session_id, events=[])
     incoming = list(batch.events)
     if batch.free_text and batch.scenario_id:
         incoming.extend(normalize_free_text(batch.free_text, batch.scenario_id, batch.turn_id))
@@ -142,13 +189,14 @@ def add_events(session_id: str, batch: EventBatch):
         if not event.turn_id and batch.turn_id:
             event.turn_id = batch.turn_id
     session.events.extend(incoming)
+    _put_session(session)
     track("events_added", session_id=session_id, metadata={"count": len(incoming)})
     return {"session_id": session_id, "event_count": len(session.events)}
 
 
 @app.post("/v1/sessions/{session_id}/score")
 def score_stored_session(session_id: str, payload: ScoreRequest | None = Body(default=None)):
-    session = SESSIONS.get(session_id)
+    session = _get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Unknown session")
     filters = payload.filters if payload else None
@@ -157,12 +205,16 @@ def score_stored_session(session_id: str, payload: ScoreRequest | None = Body(de
 
 @app.post("/v1/sessions/{session_id}/share")
 def share_session(session_id: str):
-    result = SCORES.get(session_id)
+    result = SCORES.get(session_id) or _load_persisted("scores", session_id)
     if result is None:
-        session = SESSIONS.get(session_id)
+        session = _get_session(session_id)
         if session is None:
             raise HTTPException(status_code=404, detail="Unknown session")
         result = _score_and_store(session)
+    return _store_share(result, session_id)
+
+
+def _store_share(result: dict[str, Any], session_id: str | None = None) -> dict[str, str]:
     share_id = str(uuid.uuid4())
     snapshot = {
         "share_id": share_id,
@@ -178,13 +230,14 @@ def share_session(session_id: str):
         "privacy": result["privacy"],
     }
     SHARES[share_id] = snapshot
+    _persist("shares", share_id, snapshot)
     track("session_shared", session_id=session_id)
     return {"share_id": share_id, "path": f"/share/{share_id}"}
 
 
 @app.get("/v1/share/{share_id}")
 def get_share(share_id: str):
-    snapshot = SHARES.get(share_id)
+    snapshot = SHARES.get(share_id) or _load_persisted("shares", share_id)
     if snapshot is None:
         raise HTTPException(status_code=404, detail="Unknown share")
     return snapshot
@@ -192,30 +245,35 @@ def get_share(share_id: str):
 
 @app.get("/v1/sessions/{session_id}/export")
 def export_session(session_id: str):
-    session = SESSIONS.get(session_id)
+    session = _get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Unknown session")
     return {
         "session": session.model_dump(),
-        "result": SCORES.get(session_id),
+        "result": SCORES.get(session_id) or _load_persisted("scores", session_id),
         "notice": "This export is the anonymous session record. No name or employer is stored.",
     }
 
 
 @app.delete("/v1/sessions/{session_id}")
 def delete_session(session_id: str):
-    if session_id not in SESSIONS and session_id not in SCORES:
+    existed = _get_session(session_id) is not None or session_id in SCORES or _load_persisted("scores", session_id)
+    if not existed:
         raise HTTPException(status_code=404, detail="Unknown session")
     SESSIONS.pop(session_id, None)
     SCORES.pop(session_id, None)
+    for kind in ("sessions", "scores"):
+        path = STORE / kind / f"{session_id}.json"
+        if path.exists():
+            path.unlink()
     track("session_deleted", session_id=session_id)
     return {"deleted": True, "session_id": session_id}
 
 
 @app.post("/v1/score")
-def score(session: AssessmentSession):
-    SESSIONS[session.session_id] = session
-    return _score_and_store(session)
+def score(payload: ScoreBody):
+    session = AssessmentSession(session_id=payload.session_id, events=payload.events)
+    return _score_and_store(session, payload.filters)
 
 
 @app.post("/v1/fit")

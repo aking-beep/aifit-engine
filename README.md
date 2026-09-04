@@ -65,6 +65,20 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
+## Deploy on Vercel
+
+This repo is a Vercel Services project: Next.js in `apps/web` and FastAPI at `/v1` and `/health` on the same domain. Scoring stays Python.
+
+```bash
+npx vercel login
+npx vercel
+npx vercel --prod
+```
+
+Import the Git repo in the Vercel dashboard if you prefer. Leave the root directory at the repository root so `vercel.json` can see both services. Do not set the root to `apps/web`.
+
+On Vercel, assessment events are buffered in the browser and scored in one request. Share links include a compressed snapshot in the URL hash because serverless functions do not share memory.
+
 ## v0.1 outputs
 
 - Interaction signature with evidence and confidence

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
+import { clearSession, encodeSharePayload, loadSession, saveResult } from "@/lib/session-store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,11 +47,12 @@ export function ResultsView({
     setFiltering(true);
     setFilterNote(null);
     try {
-      const scored = await api.score(sessionId, {
-        local_only: nextLocal,
-        max_pricing_tier: nextPrice,
-      });
+      const stored = sessionId ? loadSession(sessionId) : null;
+      const scored = stored
+        ? await api.scoreFull(stored, { local_only: nextLocal, max_pricing_tier: nextPrice })
+        : await api.score(sessionId, { local_only: nextLocal, max_pricing_tier: nextPrice });
       setCurrent(scored);
+      if (sessionId) saveResult(sessionId, scored);
     } catch (err) {
       setFilterNote(err instanceof Error ? err.message : "Could not re-rank with those filters.");
     } finally {
@@ -77,15 +79,23 @@ export function ResultsView({
 
   async function share() {
     if (!sessionId) return;
-    const created = await api.share(sessionId);
-    const url = `${window.location.origin}${created.path}`;
+    let path = `/share/${sessionId}`;
+    try {
+      const created = await api.share(sessionId);
+      path = created.path;
+    } catch {
+      // Serverless share storage is best-effort. The compressed hash still works.
+    }
+    const encoded = await encodeSharePayload(current);
+    const url = `${window.location.origin}${path}#${encoded}`;
     setShareUrl(url);
     await navigator.clipboard.writeText(url).catch(() => undefined);
   }
 
   async function remove() {
     if (!sessionId) return;
-    await api.deleteSession(sessionId);
+    clearSession(sessionId);
+    await api.deleteSession(sessionId).catch(() => undefined);
     router.push("/");
   }
 

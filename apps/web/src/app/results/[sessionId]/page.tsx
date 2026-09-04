@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
+import { loadResult, loadSession, saveResult } from "@/lib/session-store";
 import { Button } from "@/components/ui/button";
 import { ResultsView } from "@/components/results-view";
 
@@ -18,8 +19,23 @@ export default function ResultsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const scored = await api.score(params.sessionId);
-        if (!cancelled) setResult(scored);
+        const cached = loadResult(params.sessionId);
+        if (cached) {
+          if (!cancelled) setResult(cached);
+          return;
+        }
+        try {
+          const scored = await api.score(params.sessionId);
+          saveResult(params.sessionId, scored);
+          if (!cancelled) setResult(scored);
+          return;
+        } catch {
+          const stored = loadSession(params.sessionId);
+          if (!stored) throw new Error("This session is no longer on the server. Run the assessment again.");
+          const scored = await api.scoreFull(stored);
+          saveResult(params.sessionId, scored);
+          if (!cancelled) setResult(scored);
+        }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not load results.");
       } finally {
