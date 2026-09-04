@@ -1,0 +1,385 @@
+[
+  {
+    "id": "claude",
+    "name": "Claude",
+    "provider": "Anthropic",
+    "category": "general_assistant",
+    "description": "General-purpose AI assistant and knowledge-work product.",
+    "status": "active",
+    "homepage": "https://claude.ai",
+    "pricing_tier": "mixed",
+    "technical_level": 0.45,
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "capabilities": [
+      "analysis",
+      "writing",
+      "coding",
+      "research_workflows"
+    ],
+    "integrations": [
+      "claude_code"
+    ],
+    "fit_vector": {
+      "evidence_seeking": 0.8,
+      "comparison_preference": 0.78,
+      "iteration_preference": 0.88,
+      "autonomy_preference": 0.7,
+      "structure_preference": 0.82,
+      "code_comfort": 0.7,
+      "automation_appetite": 0.6,
+      "local_control_preference": 0.1,
+      "budget_sensitivity": 0.45
+    },
+    "underlying_models": [
+      "claude-fable-5-1"
+    ],
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Anthropic Claude Fable product page",
+        "url": "https://www.anthropic.com/claude/fable",
+        "observed_at": "2026-09-03",
+        "notes": "Seed entry; re-evaluate all product-level capabilities before launch."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "chatgpt",
+    "name": "ChatGPT",
+    "provider": "OpenAI",
+    "category": "general_assistant",
+    "description": "General-purpose AI assistant with broad tool and multimodal workflows.",
+    "status": "active",
+    "homepage": "https://chatgpt.com",
+    "pricing_tier": "mixed",
+    "technical_level": 0.4,
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "audio"
+    ],
+    "capabilities": [
+      "analysis",
+      "research",
+      "coding",
+      "multimodal",
+      "tool_use"
+    ],
+    "integrations": [],
+    "fit_vector": {
+      "evidence_seeking": 0.75,
+      "comparison_preference": 0.75,
+      "iteration_preference": 0.82,
+      "autonomy_preference": 0.72,
+      "structure_preference": 0.76,
+      "multimodal_preference": 0.85,
+      "code_comfort": 0.7,
+      "automation_appetite": 0.65,
+      "local_control_preference": 0.1,
+      "budget_sensitivity": 0.45
+    },
+    "underlying_models": [],
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Illustrative only; benchmark before launch."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "provider": "Google",
+    "category": "general_assistant",
+    "description": "Google AI assistant with multimodal and ecosystem-oriented workflows.",
+    "status": "active",
+    "homepage": "https://gemini.google.com",
+    "pricing_tier": "mixed",
+    "technical_level": 0.42,
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "audio",
+      "video"
+    ],
+    "capabilities": [
+      "analysis",
+      "research",
+      "multimodal",
+      "coding"
+    ],
+    "integrations": [
+      "google_workspace"
+    ],
+    "fit_vector": {
+      "evidence_seeking": 0.72,
+      "comparison_preference": 0.72,
+      "iteration_preference": 0.75,
+      "autonomy_preference": 0.65,
+      "structure_preference": 0.72,
+      "multimodal_preference": 0.92,
+      "code_comfort": 0.65,
+      "automation_appetite": 0.62,
+      "local_control_preference": 0.1,
+      "budget_sensitivity": 0.5
+    },
+    "underlying_models": [],
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Illustrative only; benchmark before launch."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity",
+    "provider": "Perplexity",
+    "category": "research",
+    "description": "AI research/search product.",
+    "status": "active",
+    "homepage": "https://www.perplexity.ai",
+    "pricing_tier": "mixed",
+    "technical_level": 0.35,
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text"
+    ],
+    "capabilities": [
+      "web_research",
+      "citations",
+      "search"
+    ],
+    "integrations": [],
+    "fit_vector": {
+      "evidence_seeking": 0.95,
+      "comparison_preference": 0.8,
+      "iteration_preference": 0.65,
+      "autonomy_preference": 0.55,
+      "structure_preference": 0.72,
+      "code_comfort": 0.35,
+      "automation_appetite": 0.3,
+      "local_control_preference": 0.05,
+      "budget_sensitivity": 0.55
+    },
+    "underlying_models": [],
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Illustrative only; benchmark before launch."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "provider": "Anysphere",
+    "category": "ide",
+    "description": "AI-native coding environment.",
+    "status": "active",
+    "homepage": "https://www.cursor.com",
+    "pricing_tier": "mixed",
+    "technical_level": 0.78,
+    "deployment": [
+      "desktop",
+      "cloud"
+    ],
+    "modalities": [
+      "text",
+      "code"
+    ],
+    "capabilities": [
+      "coding",
+      "codebase_context",
+      "agentic_editing"
+    ],
+    "integrations": [
+      "git"
+    ],
+    "fit_vector": {
+      "evidence_seeking": 0.62,
+      "comparison_preference": 0.55,
+      "iteration_preference": 0.92,
+      "autonomy_preference": 0.78,
+      "structure_preference": 0.65,
+      "code_comfort": 0.95,
+      "automation_appetite": 0.78,
+      "local_control_preference": 0.4,
+      "budget_sensitivity": 0.45
+    },
+    "underlying_models": [],
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Illustrative only; benchmark before launch."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "provider": "n8n",
+    "category": "automation",
+    "description": "Workflow automation and orchestration platform.",
+    "status": "active",
+    "homepage": "https://n8n.io",
+    "pricing_tier": "mixed",
+    "technical_level": 0.7,
+    "deployment": [
+      "cloud",
+      "self_hosted"
+    ],
+    "modalities": [
+      "workflow"
+    ],
+    "capabilities": [
+      "automation",
+      "integrations",
+      "agent_workflows"
+    ],
+    "integrations": [
+      "many"
+    ],
+    "fit_vector": {
+      "evidence_seeking": 0.6,
+      "comparison_preference": 0.62,
+      "iteration_preference": 0.82,
+      "autonomy_preference": 0.82,
+      "structure_preference": 0.85,
+      "code_comfort": 0.68,
+      "automation_appetite": 0.98,
+      "local_control_preference": 0.72,
+      "budget_sensitivity": 0.65
+    },
+    "underlying_models": [],
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Illustrative only; benchmark before launch."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "fable-editor",
+    "name": "Fable",
+    "provider": "Fable",
+    "category": "writing",
+    "description": "AI document editor with voice-directed editing workflows.",
+    "status": "active",
+    "homepage": "https://www.fable.la/",
+    "pricing_tier": "unknown",
+    "technical_level": 0.3,
+    "deployment": [
+      "desktop"
+    ],
+    "modalities": [
+      "text",
+      "voice"
+    ],
+    "capabilities": [
+      "writing",
+      "editing",
+      "voice_editing",
+      "collaboration"
+    ],
+    "integrations": [],
+    "fit_vector": {
+      "evidence_seeking": 0.35,
+      "comparison_preference": 0.4,
+      "iteration_preference": 0.9,
+      "autonomy_preference": 0.62,
+      "structure_preference": 0.55,
+      "multimodal_preference": 0.72,
+      "code_comfort": 0.1,
+      "automation_appetite": 0.35,
+      "local_control_preference": 0.35,
+      "budget_sensitivity": 0.5
+    },
+    "underlying_models": [],
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Fable - Edit Any Document With Your Voice",
+        "url": "https://www.fable.la/",
+        "observed_at": "2026-09-03",
+        "notes": "This is the Fable document-editing product; keep distinct from Anthropic's Claude Fable model family."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama",
+    "provider": "Ollama",
+    "category": "local_open_source",
+    "description": "Local model runner for self-hosted open-weight models.",
+    "status": "active",
+    "homepage": "https://ollama.com",
+    "pricing_tier": "free",
+    "technical_level": 0.65,
+    "deployment": ["local", "self_hosted"],
+    "modalities": ["text", "image"],
+    "capabilities": ["local_inference", "open_weights"],
+    "integrations": [],
+    "fit_vector": {
+      "evidence_seeking": 0.45,
+      "comparison_preference": 0.5,
+      "iteration_preference": 0.7,
+      "autonomy_preference": 0.6,
+      "structure_preference": 0.5,
+      "code_comfort": 0.7,
+      "automation_appetite": 0.55,
+      "local_control_preference": 0.98,
+      "budget_sensitivity": 0.9
+    },
+    "underlying_models": [],
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Ollama product page",
+        "url": "https://ollama.com",
+        "observed_at": "2026-09-03",
+        "notes": "Seed entry; re-evaluate local capability claims before launch."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  }
+]

@@ -1,0 +1,148 @@
+[
+  {
+    "id": "claude-fable-5-1",
+    "name": "Claude Fable 5.1",
+    "provider": "Anthropic",
+    "family": "Claude Fable",
+    "availability": [
+      "claude",
+      "api",
+      "cloud marketplaces"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "workload_scores": {
+      "deep_reasoning": 0.94,
+      "fast_reasoning": 0.72,
+      "coding": 0.95,
+      "long_context": 0.9,
+      "research": 0.91,
+      "multimodal": 0.78,
+      "agentic_execution": 0.94,
+      "cost_efficiency": 0.55,
+      "local_control": 0.15
+    },
+    "context_notes": "Seed entry. Revalidate published limits before launch.",
+    "cost_notes": "Pricing is time-sensitive; query current official source before public display.",
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Anthropic Claude Fable",
+        "url": "https://www.anthropic.com/claude/fable",
+        "observed_at": "2026-09-03",
+        "notes": "Official page lists Fable 5.1 as current as of seed date."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "model-placeholder-openai",
+    "name": "OpenAI current flagship placeholder",
+    "provider": "OpenAI",
+    "family": "OpenAI",
+    "availability": [
+      "api",
+      "product"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "workload_scores": {
+      "deep_reasoning": 0.9,
+      "fast_reasoning": 0.88,
+      "coding": 0.91,
+      "long_context": 0.86,
+      "research": 0.9,
+      "multimodal": 0.9,
+      "agentic_execution": 0.88,
+      "cost_efficiency": 0.6,
+      "local_control": 0.1
+    },
+    "context_notes": "Replace with current evaluated model ID before launch.",
+    "cost_notes": "Placeholder only.",
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Do not display publicly until replaced with current validated model."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "model-placeholder-google",
+    "name": "Google current flagship placeholder",
+    "provider": "Google",
+    "family": "Gemini",
+    "availability": [
+      "api",
+      "product"
+    ],
+    "modalities": [
+      "text",
+      "image",
+      "audio",
+      "video"
+    ],
+    "workload_scores": {
+      "deep_reasoning": 0.89,
+      "fast_reasoning": 0.86,
+      "coding": 0.88,
+      "long_context": 0.93,
+      "research": 0.91,
+      "multimodal": 0.96,
+      "agentic_execution": 0.85,
+      "cost_efficiency": 0.62,
+      "local_control": 0.12
+    },
+    "context_notes": "Replace with current evaluated model ID before launch.",
+    "cost_notes": "Placeholder only.",
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Do not display publicly until replaced with current validated model."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  },
+  {
+    "id": "model-placeholder-local-open",
+    "name": "Local open-weight placeholder",
+    "provider": "community",
+    "family": "open-weights",
+    "availability": ["ollama", "local"],
+    "modalities": ["text"],
+    "workload_scores": {
+      "deep_reasoning": 0.62,
+      "fast_reasoning": 0.7,
+      "coding": 0.64,
+      "long_context": 0.55,
+      "research": 0.5,
+      "multimodal": 0.4,
+      "agentic_execution": 0.45,
+      "cost_efficiency": 0.95,
+      "local_control": 0.98
+    },
+    "context_notes": "Replace with a currently evaluated local model before launch.",
+    "cost_notes": "Hardware-dependent; no vendor API bill.",
+    "evidence": [
+      {
+        "source_type": "manual_eval",
+        "title": "Seed placeholder",
+        "observed_at": "2026-09-03",
+        "notes": "Do not display publicly until replaced with a current validated local model."
+      }
+    ],
+    "last_evaluated_at": "2026-09-03",
+    "registry_version": "0.1-seed"
+  }
+]

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+.next/
+node_modules/
+coverage/
+dist/
+build/
+*.sqlite3
