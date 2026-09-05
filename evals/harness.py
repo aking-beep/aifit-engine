@@ -63,10 +63,11 @@ def validate_seed():
 
 @app.command("run-cases")
 def run_cases():
-    """Score fixture cases. Failures are expected until a case has explicit expect blocks."""
+    """Score fixture cases. Every case must assert something, or the run fails."""
     root = repo_root()
     products = {p.id: p for p in load_products(root / "data/registry/products.json")}
     failures: list[str] = []
+    checked = 0
     for path in sorted((_evals_root() / "cases").glob("*.json")):
         case = json.loads(path.read_text())
         session_file = case.get("session_file", "examples/sample_session.json")
@@ -75,13 +76,27 @@ def run_cases():
         result = score_session(session, filters=filters)
         expect = case.get("expect") or {}
         if not expect:
-            console.print(f"[yellow]skip[/yellow] {case.get('id', path.name)} (no expect block)")
+            failures.append(f"{case.get('id', path.name)}: no expect block, so this case asserts nothing")
             continue
+        checked += 1
         metrics = {m["name"]: m["score"] for m in result["metrics"]}
         if "min_source_demand" in expect and metrics.get("evidence_seeking", 0) < expect["min_source_demand"]:
             failures.append(f"{case['id']}: evidence_seeking too low")
+        for metric, floor in (expect.get("min_metric") or {}).items():
+            if metrics.get(metric, 0) < floor:
+                failures.append(f"{case['id']}: {metric} {metrics.get(metric, 0):.2f} below {floor}")
         if expect.get("stack_ids_include") and not result["primary_stack"]["slots"]:
             failures.append(f"{case['id']}: missing primary stack slots")
+        ranked_categories = {rec.get("category") for rec in result["products"]}
+        for category in expect.get("categories_include") or []:
+            if category not in ranked_categories:
+                failures.append(f"{case['id']}: no {category} product in the ranked list")
+        filled_roles = {
+            slot["role"] for slot in result.get("operating_stack") or [] if slot.get("product")
+        }
+        for role in expect.get("stack_roles_filled") or []:
+            if role not in filled_roles:
+                failures.append(f"{case['id']}: stack role {role} stayed empty")
         if expect.get("no_cloud_only_products"):
             for rec in result["products"]:
                 deployment = set(products[rec["id"]].deployment)
@@ -91,7 +106,7 @@ def run_cases():
         for row in failures:
             console.print(f"[red]{row}[/red]")
         raise typer.Exit(1)
-    console.print("[green]Eval cases passed.[/green]")
+    console.print(f"[green]{checked} eval cases passed.[/green]")
 
 
 if __name__ == "__main__":
