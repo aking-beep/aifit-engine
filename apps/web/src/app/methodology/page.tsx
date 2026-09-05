@@ -14,7 +14,7 @@ export default function MethodologyPage() {
 
       <section className="mt-10 space-y-8 text-sm leading-6">
         <div>
-          <h2 className="text-lg font-semibold">1. How scoring works</h2>
+          <h2 className="text-lg font-semibold">1. Scoring pipeline</h2>
           <p className="mt-2 text-muted-foreground">
             Each round logs a structured interaction event. Events become a 0–1 metric vector with confidence from
             observation count and scenario spread. The ranker is deterministic math, not a chat model.

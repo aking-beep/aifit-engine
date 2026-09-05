@@ -10,7 +10,7 @@ test("landing, privacy, transparency, and scored sample", async ({ page }) => {
   await expect(page.getByText(/anonymous mode/i)).toBeVisible();
 
   await page.goto("/methodology");
-  await expect(page.getByRole("heading", { name: /how scoring works/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How scoring works", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /open the seed registry/i })).toBeVisible();
 
   await page.goto("/");
