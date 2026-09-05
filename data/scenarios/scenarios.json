@@ -1,10 +1,10 @@
 [
   {
     "id": "launch-risk",
-    "title": "The Friday Launch",
+    "title": "Going live Friday",
     "domain": "decision",
-    "setup": "A product launches Friday. Engineering says it is ready; security found a possible vulnerability; sales has promised the date.",
-    "initial_ambiguity": "You do not yet know severity, exploitability, or what 'ready' means.",
+    "setup": "Your shop, site, or product goes live Friday. One person says it is ready. Someone else spotted a possible problem. You already told people the date.",
+    "initial_ambiguity": "You do not yet know how serious it is, or what 'ready' means.",
     "dimensions": [
       "evidence_seeking",
       "clarification_tendency",
@@ -15,13 +15,13 @@
     "turns": [
       {
         "id": "lr-1",
-        "prompt": "The team wants a call in ten minutes. What do you have the AI do first?",
+        "prompt": "People want an answer in ten minutes. What do you have the AI do first?",
         "hidden_information": "Severity and exploitability have not been established.",
         "allow_free_text": true,
         "choices": [
           {
             "id": "a",
-            "label": "Get severity, exploitability, and what 'ready' actually means before anyone recommends a path.",
+            "label": "Find out how bad it is and what 'ready' actually means before anyone picks a path.",
             "events": [
               {
                 "event_type": "requested_evidence",
@@ -35,7 +35,7 @@
           },
           {
             "id": "b",
-            "label": "Just recommend ship / delay / mitigate now so the meeting has a decision.",
+            "label": "Just recommend go / wait / patch now so the conversation has a decision.",
             "events": [
               {
                 "event_type": "requested_recommendation",
@@ -49,7 +49,7 @@
           },
           {
             "id": "c",
-            "label": "Compare delay vs. ship-with-mitigation vs. rollback plan with explicit tradeoffs.",
+            "label": "Compare waiting vs. going live with a patch vs. having a backup plan.",
             "events": [
               {
                 "event_type": "requested_comparison",
@@ -65,7 +65,7 @@
       },
       {
         "id": "lr-2",
-        "prompt": "Engineering still says 'ready.' Security still flags a possible vuln. Next move?",
+        "prompt": "One person still says 'ready.' Another still flags a possible problem. Next move?",
         "allow_free_text": true,
         "choices": [
           {
@@ -84,7 +84,7 @@
           },
           {
             "id": "b",
-            "label": "Have the AI draft the launch recommendation and own the call.",
+            "label": "Have the AI write the go-live recommendation and own the call.",
             "events": [
               {
                 "event_type": "delegated_action",
@@ -114,7 +114,7 @@
       },
       {
         "id": "lr-3",
-        "prompt": "Sales wants a war-room tool standing up in an hour. How do you staff the work?",
+        "prompt": "Someone wants a shared tracker standing up in an hour. How do you staff the work?",
         "allow_free_text": true,
         "choices": [
           {
@@ -143,7 +143,7 @@
           },
           {
             "id": "c",
-            "label": "Give me a tight one-page brief, not a war-room.",
+            "label": "Give me a tight one-page brief, not a war room.",
             "events": [
               {
                 "event_type": "requested_summary",
@@ -161,9 +161,9 @@
   },
   {
     "id": "contested-research",
-    "title": "The Conflicting Research",
+    "title": "People you trust disagree",
     "domain": "research",
-    "setup": "You need to brief leadership on a claim where credible sources disagree.",
+    "setup": "You need to decide on a claim where people you trust disagree — a purchase, a class, a shop choice, or a briefing.",
     "initial_ambiguity": "You do not know which sources are primary, dated, or methodologically weak.",
     "dimensions": [
       "evidence_seeking",
@@ -320,9 +320,9 @@
   },
   {
     "id": "weekend-build",
-    "title": "Build It This Weekend",
+    "title": "Make it this weekend",
     "domain": "coding",
-    "setup": "You have an app idea and two days to build a usable MVP.",
+    "setup": "You have an idea and two days to make something usable — an app, a shop page, or a class project.",
     "initial_ambiguity": "Scope, stack, and what 'usable' means are still undefined.",
     "dimensions": [
       "code_comfort",
@@ -487,9 +487,9 @@
   },
   {
     "id": "workflow-automation",
-    "title": "Automate the Repetitive Work",
+    "title": "The thing you do every week",
     "domain": "automation",
-    "setup": "A recurring manual workflow consumes three hours every week.",
+    "setup": "A repeating chore eats three hours every week — invoices, school emails, inventory, or a team process.",
     "initial_ambiguity": "You have not decided local vs cloud, cost, or how much control to keep.",
     "dimensions": [
       "automation_appetite",
@@ -650,9 +650,9 @@
   },
   {
     "id": "campaign-create",
-    "title": "Create the Campaign",
+    "title": "Get the word out",
     "domain": "creative",
-    "setup": "You need a campaign concept, visuals, and copy from a rough idea.",
+    "setup": "You need a concept, pictures, and words from a rough idea — a sale, a fundraiser, or a launch.",
     "initial_ambiguity": "Audience, tone, and visual direction are still fuzzy.",
     "dimensions": [
       "multimodal_preference",
@@ -812,9 +812,9 @@
   },
   {
     "id": "messy-data",
-    "title": "The Messy Dataset",
+    "title": "The messy numbers",
     "domain": "analysis",
-    "setup": "You receive incomplete business data and need a recommendation.",
+    "setup": "You got incomplete numbers and need a recommendation — sales, a household budget, or inventory.",
     "initial_ambiguity": "Missing values, unstated assumptions, and no data dictionary.",
     "dimensions": [
       "evidence_seeking",
@@ -986,9 +986,9 @@
   },
   {
     "id": "learn-fast",
-    "title": "Learn Something New",
+    "title": "Learn something new",
     "domain": "learning",
-    "setup": "You need enough understanding of an unfamiliar technical topic to make a decision tomorrow.",
+    "setup": "You need to understand something new well enough to decide tomorrow — a class, a tool, or a purchase.",
     "initial_ambiguity": "You do not know how deep is deep enough.",
     "dimensions": [
       "structure_preference",
@@ -1144,9 +1144,9 @@
   },
   {
     "id": "executive-choice",
-    "title": "The Executive Call",
+    "title": "A decision due today",
     "domain": "strategy",
-    "setup": "Three viable paths exist, none is clearly superior, and a decision is due today.",
+    "setup": "Three decent options exist, none is clearly better, and you need a call today — for a shop, a family choice, or a team.",
     "initial_ambiguity": "Criteria and risk tolerance have not been made explicit.",
     "dimensions": [
       "comparison_preference",
@@ -1158,7 +1158,7 @@
     "turns": [
       {
         "id": "ec-1",
-        "prompt": "You have one hour with the AI before the meeting.",
+        "prompt": "You have one hour with the AI before you have to choose.",
         "allow_free_text": true,
         "choices": [
           {

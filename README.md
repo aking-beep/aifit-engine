@@ -1,30 +1,32 @@
-# Workprint
+# Fit
 
-Workprint is a 5-minute adaptive diagnostic that answers:
+Fit is a 5-minute adaptive quiz that answers:
 
-**How do you work with intelligence — and how should your AI be configured?**
+**How do you like to use AI — and which setup actually fits you?**
+
+It is for everyday people: homework, home life, a shop or studio, a side hustle, or a small team. Not a corporate form.
 
 You leave with:
 
-1. **AI Workstyle** — a named interaction profile, not a personality type.
-2. **Why** — the behaviors that produced that profile.
-3. **Interaction dimensions** — autonomy, verification, iteration, context depth, tool delegation, source dependency, exploration.
-4. **Recommended stack** — what each product should handle.
-5. **Model routing** — which model for which workload.
-6. **Working persona** — how AI should interact with you.
-7. **Installable files** — ChatGPT, Claude / CLAUDE.md, Gemini, Cursor rules, AGENTS.md.
+1. **Your AI style** — a named interaction profile, not a personality type.
+2. **Why** — the choices that produced that profile.
+3. **How you like to use AI** — checking facts, tweaking, going deeper, handing work off, wanting sources, comparing options.
+4. **Tools that fit you** — what each product should handle.
+5. **What to use each model for**.
+6. **How your AI should talk to you**.
+7. **Setup files** — ChatGPT, Claude / CLAUDE.md, Gemini, Cursor rules, AGENTS.md.
 
-This is a **free individual diagnostic**. It is not a $10/month “which AI should I use?” subscription.
+This is a **free individual quiz**. It is not a $10/month “which AI should I use?” subscription.
 
 Source: [github.com/aking-beep/aifit-engine](https://github.com/aking-beep/aifit-engine).
 
-Workprint is a working product name, distinct from the unrelated business-matching site at aifitengine.com. Domain and trademark clearance still needed before a public brand lock.
+The public name is Fit. The repo stays `aifit-engine` so it is not confused with the unrelated business-matching site at aifitengine.com. Domain and trademark clearance still needed before a public brand lock.
 
 ## What it measures
 
-Workprint scores **what you ask, how you steer, and how much evidence you demand**. Two people with the same job, budget, and skill level can need different AI configurations.
+Fit scores **what you ask, how you steer, and how much evidence you demand**. Two people with the same job, budget, and skill level can need different AI setups.
 
-The diagnostic usually stops after four scenarios (about twelve interactions). It continues only when a core dimension still lacks signal, and never past eight.
+The quiz usually stops after four scenes (about twelve interactions). It continues only when a core habit still is not clear, and never past eight.
 
 An LLM may label optional free text. It never picks the winner. Ranking is dated registries + weights.
 
@@ -86,33 +88,33 @@ On Vercel, assessment events are buffered in the browser and scored in one reque
 ## Architecture
 
 ```text
-Interactive diagnostic
+Short everyday scenes
         │
         ▼
-Behavioral signals
+How you actually use AI
         │
         ▼
-AI Workstyle
+Your AI style
         │
         ▼
-Capability requirements
+What you need from tools
         │
         ├───────────────┐
         ▼               ▼
-Product Registry   Model Registry
+Product list        Model list
         │               │
         └───────┬───────┘
                 ▼
-           AI stack
+         Tools that fit
                 │
                 ▼
-      Persona + install guides
+      How AI should talk + setup files
                 │
                 ▼
- Portable AI operating profile
+     A setup you can paste today
 ```
 
-The registry, methodology, and evidence live under **Transparency**. They are credibility infrastructure, not the homepage.
+The registry, methodology, and evidence live under **How it works**. They are credibility infrastructure, not the homepage.
 
 ## Pack docs
 

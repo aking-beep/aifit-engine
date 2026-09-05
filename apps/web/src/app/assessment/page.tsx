@@ -42,7 +42,7 @@ export default function AssessmentPage() {
           if (!cancelled) setSessionId(crypto.randomUUID());
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Could not start the diagnostic.");
+        if (!cancelled) setError(err instanceof Error ? err.message : "Could not start. Try again in a moment.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -120,7 +120,7 @@ export default function AssessmentPage() {
   if (error && !scenario) {
     return (
       <div className="mx-auto max-w-3xl space-y-4 px-4 py-16">
-        <h1 className="text-2xl font-semibold">Diagnostic unavailable</h1>
+        <h1 className="text-2xl font-semibold">This quiz is unavailable</h1>
         <p className="text-muted-foreground">{error}</p>
       </div>
     );
@@ -129,18 +129,19 @@ export default function AssessmentPage() {
   if (!started) {
     return (
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-12">
-        <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">About five minutes</p>
-        <h1 className="text-3xl font-semibold tracking-tight">Build your AI Workstyle</h1>
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">About five minutes</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Find your AI fit</h1>
         <p className="text-muted-foreground">
-          Short scenarios. No right answers. The diagnostic stops when it has enough signal — usually four scenarios,
-          never more than eight. You leave with a workstyle, a stack, and files you can install.
+          Short everyday scenes. No right answers. It usually stops after four scenes — never more than eight. You
+          leave with a plain-language profile, suggested tools, and files you can paste into the apps you already use.
         </p>
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>Anonymous: no name, employer, or demographic questions.</li>
-          <li>You can delete the session from the profile page.</li>
+          <li>For homework, a shop, a studio, a side hustle, or a team — not a corporate form.</li>
+          <li>Anonymous: no name, job title, or personal details.</li>
+          <li>You can delete the session from your results page.</li>
         </ul>
         <Button onClick={() => setStarted(true)} disabled={!sessionId || loading}>
-          {loading ? "Preparing…" : "Begin diagnostic"}
+          {loading ? "Getting ready…" : "Let's go"}
         </Button>
       </div>
     );
@@ -162,7 +163,7 @@ export default function AssessmentPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Scenario {completed + 1}</span>
+          <span>Scene {completed + 1}</span>
           <span>
             Round {turnIndex + 1} of {scenario.turns.length}
           </span>
@@ -199,7 +200,7 @@ export default function AssessmentPage() {
             <Textarea
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Optional note. Words like compare, sources, automate, or local can add evidence."
+              placeholder="Optional note. Words like compare, sources, or keep it private can add a little extra signal."
             />
           ) : null}
           {error ? <p className="text-sm text-destructive">{error}</p> : null}

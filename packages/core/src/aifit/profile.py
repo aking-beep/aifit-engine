@@ -5,33 +5,33 @@ from __future__ import annotations
 from .models import MetricResult, Recommendation, UserFitVector
 
 INTERACTION_PROFILE = (
-    ("autonomy", "Autonomy", ("autonomy_preference",)),
-    ("verification", "Verification", ("assumption_challenge", "evidence_seeking")),
-    ("iteration", "Iteration", ("iteration_preference",)),
-    ("context_depth", "Context depth", ("depth_preference", "structure_preference")),
-    ("tool_delegation", "Tool delegation", ("automation_appetite", "integration_appetite")),
-    ("source_dependency", "Source dependency", ("evidence_seeking",)),
-    ("exploration", "Exploration", ("comparison_preference", "alternative_seeking")),
+    ("autonomy", "Hands-off help", ("autonomy_preference",)),
+    ("verification", "Fact checking", ("assumption_challenge", "evidence_seeking")),
+    ("iteration", "Tweaking", ("iteration_preference",)),
+    ("context_depth", "Going deeper", ("depth_preference", "structure_preference")),
+    ("tool_delegation", "Handing work off", ("automation_appetite", "integration_appetite")),
+    ("source_dependency", "Wanting sources", ("evidence_seeking",)),
+    ("exploration", "Comparing options", ("comparison_preference", "alternative_seeking")),
 )
 
 STACK_ROLES = (
-    ("primary_assistant", "Primary reasoning", ("general_assistant",)),
-    ("research", "Research", ("research", "knowledge")),
-    ("coding", "Development", ("coding_agent",)),
-    ("ide", "IDE", ("ide",)),
-    ("automation", "Automation", ("automation",)),
-    ("creative", "Creative", ("writing", "image", "design", "presentation", "video")),
-    ("local_private", "Local / private", ("local_open_source",)),
+    ("primary_assistant", "Everyday helper", ("general_assistant",)),
+    ("research", "Looking things up", ("research", "knowledge")),
+    ("coding", "Building things", ("coding_agent",)),
+    ("ide", "In your editor", ("ide",)),
+    ("automation", "Repeating chores", ("automation",)),
+    ("creative", "Making things", ("writing", "image", "design", "presentation", "video")),
+    ("local_private", "Keep it private", ("local_open_source",)),
 )
 
 ROUTER_WORKLOADS = (
-    ("strategy", "Strategy", "deep_reasoning"),
-    ("research", "Research", "research"),
-    ("coding", "Coding", "coding"),
-    ("multimodal", "Images / multimodal", "multimodal"),
-    ("fast", "Fast answers", "fast_reasoning"),
-    ("agents", "Agents / automation", "agentic_execution"),
-    ("local", "Local control", "local_control"),
+    ("strategy", "Big decisions", "deep_reasoning"),
+    ("research", "Looking it up", "research"),
+    ("coding", "Building", "coding"),
+    ("multimodal", "Pictures and media", "multimodal"),
+    ("fast", "Quick questions", "fast_reasoning"),
+    ("agents", "Hands-off help", "agentic_execution"),
+    ("local", "Private / on-device", "local_control"),
 )
 
 MATURITY_KEYS = (
@@ -54,7 +54,7 @@ INSTALL_GUIDES = (
         "steps": [
             "Open ChatGPT settings and choose Personalization.",
             "Paste into “How would you like ChatGPT to respond?”",
-            "Save. Edit any line that does not match how you work.",
+            "Save. Edit any line that does not match how you like to use AI.",
         ],
     },
     {
@@ -73,10 +73,10 @@ INSTALL_GUIDES = (
         "id": "cursor",
         "label": "Cursor",
         "export_target": "cursor",
-        "filename": ".cursor/rules/workprint.mdc",
-        "where": ".cursor/rules/workprint.mdc",
+        "filename": ".cursor/rules/fit.mdc",
+        "where": ".cursor/rules/fit.mdc",
         "steps": [
-            "Create .cursor/rules/workprint.mdc in the project.",
+            "Create .cursor/rules/fit.mdc in the project.",
             "Paste the downloaded rule. alwaysApply is already set.",
             "Reload the window so Cursor picks it up.",
         ],
@@ -90,7 +90,7 @@ INSTALL_GUIDES = (
         "steps": [
             "Create or edit a Gem.",
             "Paste the instructions into the Gem instructions field.",
-            "Use that Gem for work that should match this profile.",
+            "Use that Gem for chats that should match this style.",
         ],
     },
     {
@@ -107,13 +107,13 @@ INSTALL_GUIDES = (
 )
 
 _BEHAVIOR = {
-    "autonomy": "you let AI take intermediate steps instead of confirming every move",
-    "verification": "you ask the system to challenge claims and show its working",
-    "iteration": "you refine outputs instead of accepting the first draft",
-    "context_depth": "you prefer underlying structure over a thin first answer",
-    "tool_delegation": "you push work into tools, agents, and automations",
-    "source_dependency": "you demand sources before treating a claim as settled",
-    "exploration": "you compare options and ask for alternatives before committing",
+    "autonomy": "you let AI take the next few steps instead of asking you every time",
+    "verification": "you want claims checked and the working shown",
+    "iteration": "you tweak the first draft instead of taking it as-is",
+    "context_depth": "you prefer the real structure over a thin first answer",
+    "tool_delegation": "you like handing repeating work to tools and automations",
+    "source_dependency": "you want sources before treating a claim as settled",
+    "exploration": "you compare options before you commit",
 }
 
 
@@ -151,22 +151,22 @@ def workstyle_label(values: dict[str, float], confidence: dict[str, float] | Non
     automation = strong(values, confidence, "automation_appetite", 0.7)
     autonomy = values.get("autonomy_preference", 0)
     if evidence and autonomy >= 0.6:
-        return "Evidence-Driven Operator"
+        return "Careful Checker"
     if evidence and code:
-        return "Evidence-Driven Builder"
+        return "Careful Maker"
     if evidence and strong(values, confidence, "comparison_preference", 0.65):
-        return "Critical Systems Operator"
+        return "Side-by-side Thinker"
     if code and autonomy >= 0.65:
-        return "High-Autonomy Builder"
+        return "Hands-on Maker"
     if automation:
-        return "Workflow Operator"
+        return "Automation Fan"
     if autonomy >= 0.7 and values.get("assumption_challenge", 0) < 0.45:
-        return "Fast-Cycle Operator"
+        return "Quick Mover"
     if strong(values, confidence, "multimodal_preference", 0.7):
-        return "Creative Iterator"
+        return "Creative Tweaker"
     if autonomy and autonomy <= 0.35:
-        return "Confirm-First Collaborator"
-    return "Adaptive Operator"
+        return "Check-with-me First"
+    return "Flexible Partner"
 
 
 def workstyle_narrative(values: dict[str, float], confidence: dict[str, float] | None = None) -> str:
@@ -178,20 +178,19 @@ def workstyle_narrative(values: dict[str, float], confidence: dict[str, float] |
     tools = max(values.get("automation_appetite", 0), values.get("integration_appetite", 0))
     if autonomy >= 0.6 and verified:
         return (
-            "You work best with AI when it can operate independently but expose reasoning, "
-            "sources, and checkpoints before consequential actions."
+            "You like AI that can keep going on its own, then show its sources and pause before anything that really matters."
         )
     if autonomy >= 0.65 and strong(values, confidence, "code_comfort", 0.6):
-        return "You work best with AI that builds: it takes the implementation steps itself and shows you the working artifact instead of a plan."
+        return "You like AI that actually builds the thing — a draft, a page, a working file — instead of only describing a plan."
     if autonomy >= 0.7 and not verified:
-        return "You work best with AI that moves quickly, takes intermediate steps, and does not pause for extra confirmation."
+        return "You like AI that moves quickly, takes the next steps, and does not stop to ask extra permission."
     if autonomy <= 0.35 and verified:
-        return "You work best with AI that stays inspectable, asks before material changes, and shows the evidence behind recommendations."
+        return "You like AI that stays easy to check, asks before big changes, and shows the evidence behind a recommendation."
     if tools >= 0.65 and iteration >= 0.6:
-        return "You work best with AI that turns repeating work into tools and automations, then iterates on the result."
+        return "You like AI that turns repeating chores into tools, then lets you tweak the result."
     if values.get("multimodal_preference", 0) >= 0.65:
-        return "You work best with AI that can draft, visualize, and revise in the same loop rather than staying in plain text."
-    return "You work best with AI that matches the depth you ask for, stays inspectable, and gives you a concrete next step."
+        return "You like AI that can draft, picture, and revise in the same loop — not only plain text."
+    return "You like AI that matches how deep you want to go, stays easy to check, and gives you a clear next step."
 
 
 def workstyle_summary(values: dict[str, float]) -> str:
@@ -225,16 +224,16 @@ def maturity(user: UserFitVector) -> dict:
     mean_conf = sum(confs) / len(confs) if confs else 0.0
     value = round(100 * ((mean_score * 0.45) + (mean_conf * 0.35) + (coverage * 0.20)))
     if value < 45:
-        band = "emerging"
+        band = "getting started"
     elif value < 70:
-        band = "practiced"
+        band = "getting comfortable"
     else:
-        band = "advanced"
+        band = "really fluent"
     return {
         "score": value,
         "band": band,
         "coverage": round(coverage, 4),
-        "note": "This score tracks observed coverage and confidence. Retest after your stack or habits change.",
+        "note": "This score tracks how clearly we saw your habits. Retake it if your tools or routine change.",
     }
 
 
@@ -273,7 +272,7 @@ def workstyle_why(user: UserFitVector, metrics: list[MetricResult] | None = None
             {
                 "dimension": row["label"],
                 "score": row["display"],
-                "text": f"You score {row['display']} on {row['label'].lower()} because {behavior}.",
+                "text": f"{behavior[0].upper() + behavior[1:]}.",
                 "evidence": list(dict.fromkeys(evidence))[:2],
             }
         )
@@ -284,7 +283,7 @@ def workstyle_why(user: UserFitVector, metrics: list[MetricResult] | None = None
             {
                 "dimension": "Coverage",
                 "score": 0,
-                "text": "The diagnostic did not yet see a dominant pattern, so this profile stays conservative.",
+                "text": "We did not yet see a strong pattern, so this profile stays cautious.",
                 "evidence": [],
             }
         )
@@ -294,20 +293,20 @@ def workstyle_why(user: UserFitVector, metrics: list[MetricResult] | None = None
 def _slot_handle(role_id: str, values: dict[str, float]) -> str:
     if role_id == "primary_assistant":
         if values.get("evidence_seeking", 0) >= 0.65:
-            return "Primary reasoning partner. Use it for strategy, writing, and decisions that need sources and checkpoints."
-        return "Primary reasoning partner for planning, writing, and day-to-day decisions."
+            return "Your everyday helper for writing, planning, and decisions that need sources."
+        return "Your everyday helper for planning, writing, and day-to-day questions."
     if role_id == "research":
-        return "Source-backed research and current-web lookup before you commit to a claim."
+        return "Look things up and check sources before you treat a claim as settled."
     if role_id == "coding":
-        return "Implementation agent: scaffolding, diffs, tests, and multi-file changes."
+        return "Build the thing: drafts, pages, files, tests, and edits."
     if role_id == "ide":
-        return "In-editor pair programmer. Keep project rules here so the IDE matches this workstyle."
+        return "Help inside your editor. Keep a short rule file there so it matches this style."
     if role_id == "automation":
-        return "Turn repeating workflows into durable automations instead of one-off prompts."
+        return "Turn repeating chores — invoices, emails, inventory — into a saved workflow."
     if role_id == "creative":
-        return "Drafts, visuals, and campaign artifacts when the work is not only text."
+        return "Drafts, pictures, and posts when the work is not only text."
     if role_id == "local_private":
-        return "Local or self-hosted option when the work should not leave your machine."
+        return "A local or on-device option when the work should stay on your machine."
     return "Use this product for the workload named above."
 
 
@@ -321,7 +320,7 @@ def build_workstyle(user: UserFitVector, metrics: list[MetricResult] | None = No
         "why": workstyle_why(user, metrics),
         "dimensions": profile,
         "maturity": maturity(user),
-        "disclaimer": "This is an interaction workstyle, not a personality type.",
+        "disclaimer": "This is how you like to use AI, not a personality type.",
     }
 
 
@@ -361,7 +360,7 @@ def build_model_router(model_recs: dict[str, list[Recommendation]]) -> list[dict
                 "id": route_id,
                 "work": label,
                 "workload": workload,
-                "handles": f"Route {label.lower()} work here.",
+                "handles": f"Use this for {label.lower()}.",
                 "model": top.model_dump() if top else None,
             }
         )
@@ -374,38 +373,38 @@ def build_workflow(values: dict[str, float]) -> list[dict]:
             "id": "research",
             "label": "Research",
             "emphasis": values.get("evidence_seeking", 0) >= 0.55,
-            "instruction": "Gather sources and separate fact from inference before recommending.",
+            "instruction": "Gather sources and separate fact from guesswork before recommending.",
         },
         {
             "id": "synthesize",
             "label": "Synthesize",
             "emphasis": values.get("structure_preference", 0) >= 0.55 or values.get("comparison_preference", 0) >= 0.55,
-            "instruction": "Compress options into a comparable structure with explicit tradeoffs.",
+            "instruction": "Lay the options side by side so the tradeoffs are easy to see.",
         },
         {
             "id": "challenge",
             "label": "Challenge",
             "emphasis": values.get("assumption_challenge", 0) >= 0.5,
-            "instruction": "Stress-test the leading option. Surface what would change the call.",
+            "instruction": "Pressure-test the leading option. Say what would change your mind.",
         },
         {
             "id": "execute",
             "label": "Execute",
             "emphasis": values.get("action_orientation", 0) >= 0.55 or values.get("code_comfort", 0) >= 0.55,
-            "instruction": "Produce a working artifact: draft, plan, code, or automation.",
+            "instruction": "Make something you can use: a draft, a plan, a file, or a saved workflow.",
         },
         {
             "id": "verify",
             "label": "Verify",
             "emphasis": values.get("evidence_seeking", 0) >= 0.6 or values.get("iteration_preference", 0) >= 0.6,
-            "instruction": "Check claims, diffs, or outputs against the original constraint.",
+            "instruction": "Check claims or outputs against what you actually asked for.",
         },
     ]
 
 
 def default_instructions(persona: dict) -> str:
     lines = [
-        f"You are operating as {persona.get('label', 'an Adaptive Operator')}.",
+        f"You are helping as {persona.get('label', 'a Flexible Partner')}.",
         persona.get("purpose", ""),
         "",
         "Interaction:",
@@ -438,15 +437,15 @@ def share_card_text(result: dict) -> str:
         if product.get("name"):
             stack.append(product["name"])
     lines = [
-        "WORKPRINT",
-        workstyle.get("label") or persona.get("label") or "AI Workstyle",
+        "FIT",
+        workstyle.get("label") or persona.get("label") or "AI style",
         "",
         workstyle.get("narrative") or workstyle.get("summary") or "",
         "",
         dim_line,
         "",
-        f"Stack: {' · '.join(stack[:5]) or 'n/a'}",
-        f"Persona: {persona.get('label') or 'n/a'}",
+        f"Tools: {' · '.join(stack[:5]) or 'n/a'}",
+        f"How AI should talk: {persona.get('label') or 'n/a'}",
     ]
     return "\n".join(lines).strip() + "\n"
 

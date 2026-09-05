@@ -14,16 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Workprint",
+  title: "Fit — find the AI that fits you",
   description:
-    "Discover how you work with AI. Get your AI Workstyle, recommended stack, and a configuration you can install across ChatGPT, Claude, Gemini, Cursor, and agents.",
+    "A five-minute quiz for anyone who uses AI: homework, a shop, a side hustle, or a team. Get a friendly profile and setup files for ChatGPT, Claude, Gemini, Cursor, and more.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <SiteHeader />

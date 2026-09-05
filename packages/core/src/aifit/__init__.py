@@ -1,4 +1,4 @@
-"""Workprint scoring engine."""
+"""Fit scoring engine."""
 
 from .engine import score_session
 from .models import AssessmentSession, UserFitVector

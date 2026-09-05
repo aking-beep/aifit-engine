@@ -9,24 +9,24 @@ def persona_label(values: dict[str, float], confidence: dict[str, float] | None 
 
     evidence = strong(values, confidence, "evidence_seeking", 0.7)
     if evidence and values.get("code_comfort", 0) >= 0.6:
-        return "Critical Technical Partner"
+        return "Careful Building Partner"
     if evidence and values.get("comparison_preference", 0) >= 0.65:
-        return "Critical Systems Partner"
+        return "Careful Comparing Partner"
     if values.get("autonomy_preference", 0) >= 0.7 and (
         values.get("automation_appetite", 0) >= 0.55 or values.get("integration_appetite", 0) >= 0.55
     ):
-        return "Autonomous Operator"
+        return "Go-ahead Partner"
     if strong(values, confidence, "code_comfort", 0.6):
-        return "Implementation Partner"
+        return "Building Partner"
     if values.get("autonomy_preference", 0) and values.get("autonomy_preference", 0) <= 0.35:
-        return "Confirm-First Analyst"
+        return "Check-first Partner"
     if values.get("conciseness_preference", 0) >= 0.65:
-        return "Concise Working Partner"
+        return "Short-and-clear Partner"
     if values.get("multimodal_preference", 0) >= 0.7:
-        return "Creative Production Partner"
+        return "Creative Partner"
     if values.get("structure_preference", 0) >= 0.65 and values.get("evidence_seeking", 0) >= 0.55:
-        return "Structured Research Partner"
-    return "Adaptive Working Partner"
+        return "Organized Research Partner"
+    return "Flexible Partner"
 
 
 def persona_purpose(values: dict[str, float], confidence: dict[str, float] | None = None) -> str:
@@ -34,14 +34,14 @@ def persona_purpose(values: dict[str, float], confidence: dict[str, float] | Non
 
     evidence = strong(values, confidence, "evidence_seeking", 0.65)
     if evidence and values.get("code_comfort", 0) >= 0.6:
-        return "Act as a critical technical partner: evidence first, architectures when useful, and working artifacts over commentary."
+        return "Be a careful building partner: sources first, then a working draft instead of a long commentary."
     if evidence:
-        return "Help this user make evidence-backed decisions, surface uncertainty, and execute without hiding assumptions."
+        return "Help this person make decisions they can check, say what is uncertain, and still get something done."
     if values.get("autonomy_preference", 0) >= 0.7:
-        return "Move work forward: take reasonable intermediate steps, then show what changed."
+        return "Keep things moving: take the next reasonable steps, then show what changed."
     if values.get("autonomy_preference", 0) and values.get("autonomy_preference", 0) <= 0.35:
-        return "Stay inspectable. Ask before material multi-step changes, and keep recommendations reversible."
-    return "Help this user make evidence-backed decisions and execute in a way that matches observed AI interaction preferences."
+        return "Stay easy to check. Ask before big multi-step changes, and keep recommendations easy to undo."
+    return "Help this person make decisions they can check, in a way that matches how they actually use AI."
 
 
 def generate_persona(user: UserFitVector) -> dict:
@@ -127,5 +127,5 @@ def generate_persona(user: UserFitVector) -> dict:
         "decision_rules": decision,
         "tool_rules": tools,
         "avoid": avoid,
-        "disclaimer": "This configuration reflects observed workflow preferences, not psychological traits.",
+        "disclaimer": "This setup reflects how you like to use AI, not a psychological profile or personality type.",
     }

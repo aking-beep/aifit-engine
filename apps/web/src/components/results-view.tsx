@@ -129,8 +129,8 @@ export function ResultsView({
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10">
       <section className="space-y-4">
-        <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
-          {shareMode ? "Shared AI Workstyle" : "Your AI Workstyle"}
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
+          {shareMode ? "A shared AI style" : "Your AI style"}
         </p>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="max-w-2xl space-y-3">
@@ -139,7 +139,7 @@ export function ResultsView({
           </div>
           {maturity ? (
             <div className="rounded-xl border px-4 py-3 text-right">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Workprint score</p>
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Fit score</p>
               <p className="text-3xl font-semibold">{maturity.score}</p>
               <p className="text-sm capitalize text-muted-foreground">{maturity.band}</p>
             </div>
@@ -147,7 +147,7 @@ export function ResultsView({
         </div>
         {!shareMode ? (
           <div className="flex flex-wrap gap-2">
-            <Button onClick={() => download("pack")}>Export my AI setup</Button>
+            <Button onClick={() => download("pack")}>Save my AI setup</Button>
             <Button variant="outline" onClick={share}>
               Share this profile
             </Button>
@@ -156,7 +156,7 @@ export function ResultsView({
             </Button>
           </div>
         ) : (
-          <Button render={<Link href="/assessment" />}>Build your own profile</Button>
+          <Button render={<Link href="/assessment" />}>Find your own fit</Button>
         )}
       </section>
 
@@ -168,7 +168,7 @@ export function ResultsView({
 
       {workstyle?.why?.length ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Why the system thinks that</h2>
+          <h2 className="text-lg font-semibold">Why we think that</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {workstyle.why.map((reason) => (
               <Card key={reason.dimension}>
@@ -196,7 +196,7 @@ export function ResultsView({
 
       {workstyle?.dimensions?.length ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Your interaction profile</h2>
+          <h2 className="text-lg font-semibold">How you like to use AI</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {workstyle.dimensions.map((dimension) => (
               <Card key={dimension.id}>
@@ -216,7 +216,7 @@ export function ResultsView({
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Your recommended AI stack</h2>
+        <h2 className="text-lg font-semibold">Tools that fit you</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           {(stack ?? current.primary_stack.slots.map((slot) => ({
             role: slot.category,
@@ -240,7 +240,7 @@ export function ResultsView({
 
       {routing.length ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">What each model should handle</h2>
+          <h2 className="text-lg font-semibold">What to use each model for</h2>
           <Card>
             <CardContent className="divide-y p-0">
               {routing.map((row) => (
@@ -259,7 +259,7 @@ export function ResultsView({
 
       {workflow.length ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Recommended workflow</h2>
+          <h2 className="text-lg font-semibold">A simple way to work</h2>
           <div className="grid gap-3 md:grid-cols-5">
             {workflow.map((step) => (
               <Card key={step.id} className={step.emphasis ? "border-primary/50" : ""}>
@@ -274,7 +274,7 @@ export function ResultsView({
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Your recommended AI interaction persona</h2>
+        <h2 className="text-lg font-semibold">How your AI should talk to you</h2>
         <Card>
           <CardHeader>
             <CardTitle>{current.persona.label}</CardTitle>
@@ -306,8 +306,8 @@ export function ResultsView({
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold">Configure my AI</h2>
-          <p className="text-sm text-muted-foreground">Install in Claude, ChatGPT, Cursor, Gemini, or your agent runner.</p>
+          <h2 className="text-lg font-semibold">Set up your apps</h2>
+          <p className="text-sm text-muted-foreground">Paste into ChatGPT, Claude, Cursor, Gemini, or an agent.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {guides.map((guide) => (
@@ -319,7 +319,7 @@ export function ResultsView({
         {activeGuide ? (
           <Card>
             <CardHeader>
-              <CardTitle>Install in {activeGuide.label}</CardTitle>
+              <CardTitle>Set up {activeGuide.label}</CardTitle>
               <p className="text-sm text-muted-foreground">{activeGuide.where}</p>
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
@@ -348,7 +348,7 @@ export function ResultsView({
         <div className="mt-4 space-y-6">
           {!shareMode && sessionId ? (
             <div className="space-y-3 text-sm">
-              <p className="text-muted-foreground">Optional filters re-run the deterministic ranker.</p>
+              <p className="text-muted-foreground">Optional filters re-rank the same answers. Nothing is guessed.</p>
               <div className="flex flex-wrap gap-2">
                 <Button
                   size="sm"
@@ -474,7 +474,7 @@ export function ResultsView({
               </p>
             ) : null}
             <div className="space-y-2">
-              <p className="font-medium">Did this change how you configure or use AI?</p>
+              <p className="font-medium">Did this actually help you use AI?</p>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <Button key={value} variant={rating === value ? "default" : "outline"} size="sm" onClick={() => setRating(value)}>

@@ -61,7 +61,7 @@ If autonomy preference is high:
 `AGENTS.md`
 
 ### Cursor
-`.cursor/rules/workprint.mdc`
+`.cursor/rules/fit.mdc`
 
 ### ChatGPT
 `chatgpt-instructions.md`

@@ -27,7 +27,7 @@ from aifit.persona import generate_persona
 from aifit.registry import load_models, load_products
 from aifit.scenarios import load_scenarios
 
-app = FastAPI(title="Workprint API", version="0.3.0")
+app = FastAPI(title="Fit API", version="0.3.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -138,7 +138,7 @@ def _score_and_store(session: AssessmentSession, filters: FitFilters | None = No
 
 @app.get("/health")
 def health():
-    return {"ok": True, "version": "0.3.0", "privacy": "anonymous", "product": "Workprint"}
+    return {"ok": True, "version": "0.3.0", "privacy": "anonymous", "product": "Fit"}
 
 
 @app.get("/v1/scenarios")

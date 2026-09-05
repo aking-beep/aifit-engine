@@ -5,26 +5,26 @@ import { Button } from "@/components/ui/button";
 export default function MethodologyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
-      <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Transparency</p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">How scoring works</h1>
+      <p className="text-sm font-medium uppercase tracking-wide text-primary">In plain language</p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">How it works</h1>
       <p className="mt-4 text-muted-foreground">
-        Workprint scores what you ask, how you steer, and how much evidence you demand — then ranks a dated product
-        and model registry with explicit weights. An LLM may label free text. It never picks the winner.
+        Fit watches what you ask for — a source, a comparison, a quick answer, or a hands-off helper — then matches
+        that to a dated list of products and models. A chat model may label extra notes. It never picks the winner.
       </p>
 
       <section className="mt-10 space-y-8 text-sm leading-6">
         <div>
-          <h2 className="text-lg font-semibold">1. Scoring pipeline</h2>
+          <h2 className="text-lg font-semibold">1. Short scenes, not a personality test</h2>
           <p className="mt-2 text-muted-foreground">
-            Each round logs a structured interaction event. Events become a 0–1 metric vector with confidence from
-            observation count and scenario spread. The ranker is deterministic math, not a chat model.
+            Each choice becomes a simple signal. Those signals turn into a 0–1 picture of how you like to use AI, with
+            confidence from how often we saw it. The ranking is math, not a vibe.
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold">2. Registry</h2>
+          <h2 className="text-lg font-semibold">2. Products and models stay separate</h2>
           <p className="mt-2 text-muted-foreground">
-            Products and models are separate catalogs. Every public row has a last-evaluated date and evidence. Stale
-            rows lose confidence; they are not marked “bad.”
+            Apps and models are different catalogs. Every public row has a last-checked date. Stale rows lose
+            confidence; they are not marked “bad.”
           </p>
           <p className="mt-2">
             <Link href="/registry" className="underline underline-offset-4">
@@ -33,30 +33,30 @@ export default function MethodologyPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold">3. Evidence</h2>
+          <h2 className="text-lg font-semibold">3. You can see why</h2>
           <p className="mt-2 text-muted-foreground">
-            Results quote the choices that drove each dimension and show fit as normalized similarity, not a
-            probability. You can export or delete the session from the profile page.
+            Results quote the choices that drove each dimension. Fit is similarity, not a scientific probability. You
+            can save or delete the session from your results page.
           </p>
         </div>
         <div>
           <h2 className="text-lg font-semibold">4. Version</h2>
           <p className="mt-2 text-muted-foreground">
-            Workprint 0.3. Adaptive diagnostic, usually four scenarios (about five minutes), continuing only when a
-            core dimension still lacks signal. Scoring stays server-side.
+            Fit 0.3. Usually four scenes (about five minutes), continuing only when a core habit still is not clear.
+            Scoring stays on the server.
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold">5. Limitations</h2>
+          <h2 className="text-lg font-semibold">5. Limits</h2>
           <p className="mt-2 text-muted-foreground">
-            The catalog is illustrative seed data. Fit scores are not scientifically validated. This is not a
-            personality test, clinical instrument, or hiring screen. Do not use it that way.
+            The catalog is starter data. Scores are not scientifically validated. This is not a personality test,
+            clinical tool, or hiring screen. Do not use it that way.
           </p>
         </div>
       </section>
 
       <div className="mt-10">
-        <Button render={<Link href="/assessment" />}>Build my AI profile</Button>
+        <Button render={<Link href="/assessment" />}>Find my fit</Button>
       </div>
     </div>
   );

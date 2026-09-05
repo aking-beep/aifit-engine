@@ -45,13 +45,13 @@ def profile_markdown(result: dict) -> str:
     maturity = workstyle.get("maturity") or {}
     persona = result.get("persona") or {}
     lines = [
-        f"# {workstyle.get('label') or persona.get('label') or 'AI Operating Profile'}",
+        f"# {workstyle.get('label') or persona.get('label') or 'AI Fit Profile'}",
         "",
         workstyle.get("narrative") or workstyle.get("summary") or persona.get("purpose") or "",
         "",
-        f"Workprint score: {maturity.get('score', '—')} ({maturity.get('band', 'unknown')})",
+        f"Fit score: {maturity.get('score', '—')} ({maturity.get('band', 'unknown')})",
         "",
-        "## Why this workstyle",
+        "## Why this style",
     ]
     for reason in workstyle.get("why") or []:
         lines.append(f"- {reason.get('text', '')}")
@@ -107,10 +107,10 @@ def export_persona(persona: dict, target: str, result: dict | None = None) -> tu
     if target == "agents":
         return "AGENTS.md", persona_to_markdown(persona, "Agent Working Configuration")
     if target == "cursor":
-        body = persona_to_markdown(persona, "Workprint Cursor Rule")
+        body = persona_to_markdown(persona, "Fit Cursor Rule")
         return (
-            ".cursor/rules/workprint.mdc",
-            "---\ndescription: Personalized Workprint working rules\nalwaysApply: true\n---\n\n" + body,
+            ".cursor/rules/fit.mdc",
+            "---\ndescription: Personalized Fit working rules\nalwaysApply: true\n---\n\n" + body,
         )
     return "persona.md", persona_to_markdown(persona)
 

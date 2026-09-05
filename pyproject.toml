@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "aifit"
 version = "0.3.0"
-description = "Workprint: AI workstyle diagnostic and installable operating profile"
+description = "Fit: everyday AI style quiz and installable setup"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

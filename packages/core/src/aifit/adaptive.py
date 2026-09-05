@@ -38,11 +38,11 @@ def diagnostic_signal(session: AssessmentSession) -> dict:
         "covered_core": present,
         "next_scenario_id": nxt,
         "note": (
-            "Enough signal to score this workstyle."
+            "Enough signal to score this style."
             if ready and n < MAX_SCENARIOS
-            else "Need another scenario to cover a weaker dimension."
+            else "Need another scene to cover a weaker habit."
             if not ready
-            else "Reached the diagnostic cap."
+            else "Reached the quiz cap."
         ),
     }
 

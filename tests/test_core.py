@@ -124,7 +124,7 @@ def test_exports_cover_required_targets():
         ("generic", "persona.md"),
         ("claude", "CLAUDE.md"),
         ("agents", "AGENTS.md"),
-        ("cursor", ".cursor/rules/workprint.mdc"),
+        ("cursor", ".cursor/rules/fit.mdc"),
         ("chatgpt", "chatgpt-instructions.md"),
         ("gemini", "gemini-instructions.md"),
         ("profile", "PROFILE.md"),
@@ -149,13 +149,13 @@ def test_sample_session_scores():
     assert result["products"]
     assert result["models"]
     assert result["persona"]
-    assert result["workstyle"]["label"] == "Evidence-Driven Operator"
-    assert result["persona"]["label"] == "Critical Technical Partner"
+    assert result["workstyle"]["label"] == "Careful Checker"
+    assert result["persona"]["label"] == "Careful Building Partner"
     assert result["workstyle"]["maturity"]["score"] >= 0
     assert result["workstyle"]["narrative"]
     assert result["workstyle"]["why"]
     assert result["install_guides"]
-    assert "WORKPRINT" in result["share_card"]
+    assert "FIT" in result["share_card"]
     assert result["operating_stack"]
     assert result["model_routing"]
     assert result["workflow"]
@@ -365,8 +365,8 @@ def test_label_needs_repeat_observations_not_one_strong_answer():
     from aifit.profile import workstyle_label
 
     values = {"evidence_seeking": 0.9, "autonomy_preference": 0.8}
-    assert workstyle_label(values, {"evidence_seeking": 0.9}) == "Evidence-Driven Operator"
-    assert workstyle_label(values, {"evidence_seeking": 0.2}) != "Evidence-Driven Operator"
+    assert workstyle_label(values, {"evidence_seeking": 0.9}) == "Careful Checker"
+    assert workstyle_label(values, {"evidence_seeking": 0.2}) != "Careful Checker"
 
 
 def test_adaptive_signal_waits_then_stops():
