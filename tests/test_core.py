@@ -348,6 +348,27 @@ def test_stateless_score_endpoint_accepts_full_session():
     assert scored.json()["persona"]
 
 
+def test_different_interaction_styles_get_different_profiles():
+    """Two people with similar tooling but different habits must not get one answer."""
+    verifier = score_session(
+        AssessmentSession.model_validate_json(Path("examples/sample_session.json").read_text())
+    )
+    builder = score_session(
+        AssessmentSession.model_validate_json(Path("examples/code_heavy_session.json").read_text())
+    )
+    assert verifier["workstyle"]["label"] != builder["workstyle"]["label"]
+    assert verifier["workstyle"]["narrative"] != builder["workstyle"]["narrative"]
+    assert verifier["persona"]["label"] != builder["persona"]["label"]
+
+
+def test_label_needs_repeat_observations_not_one_strong_answer():
+    from aifit.profile import workstyle_label
+
+    values = {"evidence_seeking": 0.9, "autonomy_preference": 0.8}
+    assert workstyle_label(values, {"evidence_seeking": 0.9}) == "Evidence-Driven Operator"
+    assert workstyle_label(values, {"evidence_seeking": 0.2}) != "Evidence-Driven Operator"
+
+
 def test_adaptive_signal_waits_then_stops():
     from aifit.adaptive import diagnostic_signal
     from aifit.models import AssessmentSession

@@ -117,6 +117,9 @@ _BEHAVIOR = {
 }
 
 
+MIN_LABEL_CONFIDENCE = 0.45
+
+
 def _mean(values: dict[str, float], keys: tuple[str, ...]) -> float | None:
     present = [values[key] for key in keys if key in values]
     if not present:
@@ -124,37 +127,65 @@ def _mean(values: dict[str, float], keys: tuple[str, ...]) -> float | None:
     return sum(present) / len(present)
 
 
-def workstyle_label(values: dict[str, float]) -> str:
-    if values.get("evidence_seeking", 0) >= 0.7 and values.get("autonomy_preference", 0) >= 0.6:
+def strong(
+    values: dict[str, float],
+    confidence: dict[str, float] | None,
+    key: str,
+    floor: float,
+) -> bool:
+    """A dimension only earns a label when it is both high and repeatedly observed.
+
+    Metric scores are mean strength, so one strong answer looks identical to a
+    persistent habit. Confidence carries the frequency, so labels need both.
+    """
+    if values.get(key, 0) < floor:
+        return False
+    if confidence is None:
+        return True
+    return confidence.get(key, 1.0) >= MIN_LABEL_CONFIDENCE
+
+
+def workstyle_label(values: dict[str, float], confidence: dict[str, float] | None = None) -> str:
+    evidence = strong(values, confidence, "evidence_seeking", 0.7)
+    code = strong(values, confidence, "code_comfort", 0.6)
+    automation = strong(values, confidence, "automation_appetite", 0.7)
+    autonomy = values.get("autonomy_preference", 0)
+    if evidence and autonomy >= 0.6:
         return "Evidence-Driven Operator"
-    if values.get("evidence_seeking", 0) >= 0.7 and values.get("code_comfort", 0) >= 0.6:
+    if evidence and code:
         return "Evidence-Driven Builder"
-    if values.get("evidence_seeking", 0) >= 0.7 and values.get("comparison_preference", 0) >= 0.65:
+    if evidence and strong(values, confidence, "comparison_preference", 0.65):
         return "Critical Systems Operator"
-    if values.get("autonomy_preference", 0) >= 0.7 and values.get("assumption_challenge", 0) < 0.45:
-        return "Fast-Cycle Operator"
-    if values.get("automation_appetite", 0) >= 0.7:
+    if code and autonomy >= 0.65:
+        return "High-Autonomy Builder"
+    if automation:
         return "Workflow Operator"
-    if values.get("multimodal_preference", 0) >= 0.7:
+    if autonomy >= 0.7 and values.get("assumption_challenge", 0) < 0.45:
+        return "Fast-Cycle Operator"
+    if strong(values, confidence, "multimodal_preference", 0.7):
         return "Creative Iterator"
-    if values.get("autonomy_preference", 0) <= 0.35:
+    if autonomy and autonomy <= 0.35:
         return "Confirm-First Collaborator"
     return "Adaptive Operator"
 
 
-def workstyle_narrative(values: dict[str, float]) -> str:
+def workstyle_narrative(values: dict[str, float], confidence: dict[str, float] | None = None) -> str:
     autonomy = values.get("autonomy_preference", 0.5)
-    verification = max(values.get("assumption_challenge", 0), values.get("evidence_seeking", 0) * 0.85)
+    verified = strong(values, confidence, "assumption_challenge", 0.6) or strong(
+        values, confidence, "evidence_seeking", 0.7
+    )
     iteration = values.get("iteration_preference", 0.5)
     tools = max(values.get("automation_appetite", 0), values.get("integration_appetite", 0))
-    if autonomy >= 0.6 and verification >= 0.65:
+    if autonomy >= 0.6 and verified:
         return (
             "You work best with AI when it can operate independently but expose reasoning, "
             "sources, and checkpoints before consequential actions."
         )
-    if autonomy >= 0.7 and verification < 0.5:
+    if autonomy >= 0.65 and strong(values, confidence, "code_comfort", 0.6):
+        return "You work best with AI that builds: it takes the implementation steps itself and shows you the working artifact instead of a plan."
+    if autonomy >= 0.7 and not verified:
         return "You work best with AI that moves quickly, takes intermediate steps, and does not pause for extra confirmation."
-    if autonomy <= 0.35 and verification >= 0.6:
+    if autonomy <= 0.35 and verified:
         return "You work best with AI that stays inspectable, asks before material changes, and shows the evidence behind recommendations."
     if tools >= 0.65 and iteration >= 0.6:
         return "You work best with AI that turns repeating work into tools and automations, then iterates on the result."
@@ -284,9 +315,9 @@ def build_workstyle(user: UserFitVector, metrics: list[MetricResult] | None = No
     values = user.values
     profile = interaction_profile(user)
     return {
-        "label": workstyle_label(values),
+        "label": workstyle_label(values, user.confidence),
         "summary": workstyle_summary(values),
-        "narrative": workstyle_narrative(values),
+        "narrative": workstyle_narrative(values, user.confidence),
         "why": workstyle_why(user, metrics),
         "dimensions": profile,
         "maturity": maturity(user),
