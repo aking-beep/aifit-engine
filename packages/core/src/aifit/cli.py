@@ -41,7 +41,10 @@ def score(session_file: str):
 
     workstyle = result.get("workstyle") or {}
     maturity = (workstyle.get("maturity") or {})
-    console.print(f"[bold]Workstyle[/bold] {workstyle.get('label')} · AI Fit Score {maturity.get('score')} ({maturity.get('band')})")
+    console.print(f"[bold]{workstyle.get('label')}[/bold]")
+    if workstyle.get("narrative"):
+        console.print(workstyle["narrative"])
+    console.print(f"Workprint score {maturity.get('score')} ({maturity.get('band')})")
 
     for row in result.get("model_routing") or []:
         model = row.get("model") or {}

@@ -51,9 +51,11 @@ export default function RegistryPage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-12">
       <div className="space-y-3">
+        <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Transparency</p>
         <h1 className="text-3xl font-semibold tracking-tight">Product and model registry</h1>
         <p className="max-w-3xl text-muted-foreground">
-          Seed data is illustrative. Every public entry must be re-evaluated before launch. Product ≠ model.
+          Seed catalog used by the ranker. Most people never need this page — it exists so the scoring is inspectable.
+          Product ≠ model. Every public entry must be re-evaluated before launch.
           {needsReview ? ` ${needsReview} records currently need a freshness review.` : " All seed dates currently sit inside the freshness window."}
         </p>
       </div>

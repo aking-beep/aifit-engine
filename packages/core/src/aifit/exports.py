@@ -47,19 +47,26 @@ def profile_markdown(result: dict) -> str:
     lines = [
         f"# {workstyle.get('label') or persona.get('label') or 'AI Operating Profile'}",
         "",
-        workstyle.get("summary") or persona.get("purpose") or "",
+        workstyle.get("narrative") or workstyle.get("summary") or persona.get("purpose") or "",
         "",
-        f"AI Fit Score: {maturity.get('score', '—')} ({maturity.get('band', 'unknown')})",
+        f"Workprint score: {maturity.get('score', '—')} ({maturity.get('band', 'unknown')})",
         "",
-        "## Workstyle",
+        "## Why this workstyle",
     ]
+    for reason in workstyle.get("why") or []:
+        lines.append(f"- {reason.get('text', '')}")
+        for quote in reason.get("evidence") or []:
+            lines.append(f"  - {quote}")
+    lines += ["", "## Interaction profile"]
     for dim in workstyle.get("dimensions") or []:
-        lines.append(f"- {dim['label']}: {round(dim['score'] * 100)}%")
+        display = dim.get("display", round(dim.get("score", 0) * 100))
+        lines.append(f"- {dim['label']}: {display}")
     lines += ["", "## Stack"]
     for slot in result.get("operating_stack") or []:
         product = slot.get("product") or {}
         name = product.get("name") or "No strong match yet"
-        lines.append(f"- {slot['label']}: {name}")
+        handles = slot.get("handles") or ""
+        lines.append(f"- {slot['label']}: {name}" + (f" — {handles}" if handles else ""))
     lines += ["", "## Model routing"]
     for row in result.get("model_routing") or []:
         model = row.get("model") or {}
@@ -100,10 +107,10 @@ def export_persona(persona: dict, target: str, result: dict | None = None) -> tu
     if target == "agents":
         return "AGENTS.md", persona_to_markdown(persona, "Agent Working Configuration")
     if target == "cursor":
-        body = persona_to_markdown(persona, "AI Fit Cursor Rule")
+        body = persona_to_markdown(persona, "Workprint Cursor Rule")
         return (
-            ".cursor/rules/ai-fit.mdc",
-            "---\ndescription: Personalized AI Fit working rules\nalwaysApply: true\n---\n\n" + body,
+            ".cursor/rules/workprint.mdc",
+            "---\ndescription: Personalized Workprint working rules\nalwaysApply: true\n---\n\n" + body,
         )
     return "persona.md", persona_to_markdown(persona)
 

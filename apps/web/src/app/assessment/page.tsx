@@ -16,7 +16,7 @@ export default function AssessmentPage() {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
-  const [scenarioIndex, setScenarioIndex] = useState(0);
+  const [scenarioId, setScenarioId] = useState<string | null>(null);
   const [turnIndex, setTurnIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [note, setNote] = useState("");
@@ -24,6 +24,8 @@ export default function AssessmentPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [events, setEvents] = useState<InteractionEvent[]>([]);
+  const [completed, setCompleted] = useState(0);
+  const [signalNote, setSignalNote] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,6 +34,7 @@ export default function AssessmentPage() {
         const loaded = await api.scenarios();
         if (cancelled) return;
         setScenarios(loaded);
+        if (loaded[0]) setScenarioId(loaded[0].id);
         try {
           const session = await api.createSession();
           if (!cancelled) setSessionId(session.session_id);
@@ -39,7 +42,7 @@ export default function AssessmentPage() {
           if (!cancelled) setSessionId(crypto.randomUUID());
         }
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Could not start the assessment.");
+        if (!cancelled) setError(err instanceof Error ? err.message : "Could not start the diagnostic.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -49,16 +52,20 @@ export default function AssessmentPage() {
     };
   }, []);
 
-  const scenario = scenarios[scenarioIndex];
+  const scenario = scenarios.find((item) => item.id === scenarioId) ?? scenarios[0];
   const turn = scenario?.turns[turnIndex];
-  const totalTurns = useMemo(
-    () => scenarios.reduce((sum, item) => sum + item.turns.length, 0),
-    [scenarios],
-  );
+  const typicalTurns = 12;
   const completedTurns = useMemo(() => {
-    return scenarios.slice(0, scenarioIndex).reduce((sum, item) => sum + item.turns.length, 0) + turnIndex;
-  }, [scenarios, scenarioIndex, turnIndex]);
-  const progress = totalTurns === 0 ? 0 : Math.round((completedTurns / totalTurns) * 100);
+    return events.filter((event, index, all) => all.findIndex((row) => row.turn_id === event.turn_id && row.scenario_id === event.scenario_id) === index).length;
+  }, [events]);
+  const progress = Math.min(100, Math.round(((completedTurns + (turn ? 0 : 0)) / typicalTurns) * 100));
+
+  async function finish(nextEvents: InteractionEvent[]) {
+    if (!sessionId) return;
+    const scored = await api.scoreFull({ session_id: sessionId, events: nextEvents });
+    saveResult(sessionId, scored);
+    router.push(`/results/${sessionId}`);
+  }
 
   async function advance() {
     if (!sessionId || !scenario || !turn || !selected) return;
@@ -87,19 +94,22 @@ export default function AssessmentPage() {
         // Serverless instances may not share memory. The local buffer is enough to score.
       }
       const lastTurn = turnIndex >= scenario.turns.length - 1;
-      const lastScenario = scenarioIndex >= scenarios.length - 1;
       setSelected(null);
       setNote("");
       if (!lastTurn) {
         setTurnIndex((value) => value + 1);
-      } else if (!lastScenario) {
-        setScenarioIndex((value) => value + 1);
-        setTurnIndex(0);
-      } else {
-        const scored = await api.scoreFull({ session_id: sessionId, events: nextEvents });
-        saveResult(sessionId, scored);
-        router.push(`/results/${sessionId}`);
+        return;
       }
+      const signal = await api.signal({ session_id: sessionId, events: nextEvents }).catch(() => null);
+      const doneCount = completed + 1;
+      setCompleted(doneCount);
+      if (!signal || signal.ready || !signal.next_scenario_id) {
+        await finish(nextEvents);
+        return;
+      }
+      setSignalNote(signal.note);
+      setScenarioId(signal.next_scenario_id);
+      setTurnIndex(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save that response.");
     } finally {
@@ -110,7 +120,7 @@ export default function AssessmentPage() {
   if (error && !scenario) {
     return (
       <div className="mx-auto max-w-3xl space-y-4 px-4 py-16">
-        <h1 className="text-2xl font-semibold">Assessment unavailable</h1>
+        <h1 className="text-2xl font-semibold">Diagnostic unavailable</h1>
         <p className="text-muted-foreground">{error}</p>
       </div>
     );
@@ -119,18 +129,18 @@ export default function AssessmentPage() {
   if (!started) {
     return (
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-12">
-        <h1 className="text-3xl font-semibold tracking-tight">Before you start</h1>
+        <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">About five minutes</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Build your AI Workstyle</h1>
         <p className="text-muted-foreground">
-          This measures how you interact with AI, not your personality. Eight scenarios, three rounds each.
-          There are no right answers. You leave with a workstyle, a recommended stack, and a configuration you can install.
+          Short scenarios. No right answers. The diagnostic stops when it has enough signal — usually four scenarios,
+          never more than eight. You leave with a workstyle, a stack, and files you can install.
         </p>
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>No name, employer, or demographic questions.</li>
-          <li>You can delete the session from the results page.</li>
-          <li>Recommendations come from dated product and model registries, not one model vote.</li>
+          <li>Anonymous: no name, employer, or demographic questions.</li>
+          <li>You can delete the session from the profile page.</li>
         </ul>
         <Button onClick={() => setStarted(true)} disabled={!sessionId || loading}>
-          {loading ? "Preparing…" : "Begin scenario 1"}
+          {loading ? "Preparing…" : "Begin diagnostic"}
         </Button>
       </div>
     );
@@ -152,14 +162,13 @@ export default function AssessmentPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            Scenario {scenarioIndex + 1} of {scenarios.length}
-          </span>
+          <span>Scenario {completed + 1}</span>
           <span>
             Round {turnIndex + 1} of {scenario.turns.length}
           </span>
         </div>
-        <Progress value={progress} />
+        <Progress value={Math.max(progress, Math.round(((completed + turnIndex / scenario.turns.length) / 4) * 100))} />
+        {signalNote ? <p className="text-xs text-muted-foreground">{signalNote}</p> : null}
       </div>
       <Card>
         <CardHeader className="space-y-3">
@@ -195,11 +204,7 @@ export default function AssessmentPage() {
           ) : null}
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button className="w-full sm:w-auto" onClick={advance} disabled={!selected || submitting}>
-            {submitting
-              ? "Saving…"
-              : scenarioIndex === scenarios.length - 1 && turnIndex === scenario.turns.length - 1
-                ? "See results"
-                : "Continue"}
+            {submitting ? "Saving…" : "Continue"}
           </Button>
         </CardContent>
       </Card>

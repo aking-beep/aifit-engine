@@ -124,7 +124,7 @@ def test_exports_cover_required_targets():
         ("generic", "persona.md"),
         ("claude", "CLAUDE.md"),
         ("agents", "AGENTS.md"),
-        ("cursor", ".cursor/rules/ai-fit.mdc"),
+        ("cursor", ".cursor/rules/workprint.mdc"),
         ("chatgpt", "chatgpt-instructions.md"),
         ("gemini", "gemini-instructions.md"),
         ("profile", "PROFILE.md"),
@@ -149,9 +149,13 @@ def test_sample_session_scores():
     assert result["products"]
     assert result["models"]
     assert result["persona"]
-    assert result["workstyle"]["label"] == "Evidence-Driven Builder"
+    assert result["workstyle"]["label"] == "Evidence-Driven Operator"
     assert result["persona"]["label"] == "Critical Technical Partner"
     assert result["workstyle"]["maturity"]["score"] >= 0
+    assert result["workstyle"]["narrative"]
+    assert result["workstyle"]["why"]
+    assert result["install_guides"]
+    assert "WORKPRINT" in result["share_card"]
     assert result["operating_stack"]
     assert result["model_routing"]
     assert result["workflow"]
@@ -342,4 +346,38 @@ def test_stateless_score_endpoint_accepts_full_session():
     scored = client.post("/v1/score", json=body)
     assert scored.status_code == 200
     assert scored.json()["persona"]
+
+
+def test_adaptive_signal_waits_then_stops():
+    from aifit.adaptive import diagnostic_signal
+    from aifit.models import AssessmentSession
+
+    thin = AssessmentSession(
+        session_id="thin",
+        events=[{"event_type": "requested_evidence", "scenario_id": "launch-risk", "strength": 1.0}],
+    )
+    early = diagnostic_signal(thin)
+    assert early["ready"] is False
+    assert early["next_scenario_id"]
+
+    session = AssessmentSession.model_validate_json(Path("examples/sample_session.json").read_text())
+    ready = diagnostic_signal(session)
+    assert ready["ready"] is True
+    assert ready["scenarios_completed"] >= 4
+
+
+def test_api_signal_endpoint():
+    from services.api.main import app
+
+    client = TestClient(app)
+    thin = client.post(
+        "/v1/signal",
+        json={
+            "session_id": "sig-1",
+            "events": [{"event_type": "requested_evidence", "scenario_id": "launch-risk", "strength": 1.0}],
+        },
+    )
+    assert thin.status_code == 200
+    assert thin.json()["ready"] is False
+
 

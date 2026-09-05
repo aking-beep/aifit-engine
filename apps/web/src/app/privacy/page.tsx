@@ -5,7 +5,7 @@ export default function PrivacyPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-12">
       <h1 className="text-3xl font-semibold tracking-tight">Privacy</h1>
       <p className="text-muted-foreground">
-        v0.1 runs in anonymous mode. It does not ask for your name, employer, or demographic attributes, and it
+        Workprint runs in anonymous mode. It does not ask for your name, employer, or demographic attributes, and it
         does not infer protected characteristics.
       </p>
       <Card>
@@ -23,10 +23,13 @@ export default function PrivacyPage() {
           <CardTitle>Delete and export</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>From results, export the session JSON or delete the session. Deletion drops events and scores for that ID.</p>
-          <p>Process restart also clears in-memory sessions. There is no account database in v0.1.</p>
+          <p>From results, export the session or delete it. Deletion drops events and scores for that ID.</p>
+          <p>Process restart also clears in-memory sessions. There is no account database.</p>
         </CardContent>
       </Card>
+      <p className="text-xs text-muted-foreground">
+        One limitation, stated once: this is not a personality test, clinical tool, or hiring screen.
+      </p>
     </div>
   );
 }

@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Fit Engine",
+  title: "Workprint",
   description:
-    "A behavioral assessment that matches how you work with AI products, models, and a portable working configuration.",
+    "Discover how you work with AI. Get your AI Workstyle, recommended stack, and a configuration you can install across ChatGPT, Claude, Gemini, Cursor, and agents.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

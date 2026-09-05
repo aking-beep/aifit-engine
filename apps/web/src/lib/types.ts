@@ -73,7 +73,9 @@ export type Persona = {
 export type Workstyle = {
   label: string;
   summary: string;
-  dimensions: { id: string; label: string; score: number; confidence: number }[];
+  narrative?: string;
+  why?: { dimension: string; score: number; text: string; evidence: string[] }[];
+  dimensions: { id: string; label: string; score: number; display?: number; confidence: number }[];
   maturity: { score: number; band: string; coverage: number; note: string };
   disclaimer: string;
 };
@@ -81,6 +83,7 @@ export type Workstyle = {
 export type OperatingSlot = {
   role: string;
   label: string;
+  handles?: string;
   product: Recommendation | null;
 };
 
@@ -88,6 +91,7 @@ export type ModelRoute = {
   id: string;
   work: string;
   workload: string;
+  handles?: string;
   model: Recommendation | null;
 };
 
@@ -96,6 +100,15 @@ export type WorkflowStep = {
   label: string;
   emphasis: boolean;
   instruction: string;
+};
+
+export type InstallGuide = {
+  id: string;
+  label: string;
+  export_target: string;
+  filename: string;
+  where: string;
+  steps: string[];
 };
 
 export type ScoreResult = {
@@ -111,6 +124,8 @@ export type ScoreResult = {
   workflow?: WorkflowStep[];
   workstyle?: Workstyle;
   instructions?: string;
+  install_guides?: InstallGuide[];
+  share_card?: string;
   persona: Persona;
   freshness?: { needs_review: { id: string; name: string; band: string }[] };
   privacy?: { mode: string; retention: string };

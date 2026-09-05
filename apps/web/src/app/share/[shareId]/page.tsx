@@ -42,7 +42,7 @@ export default function SharePage() {
       <div className="mx-auto max-w-3xl space-y-4 px-4 py-16">
         <h1 className="text-2xl font-semibold">{error ? "Share unavailable" : "Loading share…"}</h1>
         {error ? (
-          <Button render={<Link href="/assessment" />}>Run your own assessment</Button>
+          <Button render={<Link href="/assessment" />}>Build your own profile</Button>
         ) : null}
       </div>
     );

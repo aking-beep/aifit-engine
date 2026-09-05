@@ -29,25 +29,23 @@ export default function HomePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12">
-      <section className="space-y-5">
-        <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">Interactive diagnostic</p>
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 px-4 py-12">
+      <section className="space-y-6">
+        <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">AI operating profile</p>
         <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
-          Which AI products fit how you actually work?
+          Discover how you work with AI.
         </h1>
         <p className="max-w-2xl text-lg text-muted-foreground">
-          This measures how you interact with AI, not your personality. Leave with a workstyle, a recommended stack,
-          model routing, and a configuration you can install in Claude, ChatGPT, Gemini, or Cursor.
+          Complete an interactive diagnostic that observes how you research, iterate, verify, and delegate. Get
+          your AI Workstyle, recommended stack, and a configuration you can install across ChatGPT, Claude, Gemini,
+          Cursor, and AI agents.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button render={<Link href="/assessment" />} size="lg">
-            Start the assessment
+            Build my AI profile
           </Button>
           <Button size="lg" variant="outline" onClick={runDemo} disabled={demoLoading}>
-            {demoLoading ? "Scoring sample…" : "See a scored sample"}
-          </Button>
-          <Button render={<Link href="/methodology" />} variant="ghost" size="lg">
-            How scoring works
+            {demoLoading ? "Scoring sample…" : "See a sample profile"}
           </Button>
         </div>
         {demoError ? <p className="text-sm text-destructive">{demoError}</p> : null}
@@ -55,26 +53,29 @@ export default function HomePage() {
       <section className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Observable behavior</CardTitle>
+            <CardTitle>Your AI Workstyle</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Choices and optional free text become interaction events. No MBTI, IQ, or clinical labels.
+            Not “what are you trying to do?” — how you actually work with intelligence. Two engineers with the same
+            budget can need very different configurations.
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Separate registries</CardTitle>
+            <CardTitle>Your stack</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Products and models stay distinct across every launch category. Each entry carries a last-evaluated date.
+            Products stay distinct from models. Each role gets a job: primary reasoning, research, development, IDE,
+            automation, creative, local.
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Explainable fit</CardTitle>
+            <CardTitle>Configure my AI</CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            Scores are normalized similarity, not probabilities. Export a portable AI setup, share the profile, or delete the session.
+            Leave with ChatGPT instructions, Claude and CLAUDE.md, Gemini, Cursor rules, and an agent system prompt
+            you can paste today.
           </CardContent>
         </Card>
       </section>

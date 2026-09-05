@@ -6,6 +6,7 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { clearSession, encodeSharePayload, loadSession, saveResult } from "@/lib/session-store";
+import { WorkstyleCard } from "@/components/workstyle-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +35,8 @@ export function ResultsView({
   const [current, setCurrent] = useState(result);
   const [exportNote, setExportNote] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"instructions" | "card" | "guide" | null>(null);
+  const [activeInstall, setActiveInstall] = useState(current.install_guides?.[0]?.id ?? "chatgpt");
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [feedbackNote, setFeedbackNote] = useState<string | null>(null);
@@ -48,6 +50,8 @@ export function ResultsView({
   const stack = current.operating_stack?.length ? current.operating_stack : null;
   const routing = current.model_routing ?? [];
   const workflow = current.workflow ?? [];
+  const guides = current.install_guides ?? [];
+  const activeGuide = guides.find((guide) => guide.id === activeInstall) ?? guides[0];
 
   async function applyFilters(nextLocal: boolean, nextPrice: string | null) {
     if (!sessionId) return;
@@ -102,11 +106,11 @@ export function ResultsView({
     await navigator.clipboard.writeText(url).catch(() => undefined);
   }
 
-  async function copyInstructions() {
-    if (!current.instructions) return;
-    await navigator.clipboard.writeText(current.instructions).catch(() => undefined);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+  async function copy(text: string, kind: "instructions" | "card" | "guide") {
+    if (!text) return;
+    await navigator.clipboard.writeText(text).catch(() => undefined);
+    setCopied(kind);
+    window.setTimeout(() => setCopied(null), 2000);
   }
 
   async function remove() {
@@ -119,76 +123,105 @@ export function ResultsView({
   async function sendFeedback() {
     if (!rating) return;
     await api.feedback({ session_id: sessionId, rating, comment, useful: rating >= 4 });
-    setFeedbackNote("Saved. No name or email is attached.");
+    setFeedbackNote("Saved. The question that matters: did you install or change anything?");
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-10">
-      <Card>
-        <CardHeader className="space-y-3">
-          <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
-            {shareMode ? "Shared AI operating profile" : "Your AI operating profile"}
-          </p>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight">{workstyle?.label ?? current.persona.label}</h1>
-              <p className="max-w-2xl text-muted-foreground">{workstyle?.summary ?? current.persona.purpose}</p>
-            </div>
-            {maturity ? (
-              <div className="rounded-xl border px-4 py-3 text-right">
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">AI Fit Score</p>
-                <p className="text-3xl font-semibold">{maturity.score}</p>
-                <p className="text-sm capitalize text-muted-foreground">{maturity.band}</p>
-              </div>
-            ) : null}
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-10">
+      <section className="space-y-4">
+        <p className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+          {shareMode ? "Shared AI Workstyle" : "Your AI Workstyle"}
+        </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-2xl space-y-3">
+            <h1 className="text-4xl font-semibold tracking-tight">{workstyle?.label ?? current.persona.label}</h1>
+            <p className="text-lg text-muted-foreground">{workstyle?.narrative ?? workstyle?.summary ?? current.persona.purpose}</p>
           </div>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          {!shareMode ? (
-            <>
-              <Button onClick={() => download("pack")}>Export my AI setup</Button>
-              <Button variant="outline" onClick={share}>
-                Copy share card
-              </Button>
-              <Button variant="outline" onClick={copyInstructions} disabled={!current.instructions}>
-                {copied ? "Copied instructions" : "Copy system instructions"}
-              </Button>
-            </>
-          ) : (
-            <Button render={<Link href="/assessment" />}>Run your own diagnostic</Button>
-          )}
-        </CardContent>
-      </Card>
+          {maturity ? (
+            <div className="rounded-xl border px-4 py-3 text-right">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">Workprint score</p>
+              <p className="text-3xl font-semibold">{maturity.score}</p>
+              <p className="text-sm capitalize text-muted-foreground">{maturity.band}</p>
+            </div>
+          ) : null}
+        </div>
+        {!shareMode ? (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => download("pack")}>Export my AI setup</Button>
+            <Button variant="outline" onClick={share}>
+              Share this profile
+            </Button>
+            <Button variant="outline" onClick={() => copy(current.instructions || "", "instructions")} disabled={!current.instructions}>
+              {copied === "instructions" ? "Copied instructions" : "Copy system instructions"}
+            </Button>
+          </div>
+        ) : (
+          <Button render={<Link href="/assessment" />}>Build your own profile</Button>
+        )}
+      </section>
+
+      <WorkstyleCard
+        result={current}
+        copied={copied === "card"}
+        onCopy={shareMode ? undefined : () => copy(current.share_card || "", "card")}
+      />
+
+      {workstyle?.why?.length ? (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold">Why the system thinks that</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            {workstyle.why.map((reason) => (
+              <Card key={reason.dimension}>
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <CardTitle className="text-base">{reason.dimension}</CardTitle>
+                    <span className="text-sm text-muted-foreground">{reason.score}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                  <p>{reason.text}</p>
+                  {reason.evidence?.length ? (
+                    <ul className="list-disc space-y-1 pl-5">
+                      {reason.evidence.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {workstyle?.dimensions?.length ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Workstyle</h2>
-          <p className="text-sm text-muted-foreground">{workstyle.disclaimer}</p>
+          <h2 className="text-lg font-semibold">Your interaction profile</h2>
           <div className="grid gap-3 md:grid-cols-2">
             {workstyle.dimensions.map((dimension) => (
               <Card key={dimension.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between gap-3">
                     <CardTitle className="text-base">{dimension.label}</CardTitle>
-                    <span className="text-sm text-muted-foreground">{pct(dimension.score)}</span>
+                    <span className="text-sm font-medium">{dimension.display ?? Math.round(dimension.score * 100)}</span>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Progress value={dimension.score * 100} />
+                  <Progress value={(dimension.display ?? dimension.score * 100)} />
                 </CardContent>
               </Card>
             ))}
           </div>
-          {maturity?.note ? <p className="text-xs text-muted-foreground">{maturity.note} Retest in a few months as products and your usage change.</p> : null}
         </section>
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">AI stack</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="text-lg font-semibold">Your recommended AI stack</h2>
+        <div className="grid gap-3 sm:grid-cols-2">
           {(stack ?? current.primary_stack.slots.map((slot) => ({
             role: slot.category,
             label: labelMetric(slot.category),
+            handles: undefined,
             product: slot.recommendation,
           }))).map((slot) => (
             <Card key={slot.role}>
@@ -196,8 +229,9 @@ export function ResultsView({
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">{slot.label}</p>
                 <CardTitle>{slot.product?.name ?? "No strong match yet"}</CardTitle>
               </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {slot.product ? `Fit ${pct(slot.product.fit)} · evaluated ${slot.product.last_evaluated_at}` : "This role stayed empty under the current filters."}
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
+                {slot.handles ? <p>{slot.handles}</p> : null}
+                {slot.product ? <p>Fit {pct(slot.product.fit)}</p> : <p>This role stayed empty under the current filters.</p>}
               </CardContent>
             </Card>
           ))}
@@ -206,12 +240,15 @@ export function ResultsView({
 
       {routing.length ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold">Model router</h2>
+          <h2 className="text-lg font-semibold">What each model should handle</h2>
           <Card>
             <CardContent className="divide-y p-0">
               {routing.map((row) => (
                 <div key={row.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
-                  <span className="font-medium">{row.work}</span>
+                  <div>
+                    <p className="font-medium">{row.work}</p>
+                    {row.handles ? <p className="text-muted-foreground">{row.handles}</p> : null}
+                  </div>
                   <span className="text-muted-foreground">{row.model?.name ?? "n/a"}</span>
                 </div>
               ))}
@@ -237,8 +274,7 @@ export function ResultsView({
       ) : null}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Your recommended AI working persona</h2>
-        <p className="text-sm text-muted-foreground">How AI should interact with you — not a personality type.</p>
+        <h2 className="text-lg font-semibold">Your recommended AI interaction persona</h2>
         <Card>
           <CardHeader>
             <CardTitle>{current.persona.label}</CardTitle>
@@ -264,154 +300,160 @@ export function ResultsView({
                 </ul>
               </div>
             ))}
-            <p className="text-muted-foreground">{current.persona.disclaimer}</p>
-            <div className="space-y-2">
-              <p className="font-medium">Install this configuration</p>
-              <p className="text-muted-foreground">Download the files and paste them into the matching product. Edit anything that does not fit.</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" onClick={() => download("pack")}>
-                ai-profile.zip
-              </Button>
-              <Button variant="outline" onClick={() => download("profile")}>
-                PROFILE.md
-              </Button>
-              <Button variant="outline" onClick={() => download("chatgpt")}>
-                ChatGPT
-              </Button>
-              <Button variant="outline" onClick={() => download("claude")}>
-                CLAUDE.md
-              </Button>
-              <Button variant="outline" onClick={() => download("gemini")}>
-                Gemini
-              </Button>
-              <Button variant="outline" onClick={() => download("cursor")}>
-                Cursor rule
-              </Button>
-              <Button variant="outline" onClick={() => download("agents")}>
-                AGENTS.md
-              </Button>
-              <Button variant="outline" onClick={() => download("routing")}>
-                model-routing.json
-              </Button>
-            </div>
-            {exportNote ? <p className="text-muted-foreground">{exportNote}</p> : null}
           </CardContent>
         </Card>
       </section>
 
-      {!shareMode && sessionId ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Rank with constraints</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <p className="text-muted-foreground">Filters re-run the deterministic ranker. They do not ask a model to pick a winner.</p>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                variant={localOnly ? "default" : "outline"}
-                disabled={filtering}
-                onClick={() => {
-                  const next = !localOnly;
-                  setLocalOnly(next);
-                  void applyFilters(next, maxPrice);
-                }}
-              >
-                Local only
-              </Button>
-              {(["low", "mixed", "high"] as const).map((tier) => (
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">Configure my AI</h2>
+          <p className="text-sm text-muted-foreground">Install in Claude, ChatGPT, Cursor, Gemini, or your agent runner.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {guides.map((guide) => (
+            <Button key={guide.id} size="sm" variant={activeGuide?.id === guide.id ? "default" : "outline"} onClick={() => setActiveInstall(guide.id)}>
+              {guide.label}
+            </Button>
+          ))}
+        </div>
+        {activeGuide ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Install in {activeGuide.label}</CardTitle>
+              <p className="text-sm text-muted-foreground">{activeGuide.where}</p>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
+                {activeGuide.steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => download(activeGuide.export_target)}>Download {activeGuide.filename.split("/").pop()}</Button>
+                <Button variant="outline" onClick={() => copy(current.instructions || "", "guide")} disabled={!current.instructions}>
+                  {copied === "guide" ? "Copied" : "Copy instructions"}
+                </Button>
+                <Button variant="outline" onClick={() => download("pack")}>
+                  Download all files
+                </Button>
+              </div>
+              {exportNote ? <p className="text-muted-foreground">{exportNote}</p> : null}
+            </CardContent>
+          </Card>
+        ) : null}
+      </section>
+
+      <details className="rounded-xl border px-4 py-3">
+        <summary className="cursor-pointer text-sm font-medium">How we scored this</summary>
+        <div className="mt-4 space-y-6">
+          {!shareMode && sessionId ? (
+            <div className="space-y-3 text-sm">
+              <p className="text-muted-foreground">Optional filters re-run the deterministic ranker.</p>
+              <div className="flex flex-wrap gap-2">
                 <Button
-                  key={tier}
                   size="sm"
-                  variant={maxPrice === tier ? "default" : "outline"}
+                  variant={localOnly ? "default" : "outline"}
                   disabled={filtering}
                   onClick={() => {
-                    const next = maxPrice === tier ? null : tier;
-                    setMaxPrice(next);
-                    void applyFilters(localOnly, next);
+                    const next = !localOnly;
+                    setLocalOnly(next);
+                    void applyFilters(next, maxPrice);
                   }}
                 >
-                  Max {tier} cost
+                  Local only
                 </Button>
-              ))}
-            </div>
-            {filtering ? <p className="text-muted-foreground">Re-ranking…</p> : null}
-            {filterNote ? <p className="text-destructive">{filterNote}</p> : null}
-          </CardContent>
-        </Card>
-      ) : null}
-
-      <Tabs defaultValue="evidence">
-        <TabsList className="flex h-auto flex-wrap">
-          <TabsTrigger value="evidence">Evidence</TabsTrigger>
-          <TabsTrigger value="products">All products</TabsTrigger>
-          <TabsTrigger value="models">All models</TabsTrigger>
-        </TabsList>
-        <TabsContent value="evidence" className="space-y-4">
-          {current.metrics.map((metric) => (
-            <Card key={`ev-${metric.name}`}>
-              <CardHeader>
-                <CardTitle className="capitalize">{labelMetric(metric.name)}</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                <p>
-                  {metric.observations} observations across {metric.scenario_ids.join(", ") || "no scenarios"}.
-                </p>
-                <Progress className="my-2" value={metric.score * 100} />
-                <ul className="mt-2 list-disc space-y-1 pl-5">
-                  {metric.evidence.length ? metric.evidence.map((item) => <li key={item}>{item}</li>) : <li>No quoted evidence for this metric.</li>}
-                </ul>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-        <TabsContent value="products" className="space-y-6">
-          {Object.entries(current.products_by_category).map(([category, recs]) => (
-            <div key={category} className="space-y-3">
-              <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{labelMetric(category)}</h3>
-              <div className="grid gap-4 md:grid-cols-2">
-                {recs.map((product) => (
-                  <Card key={product.id}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-3">
-                        <CardTitle>{product.name}</CardTitle>
-                        <Badge>{pct(product.fit)}</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
-                      <p>Evaluated {product.last_evaluated_at}</p>
-                      <p>Helps: {product.positive_factors.join(", ") || "n/a"}</p>
-                    </CardContent>
-                  </Card>
+                {(["low", "mixed", "high"] as const).map((tier) => (
+                  <Button
+                    key={tier}
+                    size="sm"
+                    variant={maxPrice === tier ? "default" : "outline"}
+                    disabled={filtering}
+                    onClick={() => {
+                      const next = maxPrice === tier ? null : tier;
+                      setMaxPrice(next);
+                      void applyFilters(localOnly, next);
+                    }}
+                  >
+                    Max {tier} cost
+                  </Button>
                 ))}
               </div>
+              {filtering ? <p className="text-muted-foreground">Re-ranking…</p> : null}
+              {filterNote ? <p className="text-destructive">{filterNote}</p> : null}
             </div>
-          ))}
-        </TabsContent>
-        <TabsContent value="models" className="space-y-4">
-          {Object.entries(current.models).map(([workload, recs]) => (
-            <Card key={workload}>
-              <CardHeader>
-                <CardTitle className="capitalize">{labelMetric(workload)}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {recs.slice(0, 3).map((model) => (
-                  <div key={model.id} className="flex items-center justify-between gap-3 text-sm">
-                    <span>{model.name}</span>
-                    <span className="text-muted-foreground">{pct(model.fit)}</span>
+          ) : null}
+          <Tabs defaultValue="evidence">
+            <TabsList className="flex h-auto flex-wrap">
+              <TabsTrigger value="evidence">Evidence</TabsTrigger>
+              <TabsTrigger value="products">All products</TabsTrigger>
+              <TabsTrigger value="models">All models</TabsTrigger>
+            </TabsList>
+            <TabsContent value="evidence" className="space-y-4">
+              {current.metrics.map((metric) => (
+                <Card key={`ev-${metric.name}`}>
+                  <CardHeader>
+                    <CardTitle className="capitalize">{labelMetric(metric.name)}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground">
+                    <p>
+                      {metric.observations} observations across {metric.scenario_ids.join(", ") || "no scenarios"}.
+                    </p>
+                    <Progress className="my-2" value={metric.score * 100} />
+                    <ul className="mt-2 list-disc space-y-1 pl-5">
+                      {metric.evidence.length ? metric.evidence.map((item) => <li key={item}>{item}</li>) : <li>No quoted evidence for this metric.</li>}
+                    </ul>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+            <TabsContent value="products" className="space-y-6">
+              {Object.entries(current.products_by_category).map(([category, recs]) => (
+                <div key={category} className="space-y-3">
+                  <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{labelMetric(category)}</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {recs.map((product) => (
+                      <Card key={product.id}>
+                        <CardHeader>
+                          <div className="flex items-start justify-between gap-3">
+                            <CardTitle>{product.name}</CardTitle>
+                            <Badge>{pct(product.fit)}</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                          <p>Evaluated {product.last_evaluated_at}</p>
+                          <p>Helps: {product.positive_factors.join(", ") || "n/a"}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
                   </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+                </div>
+              ))}
+            </TabsContent>
+            <TabsContent value="models" className="space-y-4">
+              {Object.entries(current.models).map(([workload, recs]) => (
+                <Card key={workload}>
+                  <CardHeader>
+                    <CardTitle className="capitalize">{labelMetric(workload)}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {recs.slice(0, 3).map((model) => (
+                      <div key={model.id} className="flex items-center justify-between gap-3 text-sm">
+                        <span>{model.name}</span>
+                        <span className="text-muted-foreground">{pct(model.fit)}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </details>
 
       {!shareMode && sessionId ? (
         <Card>
           <CardHeader>
-            <CardTitle>Save, share, or delete</CardTitle>
+            <CardTitle>Share or delete</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <div className="flex flex-wrap gap-2">
@@ -432,7 +474,7 @@ export function ResultsView({
               </p>
             ) : null}
             <div className="space-y-2">
-              <p className="font-medium">Did you install or change anything because of this?</p>
+              <p className="font-medium">Did this change how you configure or use AI?</p>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
                   <Button key={value} variant={rating === value ? "default" : "outline"} size="sm" onClick={() => setRating(value)}>
@@ -440,7 +482,7 @@ export function ResultsView({
                   </Button>
                 ))}
               </div>
-              <Textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Optional. Do not include your name." />
+              <Textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Optional. Did you install a file, switch a tool, or change a workflow?" />
               <Button variant="outline" onClick={sendFeedback} disabled={!rating}>
                 Send feedback
               </Button>

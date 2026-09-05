@@ -45,6 +45,14 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ ...session, filters: filters ?? null }),
     }),
+  signal: (session: { session_id: string; events: InteractionEvent[] }) =>
+    request<{
+      ready: boolean;
+      next_scenario_id: string | null;
+      confidence: number;
+      scenarios_completed: number;
+      note: string;
+    }>("/v1/signal", { method: "POST", body: JSON.stringify(session) }),
   share: (sessionId: string) =>
     request<{ share_id: string; path: string }>(`/v1/sessions/${sessionId}/share`, { method: "POST" }),
   getShare: (shareId: string) => request<ScoreResult>(`/v1/share/${shareId}`),

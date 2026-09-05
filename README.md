@@ -1,36 +1,38 @@
-# AI Fit Engine
+# Workprint
 
-AI Fit Engine is a behavioral assessment that answers:
+Workprint is a 5-minute adaptive diagnostic that answers:
 
-1. **How you tend to collaborate with AI** — from observable interaction, not personality.
-2. **Which AI products fit those workflows** — products stay distinct from models.
-3. **Which models fit specific workloads** — research, coding, reasoning, multimodal, local control.
-4. **What working configuration to give those tools** — portable persona exports.
-5. **What stack to start with** — a primary stack, an alternative, and evidence for every score.
+**How do you work with intelligence — and how should your AI be configured?**
 
-This is not a personality test, IQ instrument, clinical tool, or hiring screen.
+You leave with:
 
-## Product thesis
+1. **AI Workstyle** — a named interaction profile, not a personality type.
+2. **Why** — the behaviors that produced that profile.
+3. **Interaction dimensions** — autonomy, verification, iteration, context depth, tool delegation, source dependency, exploration.
+4. **Recommended stack** — what each product should handle.
+5. **Model routing** — which model for which workload.
+6. **Working persona** — how AI should interact with you.
+7. **Installable files** — ChatGPT, Claude / CLAUDE.md, Gemini, Cursor rules, AGENTS.md.
 
-Generic “best AI” lists ignore how a person actually works. AI Fit Engine scores what you ask for, how you steer, and how much evidence you demand, then ranks a dated product/model registry with explicit weights. An LLM may label free text. It never picks the winner.
+This is a **free individual diagnostic**. It is not a $10/month “which AI should I use?” subscription.
 
-## Methodology
+Workprint is a working product name, distinct from the unrelated business-matching site at aifitengine.com. Domain and trademark clearance still needed before a public brand lock.
 
-1. Eight scenarios, three rounds each, capture structured interaction events.
-2. Events become a 0–1 metric vector with confidence from observation count and scenario spread.
-3. Products and models live in separate JSON registries. Every public row has `last_evaluated_at` and evidence.
-4. Fit is weighted similarity, then capability/cost/local filters, then a freshness penalty. Stale rows lose confidence; they are not marked “bad.”
-5. Results show an interaction signature, stacks, products by category, models by workload, evidence, and exports.
+## What it measures
 
-Scoring stays server-side. The Next.js app proxies `/v1` and `/health` to the API.
+Workprint scores **what you ask, how you steer, and how much evidence you demand**. Two people with the same job, budget, and skill level can need different AI configurations.
 
-## Limitations (v0.2)
+The diagnostic usually stops after four scenarios (about twelve interactions). It continues only when a core dimension still lacks signal, and never past eight.
+
+An LLM may label optional free text. It never picks the winner. Ranking is dated registries + weights.
+
+## Limitations
 
 - The catalog in `data/registry/` is **illustrative seed data**. Re-validate every row before public recommendations (`docs/REGISTRY_SEED_REVIEW.md`).
 - Sessions are **in-memory**. Restarting the API drops them. There are no accounts.
 - Keyword classification is first-class. The optional LLM classifier is off unless `AIFIT_LLM_CLASSIFIER=1` and an endpoint is set.
 - Fit scores are normalized similarity, not scientifically validated probabilities.
-- Do not use this for hiring, screening, or clinical decisions.
+- Not a personality test, clinical instrument, or hiring screen.
 
 ## Run locally
 
@@ -79,28 +81,16 @@ Import the Git repo in the Vercel dashboard if you prefer. Leave the root direct
 
 On Vercel, assessment events are buffered in the browser and scored in one request. Share links include a compressed snapshot in the URL hash because serverless functions do not share memory.
 
-## v0.2 outputs
-
-The result is an AI operating profile you can save, install, or send:
-
-- **AI workstyle** — named interaction profile, behavioral dimensions, and an AI Fit Score (retest later)
-- **AI stack** — primary assistant, research, coding, automation, creative, local/private
-- **Model router** — which model handles strategy, research, coding, multimodal, fast answers, agents, local
-- **Working persona** — how AI should interact with you, plus installable instructions
-- **Portable pack** — `ai-profile.zip` with PROFILE.md, CLAUDE.md, AGENTS.md, ChatGPT, Gemini, Cursor rules, model-routing.json
-- Anonymous share link, session export, and delete
-- Feedback on whether you actually installed or changed something
-
 ## Architecture
 
 ```text
-Interactive scenarios
+Interactive diagnostic
         │
         ▼
 Behavioral signals
         │
         ▼
-AI Workstyle Vector
+AI Workstyle
         │
         ▼
 Capability requirements
@@ -111,14 +101,16 @@ Product Registry   Model Registry
         │               │
         └───────┬───────┘
                 ▼
-           AI Stack
+           AI stack
                 │
                 ▼
-      Persona configuration
+      Persona + install guides
                 │
                 ▼
  Portable AI operating profile
 ```
+
+The registry, methodology, and evidence live under **Transparency**. They are credibility infrastructure, not the homepage.
 
 ## Pack docs
 

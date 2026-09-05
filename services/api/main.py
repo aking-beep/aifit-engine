@@ -27,7 +27,7 @@ from aifit.persona import generate_persona
 from aifit.registry import load_models, load_products
 from aifit.scenarios import load_scenarios
 
-app = FastAPI(title="AI Fit Engine API", version="0.2.0")
+app = FastAPI(title="Workprint API", version="0.3.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -138,7 +138,7 @@ def _score_and_store(session: AssessmentSession, filters: FitFilters | None = No
 
 @app.get("/health")
 def health():
-    return {"ok": True, "version": "0.2.0", "privacy": "anonymous"}
+    return {"ok": True, "version": "0.3.0", "privacy": "anonymous", "product": "Workprint"}
 
 
 @app.get("/v1/scenarios")
@@ -233,6 +233,8 @@ def _store_share(result: dict[str, Any], session_id: str | None = None) -> dict[
         "model_routing": result.get("model_routing"),
         "workflow": result.get("workflow"),
         "instructions": result.get("instructions"),
+        "install_guides": result.get("install_guides"),
+        "share_card": result.get("share_card"),
         "disclaimer": result["disclaimer"],
         "privacy": result["privacy"],
     }
@@ -281,6 +283,14 @@ def delete_session(session_id: str):
 def score(payload: ScoreBody):
     session = AssessmentSession(session_id=payload.session_id, events=payload.events)
     return _score_and_store(session, payload.filters)
+
+
+@app.post("/v1/signal")
+def signal(payload: ScoreBody):
+    from aifit.adaptive import diagnostic_signal
+
+    session = AssessmentSession(session_id=payload.session_id, events=payload.events)
+    return diagnostic_signal(session)
 
 
 @app.post("/v1/fit")

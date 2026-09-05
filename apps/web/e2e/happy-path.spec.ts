@@ -1,33 +1,32 @@
 import { expect, test } from "@playwright/test";
 
-test("landing, privacy, registry, and scored sample", async ({ page }) => {
+test("landing, privacy, transparency, and scored sample", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /which ai products fit/i })).toBeVisible();
-  await expect(page.getByRole("link", { name: /start the assessment/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /discover how you work with ai/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /build my ai profile/i })).toBeVisible();
 
   await page.getByRole("link", { name: "Privacy" }).first().click();
   await expect(page.getByRole("heading", { name: "Privacy" })).toBeVisible();
   await expect(page.getByText(/anonymous mode/i)).toBeVisible();
 
-  await page.getByRole("link", { name: "Registry" }).first().click();
-  await expect(page.getByRole("heading", { name: /product and model registry/i })).toBeVisible();
+  await page.goto("/methodology");
+  await expect(page.getByRole("heading", { name: /how scoring works/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /open the seed registry/i })).toBeVisible();
 
   await page.goto("/");
-  await page.getByRole("button", { name: /see a scored sample/i }).click();
-    await expect(page.getByText(/ai operating profile/i)).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByText(/AI Fit Score/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /export my ai setup/i })).toBeVisible();
-    await expect(page.getByText(/install this configuration/i)).toBeVisible();
-    await expect(page.getByRole("heading", { name: /working persona/i })).toBeVisible();
-  await expect(page.getByRole("tab", { name: "Evidence" })).toBeVisible();
-  await page.getByRole("tab", { name: "Evidence" }).click();
-  await expect(page.getByText(/observations across/i).first()).toBeVisible();
+  await page.getByRole("button", { name: /see a sample profile/i }).click();
+  await expect(page.getByText(/your ai workstyle/i)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText(/Workprint score/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /export my ai setup/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /configure my ai/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /interaction profile/i })).toBeVisible();
+  await expect(page.getByText(/install in/i).first()).toBeVisible();
 });
 
 test("assessment intro gate", async ({ page }) => {
   await page.goto("/assessment");
-  await expect(page.getByRole("heading", { name: /before you start/i })).toBeVisible();
-  await expect(page.getByText(/not your personality/i)).toBeVisible();
-  await page.getByRole("button", { name: /begin scenario 1/i }).click();
-  await expect(page.getByText(/scenario 1 of 8/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /build your ai workstyle/i })).toBeVisible();
+  await expect(page.getByText(/about five minutes/i)).toBeVisible();
+  await page.getByRole("button", { name: /begin diagnostic/i }).click();
+  await expect(page.getByText(/scenario 1/i)).toBeVisible();
 });
