@@ -16,7 +16,7 @@ test("landing, privacy, transparency, and scored sample", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: /see a sample profile/i }).click();
   await expect(page.getByText(/Workprint score/i)).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByRole("heading", { name: /evidence-driven operator/i })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: /evidence-driven operator/i })).toBeVisible();
   await expect(page.getByRole("button", { name: /export my ai setup/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: /configure my ai/i })).toBeVisible();
   await expect(page.getByRole("heading", { name: /interaction profile/i })).toBeVisible();
