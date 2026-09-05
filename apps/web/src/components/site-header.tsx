@@ -37,6 +37,14 @@ export function SiteFooter() {
           <Link href="/methodology" className="hover:text-foreground">
             How scoring works
           </Link>
+          <a
+            href="https://github.com/aking-beep/aifit-engine"
+            className="hover:text-foreground"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Source
+          </a>
         </div>
       </div>
     </footer>

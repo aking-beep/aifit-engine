@@ -16,6 +16,8 @@ You leave with:
 
 This is a **free individual diagnostic**. It is not a $10/month “which AI should I use?” subscription.
 
+Source: [github.com/aking-beep/aifit-engine](https://github.com/aking-beep/aifit-engine).
+
 Workprint is a working product name, distinct from the unrelated business-matching site at aifitengine.com. Domain and trademark clearance still needed before a public brand lock.
 
 ## What it measures
