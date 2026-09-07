@@ -1,0 +1,21 @@
+{
+  "name": "Fit (aifit-engine)",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh",
+  "terminals": [
+    {
+      "name": "api",
+      "command": "PYTHONPATH=packages/core/src .venv/bin/python -m uvicorn services.api.main:app --host 127.0.0.1 --port 8472 --reload",
+      "description": "FastAPI scoring/registry service on http://127.0.0.1:8472 (serves /health and /v1/*)."
+    },
+    {
+      "name": "web",
+      "command": "cd apps/web && API_ORIGIN=http://127.0.0.1:8472 npm run dev",
+      "description": "Next.js dev server on http://127.0.0.1:43123 (proxies /health and /v1/* to the API)."
+    }
+  ],
+  "ports": [
+    { "name": "web", "port": 43123 },
+    { "name": "api", "port": 8472 }
+  ]
+}
