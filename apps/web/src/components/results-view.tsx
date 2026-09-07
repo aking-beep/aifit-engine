@@ -6,6 +6,8 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { clearSession, encodeSharePayload, loadSession, saveResult } from "@/lib/session-store";
+import { useReadingLevel } from "@/components/reading-level";
+import { cleanModelName, friendlyCategory, friendlyMetric, friendlyWorkload, metricHelp } from "@/lib/friendly";
 import { WorkstyleCard } from "@/components/workstyle-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,9 +20,12 @@ function pct(value: number) {
   return `${Math.round(value * 100)}%`;
 }
 
-function labelMetric(name: string) {
-  return name.replaceAll("_", " ");
-}
+const ruleGroupLabel: Record<"interaction_rules" | "response_rules" | "decision_rules" | "tool_rules", string> = {
+  interaction_rules: "How it should work with you",
+  response_rules: "How answers should look",
+  decision_rules: "How it should help you decide",
+  tool_rules: "How it should use tools",
+};
 
 export function ResultsView({
   result,
@@ -32,6 +37,7 @@ export function ResultsView({
   shareMode?: boolean;
 }) {
   const router = useRouter();
+  const { detailed } = useReadingLevel();
   const [current, setCurrent] = useState(result);
   const [exportNote, setExportNote] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
@@ -52,6 +58,9 @@ export function ResultsView({
   const workflow = current.workflow ?? [];
   const guides = current.install_guides ?? [];
   const activeGuide = guides.find((guide) => guide.id === activeInstall) ?? guides[0];
+  const topTool =
+    (stack ?? [])[0]?.product?.name ?? current.primary_stack.slots[0]?.recommendation?.name ?? null;
+  const firstGuide = guides[0];
 
   async function applyFilters(nextLocal: boolean, nextPrice: string | null) {
     if (!sessionId) return;
@@ -142,6 +151,9 @@ export function ResultsView({
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Fit score</p>
               <p className="text-3xl font-semibold">{maturity.score}</p>
               <p className="text-sm capitalize text-muted-foreground">{maturity.band}</p>
+              <p className="mt-1 max-w-[16rem] text-right text-xs text-muted-foreground">
+                How clearly your answers point to one way of using AI. Higher means clearer, not better.
+              </p>
             </div>
           ) : null}
         </div>
@@ -159,6 +171,42 @@ export function ResultsView({
           <Button render={<Link href="/assessment" />}>Find your own fit</Button>
         )}
       </section>
+
+      {!shareMode ? (
+        <section aria-labelledby="start-here" className="rounded-2xl border border-primary/30 bg-primary/5 p-5">
+          <h2 id="start-here" className="text-lg font-semibold">
+            Start here
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Three steps to put this to work in the next few minutes:
+          </p>
+          <ol className="mt-3 space-y-2 text-sm">
+            <li>
+              <span className="font-medium">1.</span> Copy your instructions below.
+            </li>
+            <li>
+              <span className="font-medium">2.</span> Open{" "}
+              <span className="font-medium">{topTool ?? "your main AI app"}</span>
+              {firstGuide ? <span className="text-muted-foreground"> ({firstGuide.where})</span> : null}.
+            </li>
+            <li>
+              <span className="font-medium">3.</span> Paste the instructions in and start using it.
+            </li>
+          </ol>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              onClick={() => copy(current.instructions || "", "instructions")}
+              disabled={!current.instructions}
+            >
+              {copied === "instructions" ? "Copied instructions" : "Copy my instructions"}
+            </Button>
+            <Button size="sm" variant="outline" render={<Link href="#setup" />}>
+              Jump to setup steps
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       <WorkstyleCard
         result={current}
@@ -220,13 +268,15 @@ export function ResultsView({
         <div className="grid gap-3 sm:grid-cols-2">
           {(stack ?? current.primary_stack.slots.map((slot) => ({
             role: slot.category,
-            label: labelMetric(slot.category),
+            label: friendlyCategory(slot.category),
             handles: undefined,
             product: slot.recommendation,
           }))).map((slot) => (
             <Card key={slot.role}>
               <CardHeader>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">{slot.label}</p>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {friendlyCategory(slot.role)}
+                </p>
                 <CardTitle>{slot.product?.name ?? "No strong match yet"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
@@ -249,7 +299,7 @@ export function ResultsView({
                     <p className="font-medium">{row.work}</p>
                     {row.handles ? <p className="text-muted-foreground">{row.handles}</p> : null}
                   </div>
-                  <span className="text-muted-foreground">{row.model?.name ?? "n/a"}</span>
+                  <span className="text-muted-foreground">{cleanModelName(row.model?.name)}</span>
                 </div>
               ))}
             </CardContent>
@@ -292,7 +342,7 @@ export function ResultsView({
             ) : null}
             {(["interaction_rules", "response_rules", "decision_rules", "tool_rules"] as const).map((key) => (
               <div key={key}>
-                <p className="mb-1 font-medium capitalize">{labelMetric(key)}</p>
+                <p className="mb-1 font-medium">{ruleGroupLabel[key]}</p>
                 <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
                   {current.persona[key].map((item) => (
                     <li key={item}>{item}</li>
@@ -304,7 +354,7 @@ export function ResultsView({
         </Card>
       </section>
 
-      <section className="space-y-4">
+      <section id="setup" className="scroll-mt-24 space-y-4">
         <div>
           <h2 className="text-lg font-semibold">Set up your apps</h2>
           <p className="text-sm text-muted-foreground">Paste into ChatGPT, Claude, Cursor, Gemini, or an agent.</p>
@@ -343,8 +393,13 @@ export function ResultsView({
         ) : null}
       </section>
 
-      <details className="rounded-xl border px-4 py-3">
-        <summary className="cursor-pointer text-sm font-medium">How we scored this</summary>
+      <details className="rounded-xl border px-4 py-3" open={detailed}>
+        <summary className="cursor-pointer text-sm font-medium">
+          How we scored this
+          <span className="ml-2 font-normal text-muted-foreground">
+            {detailed ? "— the full breakdown" : "— open for the full breakdown"}
+          </span>
+        </summary>
         <div className="mt-4 space-y-6">
           {!shareMode && sessionId ? (
             <div className="space-y-3 text-sm">
@@ -392,11 +447,20 @@ export function ResultsView({
               {current.metrics.map((metric) => (
                 <Card key={`ev-${metric.name}`}>
                   <CardHeader>
-                    <CardTitle className="capitalize">{labelMetric(metric.name)}</CardTitle>
+                    <CardTitle>
+                      {friendlyMetric(metric.name)}
+                      {detailed ? (
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">{metric.name}</span>
+                      ) : null}
+                    </CardTitle>
+                    {metricHelp(metric.name) ? (
+                      <p className="text-sm text-muted-foreground">{metricHelp(metric.name)}</p>
+                    ) : null}
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground">
                     <p>
                       {metric.observations} observations across {metric.scenario_ids.join(", ") || "no scenarios"}.
+                      {detailed ? ` Confidence ${pct(metric.confidence)}.` : ""}
                     </p>
                     <Progress className="my-2" value={metric.score * 100} />
                     <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -409,7 +473,9 @@ export function ResultsView({
             <TabsContent value="products" className="space-y-6">
               {Object.entries(current.products_by_category).map(([category, recs]) => (
                 <div key={category} className="space-y-3">
-                  <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{labelMetric(category)}</h3>
+                  <h3 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                    {friendlyCategory(category)}
+                  </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     {recs.map((product) => (
                       <Card key={product.id}>
@@ -433,12 +499,12 @@ export function ResultsView({
               {Object.entries(current.models).map(([workload, recs]) => (
                 <Card key={workload}>
                   <CardHeader>
-                    <CardTitle className="capitalize">{labelMetric(workload)}</CardTitle>
+                    <CardTitle>{friendlyWorkload(workload)}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {recs.slice(0, 3).map((model) => (
                       <div key={model.id} className="flex items-center justify-between gap-3 text-sm">
-                        <span>{model.name}</span>
+                        <span>{cleanModelName(model.name)}</span>
                         <span className="text-muted-foreground">{pct(model.fit)}</span>
                       </div>
                     ))}

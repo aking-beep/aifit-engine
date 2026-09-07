@@ -50,6 +50,10 @@ export default function HomePage() {
             Five lively minutes. No résumé, no corporate jargon, no wrong answers. Fit watches how you ask, check, and
             decide — then gives you a setup you can paste into ChatGPT, Claude, Gemini, Cursor, or an agent.
           </p>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Brand new to AI or using it every day? It works for both — switch between <strong>Simple</strong> and{" "}
+            <strong>Detailed</strong> anytime with the toggle at the top. About 5 minutes · free · no sign-up · anonymous.
+          </p>
           <div className="flex flex-wrap gap-2">
             {audiences.map((label) => (
               <span
@@ -68,7 +72,11 @@ export default function HomePage() {
               {demoLoading ? "Loading example…" : "See an example"}
             </Button>
           </div>
-          {demoError ? <p className="text-sm text-destructive">{demoError}</p> : null}
+          {demoError ? (
+            <p className="text-sm text-destructive" role="alert">
+              {demoError}
+            </p>
+          ) : null}
         </section>
         <section className="grid gap-4 md:grid-cols-3">
           <Card>
