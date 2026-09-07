@@ -127,4 +127,22 @@
   html {
     @apply font-sans;
   }
+  /* Visible keyboard focus for everyone navigating without a mouse (WCAG 2.4.7). */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: calc(var(--radius) * 0.4);
+  }
+}
+
+/* Respect users who ask the OS to reduce motion (WCAG 2.3.3). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

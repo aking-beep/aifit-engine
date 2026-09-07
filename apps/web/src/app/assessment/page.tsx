@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import type { InteractionEvent, Scenario } from "@/lib/types";
@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function AssessmentPage() {
   const router = useRouter();
+  const choicesRef = useRef<HTMLDivElement | null>(null);
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
@@ -65,6 +66,27 @@ export default function AssessmentPage() {
     const scored = await api.scoreFull({ session_id: sessionId, events: nextEvents });
     saveResult(sessionId, scored);
     router.push(`/results/${sessionId}`);
+  }
+
+  function handleChoiceKeys(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!turn) return;
+    const keys = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft", "Home", "End"];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const ids = turn.choices.map((choice) => choice.id);
+    if (!ids.length) return;
+    const currentIndex = selected ? ids.indexOf(selected) : -1;
+    let nextIndex = currentIndex;
+    if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = ids.length - 1;
+    else if (event.key === "ArrowDown" || event.key === "ArrowRight")
+      nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % ids.length;
+    else if (event.key === "ArrowUp" || event.key === "ArrowLeft")
+      nextIndex = currentIndex <= 0 ? ids.length - 1 : currentIndex - 1;
+    const nextId = ids[nextIndex];
+    setSelected(nextId);
+    const node = choicesRef.current?.querySelector<HTMLButtonElement>(`[data-choice="${nextId}"]`);
+    node?.focus();
   }
 
   async function advance() {
@@ -162,13 +184,16 @@ export default function AssessmentPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
       <div className="space-y-2">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center justify-between text-sm text-muted-foreground" role="status" aria-live="polite">
           <span>Scene {completed + 1}</span>
           <span>
             Round {turnIndex + 1} of {scenario.turns.length}
           </span>
         </div>
-        <Progress value={Math.max(progress, Math.round(((completed + turnIndex / scenario.turns.length) / 4) * 100))} />
+        <Progress
+          aria-label="Quiz progress"
+          value={Math.max(progress, Math.round(((completed + turnIndex / scenario.turns.length) / 4) * 100))}
+        />
         {signalNote ? <p className="text-xs text-muted-foreground">{signalNote}</p> : null}
       </div>
       <Card>
@@ -182,28 +207,55 @@ export default function AssessmentPage() {
           {scenario.initial_ambiguity ? (
             <p className="text-sm text-muted-foreground">{scenario.initial_ambiguity}</p>
           ) : null}
+          <p className="text-sm text-muted-foreground">Pick what you&apos;d most likely do. There are no wrong answers.</p>
         </CardHeader>
         <CardContent className="space-y-3">
-          {turn.choices.map((choice) => (
-            <button
-              key={choice.id}
-              type="button"
-              onClick={() => setSelected(choice.id)}
-              className={`w-full rounded-xl border px-4 py-3 text-left text-sm transition ${
-                selected === choice.id ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
-              }`}
-            >
-              {choice.label}
-            </button>
-          ))}
+          <div
+            ref={choicesRef}
+            role="radiogroup"
+            aria-label={turn.prompt}
+            onKeyDown={handleChoiceKeys}
+            className="space-y-3"
+          >
+            {turn.choices.map((choice, index) => {
+              const isSelected = selected === choice.id;
+              const isTabStop = isSelected || (!selected && index === 0);
+              return (
+                <button
+                  key={choice.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={isSelected}
+                  tabIndex={isTabStop ? 0 : -1}
+                  data-choice={choice.id}
+                  onClick={() => setSelected(choice.id)}
+                  className={`block w-full rounded-xl border px-4 py-3 text-left text-sm transition ${
+                    isSelected ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
+                  }`}
+                >
+                  {choice.label}
+                </button>
+              );
+            })}
+          </div>
           {turn.allow_free_text ? (
-            <Textarea
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="Optional note. Words like compare, sources, or keep it private can add a little extra signal."
-            />
+            <div className="space-y-1">
+              <label htmlFor="free-text-note" className="text-sm font-medium">
+                Add a note (optional)
+              </label>
+              <Textarea
+                id="free-text-note"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Words like compare, sources, or keep it private can add a little extra signal."
+              />
+            </div>
           ) : null}
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {error ? (
+            <p className="text-sm text-destructive" role="alert">
+              {error}
+            </p>
+          ) : null}
           <Button className="w-full sm:w-auto" onClick={advance} disabled={!selected || submitting}>
             {submitting ? "Saving…" : "Continue"}
           </Button>
