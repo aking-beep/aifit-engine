@@ -89,17 +89,18 @@
       "local_control_preference": 0.1,
       "budget_sensitivity": 0.45
     },
-    "underlying_models": [],
+    "underlying_models": ["gpt-5-6-sol"],
     "evidence": [
       {
-        "source_type": "manual_eval",
-        "title": "Seed placeholder",
-        "observed_at": "2026-09-03",
-        "notes": "Illustrative only; benchmark before launch."
+        "source_type": "official",
+        "title": "ChatGPT",
+        "url": "https://chatgpt.com",
+        "observed_at": "2026-09-10",
+        "notes": "Broad all-round assistant; commonly powered by the current GPT-5.6 family. Re-evaluate capabilities before public claims."
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-10",
+    "registry_version": "0.2-market-2026-09"
   },
   {
     "id": "gemini",
@@ -141,17 +142,18 @@
       "local_control_preference": 0.1,
       "budget_sensitivity": 0.5
     },
-    "underlying_models": [],
+    "underlying_models": ["gemini-3-8-flash"],
     "evidence": [
       {
-        "source_type": "manual_eval",
-        "title": "Seed placeholder",
-        "observed_at": "2026-09-03",
-        "notes": "Illustrative only; benchmark before launch."
+        "source_type": "official",
+        "title": "Gemini",
+        "url": "https://gemini.google.com",
+        "observed_at": "2026-09-10",
+        "notes": "Strong multimodal and value tier; commonly powered by the current Gemini 3.x family. Re-evaluate capabilities before public claims."
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-10",
+    "registry_version": "0.2-market-2026-09"
   },
   {
     "id": "perplexity",

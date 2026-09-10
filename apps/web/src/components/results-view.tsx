@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ExternalLink } from "lucide-react";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { clearSession, encodeSharePayload, loadSession, saveResult } from "@/lib/session-store";
 import { useReadingLevel } from "@/components/reading-level";
-import { cleanModelName, friendlyCategory, friendlyMetric, friendlyWorkload, metricHelp } from "@/lib/friendly";
+import { cleanModelName, friendlyCategory, friendlyMetric, friendlyWorkload, metricHelp, productHomepage } from "@/lib/friendly";
 import { WorkstyleCard } from "@/components/workstyle-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -277,11 +278,35 @@ export function ResultsView({
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   {friendlyCategory(slot.role)}
                 </p>
-                <CardTitle>{slot.product?.name ?? "No strong match yet"}</CardTitle>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle>{slot.product?.name ?? "No strong match yet"}</CardTitle>
+                  {slot.product && productHomepage(slot.product.id) ? (
+                    <a
+                      href={productHomepage(slot.product.id)!}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    >
+                      Open
+                      <ExternalLink className="size-3" aria-hidden />
+                    </a>
+                  ) : null}
+                </div>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-muted-foreground">
                 {slot.handles ? <p>{slot.handles}</p> : null}
-                {slot.product ? <p>Fit {pct(slot.product.fit)}</p> : <p>This role stayed empty under the current filters.</p>}
+                {slot.product ? (
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      {pct(slot.product.fit)} fit
+                    </span>
+                    {detailed && slot.product.last_evaluated_at ? (
+                      <span className="text-xs">checked {slot.product.last_evaluated_at}</span>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p>This role stayed empty under the current filters.</p>
+                )}
               </CardContent>
             </Card>
           ))}

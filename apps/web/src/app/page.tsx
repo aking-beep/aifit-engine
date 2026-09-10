@@ -7,8 +7,27 @@ import { api } from "@/lib/api";
 import { saveResult, saveSession } from "@/lib/session-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Compass, FileDown, Sparkles } from "lucide-react";
 
 const audiences = ["Homework", "Home life", "Shop or studio", "Side hustle", "Small team"];
+
+const steps = [
+  {
+    icon: Compass,
+    title: "1. Play a few short scenes",
+    body: "Answer quick, everyday situations. No jargon, no wrong answers — about five minutes.",
+  },
+  {
+    icon: Sparkles,
+    title: "2. See your AI style",
+    body: "Get a plain-language profile of how you like to ask, check, and decide — with the reasons.",
+  },
+  {
+    icon: FileDown,
+    title: "3. Get setup files",
+    body: "Copy-paste instructions and matched tools for ChatGPT, Claude, Gemini, Cursor, and agents.",
+  },
+];
 
 export default function HomePage() {
   const router = useRouter();
@@ -78,6 +97,25 @@ export default function HomePage() {
             </p>
           ) : null}
         </section>
+        <section aria-labelledby="how-it-works" className="space-y-4">
+          <h2 id="how-it-works" className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            How it works
+          </h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            {steps.map((step) => (
+              <Card key={step.title} className="h-full">
+                <CardHeader className="space-y-2">
+                  <span className="inline-flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <step.icon className="size-5" aria-hidden />
+                  </span>
+                  <CardTitle className="text-base">{step.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">{step.body}</CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
         <section className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader>
@@ -99,11 +137,11 @@ export default function HomePage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Leave with something you can use</CardTitle>
+              <CardTitle>Built on today&apos;s tools</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Copy-paste instructions for ChatGPT, Claude, Gemini, Cursor, and agents — written in plain language, ready
-              today.
+              Matched against a dated catalog of current apps and models — Claude, ChatGPT, Gemini, and more — each with
+              a last-checked date you can inspect.
             </CardContent>
           </Card>
         </section>
