@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReadingLevelToggle } from "@/components/reading-level";
+import { ThemeToggle } from "@/components/theme";
 
 const links = [
   { href: "/assessment", label: "Try it" },
@@ -21,6 +22,7 @@ export function SiteHeader() {
         </Link>
         <div className="flex flex-wrap items-center justify-end gap-3">
           <ReadingLevelToggle />
+          <ThemeToggle />
           <nav aria-label="Primary" className="flex flex-wrap justify-end gap-3 text-sm text-muted-foreground">
             {links.map((link) => {
               const active = pathname === link.href;

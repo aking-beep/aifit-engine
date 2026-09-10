@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { ReadingLevelProvider } from "@/components/reading-level";
+import { themeInitScript } from "@/components/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,8 +25,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ReadingLevelProvider>
           <a
