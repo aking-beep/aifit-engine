@@ -28,6 +28,10 @@ export default function AssessmentPage() {
   const [events, setEvents] = useState<InteractionEvent[]>([]);
   const [completed, setCompleted] = useState(0);
   const [signalNote, setSignalNote] = useState<string | null>(null);
+  const eventsRef = useRef<InteractionEvent[]>([]);
+  const turnIndexRef = useRef(0);
+  eventsRef.current = events;
+  turnIndexRef.current = turnIndex;
 
   useEffect(() => {
     let cancelled = false;
@@ -105,40 +109,57 @@ export default function AssessmentPage() {
   }
 
   async function pickChoice(choiceId: string) {
-    if (submittingRef.current || !sessionId || !scenario || !turn) return;
-    const choice = turn.choices.find((item) => item.id === choiceId);
+    if (submittingRef.current || !sessionId || !scenario) return;
+    const currentTurnIndex = turnIndexRef.current;
+    const currentTurn = scenario.turns[currentTurnIndex];
+    if (!currentTurn) return;
+    const choice = currentTurn.choices.find((item) => item.id === choiceId);
     if (!choice) return;
     submittingRef.current = true;
     setSelected(choiceId);
-    setSubmitting(true);
     setError(null);
-    try {
-      const mapped = choice.events.map((event) => ({
-        ...event,
-        scenario_id: scenario.id,
-        turn_id: turn.id,
-        evidence: event.evidence || choice.label,
-      }));
-      const nextEvents = [...events, ...mapped];
-      setEvents(nextEvents);
-      saveSession({ session_id: sessionId, events: nextEvents });
-      try {
-        await api.addEvents(sessionId, {
+    const freeText = note.trim();
+    const mapped = choice.events.map((event) => ({
+      ...event,
+      scenario_id: scenario.id,
+      turn_id: currentTurn.id,
+      evidence: event.evidence || choice.label,
+    }));
+    const nextEvents = [...eventsRef.current, ...mapped];
+    const lastTurn = currentTurnIndex >= scenario.turns.length - 1;
+    eventsRef.current = nextEvents;
+    setEvents(nextEvents);
+    saveSession({ session_id: sessionId, events: nextEvents });
+    setSelected(null);
+    setNote("");
+
+    const persist = () =>
+      api
+        .addEvents(sessionId, {
           scenario_id: scenario.id,
-          turn_id: turn.id,
+          turn_id: currentTurn.id,
           events: mapped,
-          free_text: note.trim() || undefined,
+          free_text: freeText || undefined,
+        })
+        .catch(() => {
+          // Serverless instances may not share memory. The local buffer is enough to score.
         });
-      } catch {
-        // Serverless instances may not share memory. The local buffer is enough to score.
-      }
-      const lastTurn = turnIndex >= scenario.turns.length - 1;
-      setSelected(null);
-      setNote("");
-      if (!lastTurn) {
-        setTurnIndex((value) => value + 1);
-        return;
-      }
+
+    if (!lastTurn) {
+      const nextIndex = currentTurnIndex + 1;
+      turnIndexRef.current = nextIndex;
+      setTurnIndex(nextIndex);
+      setSubmitting(false);
+      window.setTimeout(() => {
+        submittingRef.current = false;
+      }, 280);
+      void persist();
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await persist();
       const signal = await api.signal({ session_id: sessionId, events: nextEvents }).catch(() => null);
       const doneCount = completed + 1;
       setCompleted(doneCount);
@@ -148,6 +169,7 @@ export default function AssessmentPage() {
       }
       setSignalNote(signal.note);
       setScenarioId(signal.next_scenario_id);
+      turnIndexRef.current = 0;
       setTurnIndex(0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save that response.");
@@ -272,7 +294,7 @@ export default function AssessmentPage() {
                 id="free-text-note"
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
-                placeholder="Words like compare, sources, or keep it private can add a little extra signal."
+                placeholder="Optional — anything you want to add."
               />
             </div>
           ) : null}
