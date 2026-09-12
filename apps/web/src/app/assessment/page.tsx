@@ -24,6 +24,7 @@ export default function AssessmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
   const [events, setEvents] = useState<InteractionEvent[]>([]);
   const [completed, setCompleted] = useState(0);
   const [signalNote, setSignalNote] = useState<string | null>(null);
@@ -55,11 +56,17 @@ export default function AssessmentPage() {
 
   const scenario = scenarios.find((item) => item.id === scenarioId) ?? scenarios[0];
   const turn = scenario?.turns[turnIndex];
+  const typicalScenes = 4;
   const typicalTurns = 12;
+  const maxScenes = 8;
   const completedTurns = useMemo(() => {
     return events.filter((event, index, all) => all.findIndex((row) => row.turn_id === event.turn_id && row.scenario_id === event.scenario_id) === index).length;
   }, [events]);
-  const progress = Math.min(100, Math.round(((completedTurns + (turn ? 0 : 0)) / typicalTurns) * 100));
+  const questionNumber = completedTurns + 1;
+  const sceneNumber = completed + 1;
+  const turnsInScene = scenario?.turns.length ?? 0;
+  const expectedTotal = typicalTurns;
+  const progress = Math.min(100, Math.round((completedTurns / expectedTotal) * 100));
 
   async function finish(nextEvents: InteractionEvent[]) {
     if (!sessionId) return;
@@ -70,6 +77,14 @@ export default function AssessmentPage() {
 
   function handleChoiceKeys(event: React.KeyboardEvent<HTMLDivElement>) {
     if (!turn) return;
+    if (event.key === "Enter" || event.key === " ") {
+      const focused = (event.target as HTMLElement).closest("[data-choice]")?.getAttribute("data-choice");
+      const choiceId = focused || selected;
+      if (!choiceId) return;
+      event.preventDefault();
+      void pickChoice(choiceId);
+      return;
+    }
     const keys = ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft", "Home", "End"];
     if (!keys.includes(event.key)) return;
     event.preventDefault();
@@ -89,10 +104,12 @@ export default function AssessmentPage() {
     node?.focus();
   }
 
-  async function advance() {
-    if (!sessionId || !scenario || !turn || !selected) return;
-    const choice = turn.choices.find((item) => item.id === selected);
+  async function pickChoice(choiceId: string) {
+    if (submittingRef.current || !sessionId || !scenario || !turn) return;
+    const choice = turn.choices.find((item) => item.id === choiceId);
     if (!choice) return;
+    submittingRef.current = true;
+    setSelected(choiceId);
     setSubmitting(true);
     setError(null);
     try {
@@ -135,6 +152,7 @@ export default function AssessmentPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save that response.");
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }
@@ -154,11 +172,11 @@ export default function AssessmentPage() {
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">About five minutes</p>
         <h1 className="text-3xl font-semibold tracking-tight">Find your AI fit</h1>
         <p className="text-muted-foreground">
-          Short everyday scenes. No right answers. It usually stops after four scenes — never more than eight. You
-          leave with a plain-language profile, suggested tools, and files you can paste into the apps you already use.
+          Four short scenes, about twelve questions — usually five minutes. You leave with a profile, suggested tools,
+          and files you can paste into the apps you already use.
         </p>
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>For homework, a shop, a studio, a side hustle, or a team — not a corporate form.</li>
+          <li>For homework, a shop, a studio, a side hustle, or a team.</li>
           <li>Anonymous: no name, job title, or personal details.</li>
           <li>You can delete the session from your results page.</li>
         </ul>
@@ -185,15 +203,22 @@ export default function AssessmentPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-muted-foreground" role="status" aria-live="polite">
-          <span>Scene {completed + 1}</span>
           <span>
-            Round {turnIndex + 1} of {scenario.turns.length}
+            Scene {sceneNumber} of {typicalScenes}
+            {sceneNumber > typicalScenes ? ` · extra scene, never more than ${maxScenes}` : ""}
+          </span>
+          <span>
+            Question {questionNumber} of about {expectedTotal}
           </span>
         </div>
         <Progress
           aria-label="Quiz progress"
-          value={Math.max(progress, Math.round(((completed + turnIndex / scenario.turns.length) / 4) * 100))}
+          value={Math.max(progress, Math.round(((completed + turnIndex / Math.max(turnsInScene, 1)) / typicalScenes) * 100))}
         />
+        <p className="text-xs text-muted-foreground">
+          {turnsInScene} questions in this scene
+          {sceneNumber > typicalScenes ? ` · wrapping up, never more than ${maxScenes} scenes.` : ""}
+        </p>
         {signalNote ? <p className="text-xs text-muted-foreground">{signalNote}</p> : null}
       </div>
       <Card>
@@ -207,7 +232,6 @@ export default function AssessmentPage() {
           {scenario.initial_ambiguity ? (
             <p className="text-sm text-muted-foreground">{scenario.initial_ambiguity}</p>
           ) : null}
-          <p className="text-sm text-muted-foreground">Pick what you&apos;d most likely do. There are no wrong answers.</p>
         </CardHeader>
         <CardContent className="space-y-3">
           <div
@@ -228,8 +252,9 @@ export default function AssessmentPage() {
                   aria-checked={isSelected}
                   tabIndex={isTabStop ? 0 : -1}
                   data-choice={choice.id}
-                  onClick={() => setSelected(choice.id)}
-                  className={`block w-full rounded-xl border px-4 py-3 text-left text-sm transition ${
+                  onClick={() => void pickChoice(choice.id)}
+                  disabled={submitting}
+                  className={`block w-full rounded-xl border px-4 py-3 text-left text-sm transition disabled:opacity-70 ${
                     isSelected ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
                   }`}
                 >
@@ -256,9 +281,11 @@ export default function AssessmentPage() {
               {error}
             </p>
           ) : null}
-          <Button className="w-full sm:w-auto" onClick={advance} disabled={!selected || submitting}>
-            {submitting ? "Saving…" : "Continue"}
-          </Button>
+          {submitting ? (
+            <p className="text-sm text-muted-foreground" role="status">
+              Saving…
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     </div>
