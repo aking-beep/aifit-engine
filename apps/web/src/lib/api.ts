@@ -54,7 +54,12 @@ export const api = {
       note: string;
     }>("/v1/signal", { method: "POST", body: JSON.stringify(session) }),
   share: (sessionId: string) =>
-    request<{ share_id: string; path: string }>(`/v1/sessions/${sessionId}/share`, { method: "POST" }),
+    request<{ share_id: string; path: string; durable?: boolean }>(`/v1/sessions/${sessionId}/share`, { method: "POST" }),
+  publishShare: (result: ScoreResult) =>
+    request<{ share_id: string; path: string; durable?: boolean }>("/v1/share", {
+      method: "POST",
+      body: JSON.stringify({ result }),
+    }),
   getShare: (shareId: string) => request<ScoreResult>(`/v1/share/${shareId}`),
   exportSession: (sessionId: string) =>
     request<{ session: unknown; result: ScoreResult | null }>(`/v1/sessions/${sessionId}/export`),
