@@ -30,8 +30,13 @@ export default function AssessmentPage() {
   const [signalNote, setSignalNote] = useState<string | null>(null);
   const eventsRef = useRef<InteractionEvent[]>([]);
   const turnIndexRef = useRef(0);
-  eventsRef.current = events;
-  turnIndexRef.current = turnIndex;
+
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+  useEffect(() => {
+    turnIndexRef.current = turnIndex;
+  }, [turnIndex]);
 
   useEffect(() => {
     let cancelled = false;
