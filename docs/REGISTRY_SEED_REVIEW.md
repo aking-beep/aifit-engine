@@ -11,4 +11,4 @@ Before treating any row as a public recommendation:
 4. Keep `evidence_notes` to one factual sentence.
 5. Re-run `aifit freshness` and `aifit score`.
 
-Until that review happens, the UI and README must say the catalog is seed data.
+Last full pass: 2026-09-12. Every public product and model row now has a dated official (or clearly labeled third-party) source. Re-run this checklist when a vendor ships a material change.

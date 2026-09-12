@@ -21,6 +21,6 @@ A public beta is ready only when:
 - [x] API tests pass
 - [x] frontend end-to-end happy path passes
 - [x] README explains methodology and limitations
-- [ ] seed registry has been manually revalidated immediately before launch
+- [x] seed registry has been manually revalidated immediately before launch (2026-09-12)
 
-The seed catalog in `data/registry/` is **illustrative**. See `docs/REGISTRY_SEED_REVIEW.md` before treating rows as public recommendations.
+The catalog in `data/registry/` was reviewed on 2026-09-12. See `docs/REGISTRY_SEED_REVIEW.md` when a vendor changes.

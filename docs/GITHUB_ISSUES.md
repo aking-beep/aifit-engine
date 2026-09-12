@@ -26,7 +26,7 @@ unless the matching code exists in this tree.
 
 ## P2 — after first users
 
-- [ ] Durable session store (Postgres) — **not v0.1**; current store is in-memory
+- [x] Durable session store — browser localStorage + filesystem or Upstash/Vercel KV; Postgres still optional later
 - [ ] Accounts / saved history — **explicitly after v0.1**
 - [ ] Hiring / screening mode — **out of scope forever unless the thesis changes**
 - [ ] Personality / IQ instruments — **forbidden**

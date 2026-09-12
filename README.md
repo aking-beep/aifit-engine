@@ -20,7 +20,7 @@ This is a **free individual quiz**. It is not a $10/month “which AI should I u
 
 Source: [github.com/aking-beep/aifit-engine](https://github.com/aking-beep/aifit-engine).
 
-The public name is Fit. The repo stays `aifit-engine` so it is not confused with the unrelated business-matching site at aifitengine.com. Domain and trademark clearance still needed before a public brand lock.
+The public name is Fit. The repo stays `aifit-engine` so it is not confused with the unrelated business-matching site at aifitengine.com. Point a custom domain at the Vercel project and set `NEXT_PUBLIC_SITE_URL` to that origin for share cards.
 
 ## What it measures
 
@@ -32,8 +32,9 @@ An LLM may label optional free text. It never picks the winner. Ranking is dated
 
 ## Limitations
 
-- The catalog in `data/registry/` is **illustrative seed data**. Re-validate every row before public recommendations (`docs/REGISTRY_SEED_REVIEW.md`).
-- Sessions are **in-memory**. Restarting the API drops them. There are no accounts.
+- The catalog in `data/registry/` was last reviewed on 2026-09-12. Re-run `docs/REGISTRY_SEED_REVIEW.md` when a vendor changes.
+- Your quiz and results stay in the browser (`localStorage`). Server storage is filesystem locally, or Upstash / Vercel KV when `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (or `KV_REST_API_URL` + `KV_REST_API_TOKEN`) are set. Share links also embed a compressed copy of the result.
+- There are no accounts.
 - Keyword classification is first-class. The optional LLM classifier is off unless `AIFIT_LLM_CLASSIFIER=1` and an endpoint is set.
 - Fit scores are normalized similarity, not scientifically validated probabilities.
 - Not a personality test, clinical instrument, or hiring screen.
@@ -83,7 +84,7 @@ npx vercel --prod
 
 Import the Git repo in the Vercel dashboard if you prefer. Leave the root directory at the repository root so `vercel.json` can see both services. Do not set the root to `apps/web`.
 
-On Vercel, assessment events are buffered in the browser and scored in one request. Share links include a compressed snapshot in the URL hash because serverless functions do not share memory.
+On Vercel, assessment events are buffered in the browser and scored in one request. Add Upstash Redis or Vercel KV so share IDs survive across instances. Without that, share links still work via a compressed snapshot in the URL hash.
 
 ## Architecture
 
