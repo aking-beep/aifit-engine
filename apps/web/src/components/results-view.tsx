@@ -7,9 +7,11 @@ import { ExternalLink } from "lucide-react";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { clearSession, encodeSharePayload, loadSession, saveResult } from "@/lib/session-store";
+import { copyText, isAppleTouch, shareOrCopy } from "@/lib/copy-text";
 import { useReadingLevel } from "@/components/reading-level";
 import { cleanModelName, friendlyCategory, friendlyMetric, friendlyWorkload, metricHelp, productHomepage } from "@/lib/friendly";
 import { buildPrimedMessage, CHAT_TARGETS, personaDeepLink } from "@/lib/persona-use";
+import { CopyFallback } from "@/components/copy-fallback";
 import { WorkstyleCard } from "@/components/workstyle-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,6 +65,9 @@ export function ResultsView({
     }
   });
   const [primedCopied, setPrimedCopied] = useState(false);
+  const [fallback, setFallback] = useState<{ text: string; label: string } | null>(null);
+  const appleTouch = isAppleTouch();
+  const actionClass = "min-h-11 w-full sm:w-auto";
 
   const workstyle = current.workstyle;
   const maturity = workstyle?.maturity;
@@ -97,6 +102,16 @@ export function ResultsView({
 
   async function download(target: string) {
     setExportNote(null);
+    if (appleTouch && current.instructions) {
+      const outcome = await copyText(current.instructions);
+      if (outcome === "fallback") {
+        setFallback({ text: current.instructions, label: "your setup" });
+        return;
+      }
+      setCopied("instructions");
+      setExportNote("Copied your setup — paste it into the app. iPhone does not download zip files well.");
+      return;
+    }
     try {
       const artifact = await api.exportPersona(target, current);
       const binary = artifact.encoding === "base64";
@@ -111,28 +126,51 @@ export function ResultsView({
       URL.revokeObjectURL(url);
       setExportNote(`Downloaded ${artifact.filename}`);
     } catch (err) {
+      if (current.instructions) {
+        const outcome = await copyText(current.instructions);
+        if (outcome === "fallback") setFallback({ text: current.instructions, label: "your setup" });
+        else setCopied("instructions");
+        setExportNote("Download failed, so we copied the instructions instead.");
+        return;
+      }
       setExportNote(err instanceof Error ? err.message : "Export failed.");
     }
   }
 
   async function share() {
-    if (!sessionId) return;
-    let path = `/share/${sessionId}`;
+    let path = sessionId ? `/share/${sessionId}` : "/share/profile";
+    let durable = false;
     try {
-      const created = await api.share(sessionId);
+      const created = await api.publishShare(current);
       path = created.path;
+      durable = Boolean(created.durable);
     } catch {
-      // Serverless share storage is best-effort. The compressed hash still works.
+      if (sessionId) {
+        try {
+          const created = await api.share(sessionId);
+          path = created.path;
+          durable = Boolean(created.durable);
+        } catch {
+          // Hash fallback still works without server storage.
+        }
+      }
     }
     const encoded = await encodeSharePayload(current);
-    const url = `${window.location.origin}${path}#${encoded}`;
+    const url = durable
+      ? `${window.location.origin}${path}`
+      : `${window.location.origin}${path}#${encoded}`;
     setShareUrl(url);
-    await navigator.clipboard.writeText(url).catch(() => undefined);
+    const outcome = await shareOrCopy(url, workstyle?.label ?? current.persona.label);
+    if (outcome === "fallback") setFallback({ text: url, label: "share link" });
   }
 
   async function copy(text: string, kind: "instructions" | "card" | "guide") {
     if (!text) return;
-    await navigator.clipboard.writeText(text).catch(() => undefined);
+    const outcome = await copyText(text);
+    if (outcome === "fallback") {
+      setFallback({ text, label: kind });
+      return;
+    }
     setCopied(kind);
     window.setTimeout(() => setCopied(null), 2000);
   }
@@ -154,16 +192,18 @@ export function ResultsView({
   async function usePersona() {
     const target = CHAT_TARGETS.find((item) => item.id === useToolId) ?? CHAT_TARGETS[0];
     const message = buildPrimedMessage(current, task, personaName);
-    await navigator.clipboard.writeText(message).catch(() => undefined);
+    const outcome = await copyText(message);
+    if (outcome === "fallback") setFallback({ text: message, label: "primed message" });
+    else flashPrimedCopied();
     const url = personaDeepLink(target, message);
     if (url) window.open(url, "_blank", "noreferrer");
-    flashPrimedCopied();
   }
 
   async function copyPrimed() {
     const message = buildPrimedMessage(current, task, personaName);
-    await navigator.clipboard.writeText(message).catch(() => undefined);
-    flashPrimedCopied();
+    const outcome = await copyText(message);
+    if (outcome === "fallback") setFallback({ text: message, label: "primed message" });
+    else flashPrimedCopied();
   }
 
   async function remove() {
@@ -185,35 +225,22 @@ export function ResultsView({
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">
           {shareMode ? "A shared AI style" : "Your AI style"}
         </p>
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
           <div className="max-w-2xl space-y-3">
-            <h1 className="text-4xl font-semibold tracking-tight">{workstyle?.label ?? current.persona.label}</h1>
-            <p className="text-lg text-muted-foreground">{workstyle?.narrative ?? workstyle?.summary ?? current.persona.purpose}</p>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{workstyle?.label ?? current.persona.label}</h1>
+            <p className="text-base text-muted-foreground sm:text-lg">{workstyle?.narrative ?? workstyle?.summary ?? current.persona.purpose}</p>
           </div>
           {maturity ? (
-            <div className="rounded-xl border px-4 py-3 text-right">
+            <div className="w-full rounded-xl border px-4 py-3 text-left sm:w-auto sm:text-right">
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Fit score</p>
               <p className="text-3xl font-semibold">{maturity.score}</p>
               <p className="text-sm capitalize text-muted-foreground">{maturity.band}</p>
-              <p className="mt-1 max-w-[16rem] text-right text-xs text-muted-foreground">
+              <p className="mt-1 max-w-[16rem] text-xs text-muted-foreground sm:ml-auto">
                 How clearly your answers point to one way of using AI. Higher means clearer, not better.
               </p>
             </div>
           ) : null}
         </div>
-        {!shareMode ? (
-          <div className="flex flex-wrap gap-2">
-            <Button onClick={() => download("pack")}>Save my AI setup</Button>
-            <Button variant="outline" onClick={share}>
-              Share this profile
-            </Button>
-            <Button variant="outline" onClick={() => copy(current.instructions || "", "instructions")} disabled={!current.instructions}>
-              {copied === "instructions" ? "Copied instructions" : "Copy system instructions"}
-            </Button>
-          </div>
-        ) : (
-          <Button render={<Link href="/assessment" />}>Find your own fit</Button>
-        )}
       </section>
 
       {!shareMode ? (
@@ -237,20 +264,32 @@ export function ResultsView({
               <span className="font-medium">3.</span> Paste the instructions in and start using it.
             </li>
           </ol>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Button
-              size="sm"
+              className={actionClass}
               onClick={() => copy(current.instructions || "", "instructions")}
               disabled={!current.instructions}
             >
               {copied === "instructions" ? "Copied instructions" : "Copy my instructions"}
             </Button>
-            <Button size="sm" variant="outline" render={<Link href="#setup" />}>
-              Jump to setup steps
+            <Button className={actionClass} variant="outline" nativeButton={false} render={<Link href="#use-persona" />}>
+              Use it now
             </Button>
+            <Button className={actionClass} variant="outline" onClick={share}>
+              Share this profile
+            </Button>
+            {!appleTouch ? (
+              <Button className={actionClass} variant="outline" onClick={() => download("pack")}>
+                Save my AI setup
+              </Button>
+            ) : null}
           </div>
         </section>
-      ) : null}
+      ) : (
+        <Button className={actionClass} nativeButton={false} render={<Link href="/assessment" />}>
+          Find your own fit
+        </Button>
+      )}
 
       <WorkstyleCard
         result={current}
@@ -312,11 +351,11 @@ export function ResultsView({
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button onClick={usePersona} disabled={!task.trim()}>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <Button className={actionClass} onClick={usePersona} disabled={!task.trim()}>
             {useTarget.base ? `Open in ${useTarget.label}` : "Copy for any AI"}
           </Button>
-          <Button variant="outline" onClick={copyPrimed} disabled={!task.trim()}>
+          <Button className={actionClass} variant="outline" onClick={copyPrimed} disabled={!task.trim()}>
             {primedCopied ? "Copied message" : "Copy primed message"}
           </Button>
         </div>
@@ -514,14 +553,20 @@ export function ResultsView({
                   <li key={step}>{step}</li>
                 ))}
               </ol>
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => download(activeGuide.export_target)}>Download {activeGuide.filename.split("/").pop()}</Button>
-                <Button variant="outline" onClick={() => copy(current.instructions || "", "guide")} disabled={!current.instructions}>
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                <Button className={actionClass} onClick={() => copy(current.instructions || "", "guide")} disabled={!current.instructions}>
                   {copied === "guide" ? "Copied" : "Copy instructions"}
                 </Button>
-                <Button variant="outline" onClick={() => download("pack")}>
-                  Download all files
-                </Button>
+                {!appleTouch ? (
+                  <>
+                    <Button className={actionClass} variant="outline" onClick={() => download(activeGuide.export_target)}>
+                      Download {activeGuide.filename.split("/").pop()}
+                    </Button>
+                    <Button className={actionClass} variant="outline" onClick={() => download("pack")}>
+                      Download all files
+                    </Button>
+                  </>
+                ) : null}
               </div>
               {exportNote ? <p className="text-muted-foreground">{exportNote}</p> : null}
             </CardContent>
@@ -658,12 +703,16 @@ export function ResultsView({
             <CardTitle>Share or delete</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={share}>Copy share link</Button>
-              <Button variant="outline" onClick={() => download("pack")}>
-                Export zip
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Button className={actionClass} onClick={share}>
+                Copy share link
               </Button>
-              <Button variant="destructive" onClick={remove}>
+              {!appleTouch ? (
+                <Button className={actionClass} variant="outline" onClick={() => download("pack")}>
+                  Export zip
+                </Button>
+              ) : null}
+              <Button className={actionClass} variant="destructive" onClick={remove}>
                 Delete this session
               </Button>
             </div>
@@ -693,6 +742,7 @@ export function ResultsView({
           </CardContent>
         </Card>
       ) : null}
+      {fallback ? <CopyFallback text={fallback.text} label={fallback.label} onClose={() => setFallback(null)} /> : null}
     </div>
   );
 }

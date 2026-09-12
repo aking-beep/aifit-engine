@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { ReadingLevelProvider } from "@/components/reading-level";
@@ -15,10 +15,43 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://aifit-engine.vercel.app";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf6ef" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c1814" },
+  ],
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Fit — find the AI that fits you",
   description:
     "A five-minute quiz for anyone who uses AI: homework, a shop, a side hustle, or a team. Get a friendly profile and setup files for ChatGPT, Claude, Gemini, Cursor, and more.",
+  applicationName: "Fit",
+  appleWebApp: { title: "Fit", capable: true, statusBarStyle: "default" },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "Fit — find the AI that fits you",
+    description: "Five minutes. Get an AI setup you can paste into ChatGPT, Claude, Gemini, or Cursor.",
+    url: "/",
+    siteName: "Fit",
+    type: "website",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Fit — five minutes to an AI setup that matches how you work" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Fit — find the AI that fits you",
+    description: "Five minutes. Get an AI setup you can paste into the apps you already use.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -31,7 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="flex min-h-full flex-col bg-background text-foreground">
         <ReadingLevelProvider>
           <a
             href="#main-content"

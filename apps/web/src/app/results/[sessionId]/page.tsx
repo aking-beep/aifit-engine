@@ -55,7 +55,9 @@ export default function ResultsPage() {
       <div className="mx-auto max-w-3xl space-y-4 px-4 py-16">
         <h1 className="text-2xl font-semibold">Results unavailable</h1>
         <p className="text-muted-foreground">{error ?? "This session has no stored events."}</p>
-        <Button render={<Link href="/assessment" />}>Run the assessment</Button>
+        <Button className="min-h-11" nativeButton={false} render={<Link href="/assessment" />}>
+          Run the assessment
+        </Button>
       </div>
     );
   }

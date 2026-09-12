@@ -84,7 +84,7 @@ export default function HomePage() {
             ))}
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button render={<Link href="/assessment" />} size="lg">
+            <Button nativeButton={false} render={<Link href="/assessment" />} size="lg" className="min-h-11">
               Find my fit
             </Button>
             <Button size="lg" variant="outline" onClick={runDemo} disabled={demoLoading}>

@@ -24,7 +24,7 @@ export default function PrivacyPage() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>From results, export the session or delete it. Deletion drops events and scores for that ID.</p>
-          <p>Process restart also clears in-memory sessions. There is no account database.</p>
+          <p>Your answers stay in this browser until you delete the session. There is no account database.</p>
         </CardContent>
       </Card>
       <p className="text-xs text-muted-foreground">

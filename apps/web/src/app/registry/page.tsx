@@ -54,9 +54,9 @@ export default function RegistryPage() {
         <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Transparency</p>
         <h1 className="text-3xl font-semibold tracking-tight">Product and model registry</h1>
         <p className="max-w-3xl text-muted-foreground">
-          Seed catalog used by the ranker. Most people never need this page — it exists so the scoring is inspectable.
-          Product ≠ model. Every public entry must be re-evaluated before launch.
-          {needsReview ? ` ${needsReview} records currently need a freshness review.` : " All seed dates currently sit inside the freshness window."}
+          Catalog used by the ranker. Most people never need this page — it exists so scoring is inspectable.
+          Product ≠ model. Last reviewed 12 September 2026.
+          {needsReview ? ` ${needsReview} records currently need a freshness review.` : " All dates currently sit inside the freshness window."}
         </p>
       </div>
       <section className="grid gap-4 md:grid-cols-2">

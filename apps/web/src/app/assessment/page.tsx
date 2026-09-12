@@ -207,7 +207,14 @@ export default function AssessmentPage() {
           <li>Anonymous: no name, job title, or personal details.</li>
           <li>You can delete the session from your results page.</li>
         </ul>
-        <Button onClick={() => setStarted(true)} disabled={!sessionId || loading}>
+        <p className="text-sm text-muted-foreground">
+          We do not ask for an email. Read the{" "}
+          <a href="/privacy" className="underline underline-offset-2">
+            privacy note
+          </a>{" "}
+          anytime.
+        </p>
+        <Button className="min-h-11 w-full sm:w-auto" onClick={() => setStarted(true)} disabled={!sessionId || loading}>
           {loading ? "Getting ready…" : "Let's go"}
         </Button>
       </div>
@@ -281,7 +288,7 @@ export default function AssessmentPage() {
                   data-choice={choice.id}
                   onClick={() => void pickChoice(choice.id)}
                   disabled={submitting}
-                  className={`block w-full rounded-xl border px-4 py-3 text-left text-sm transition disabled:opacity-70 ${
+                  className={`block min-h-11 w-full rounded-xl border px-4 py-3 text-left text-sm transition disabled:opacity-70 ${
                     isSelected ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
                   }`}
                 >
