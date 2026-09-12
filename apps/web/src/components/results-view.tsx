@@ -14,7 +14,8 @@ import { buildPrimedMessage, CHAT_TARGETS, personaDeepLink } from "@/lib/persona
 import { CopyFallback } from "@/components/copy-fallback";
 import { WorkstyleCard } from "@/components/workstyle-card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -272,9 +273,9 @@ export function ResultsView({
             >
               {copied === "instructions" ? "Copied instructions" : "Copy my instructions"}
             </Button>
-            <Button className={actionClass} variant="outline" nativeButton={false} render={<Link href="#use-persona" />}>
+            <Link href="#use-persona" className={cn(buttonVariants({ variant: "outline" }), actionClass, "inline-flex")}>
               Use it now
-            </Button>
+            </Link>
             <Button className={actionClass} variant="outline" onClick={share}>
               Share this profile
             </Button>
@@ -286,9 +287,9 @@ export function ResultsView({
           </div>
         </section>
       ) : (
-        <Button className={actionClass} nativeButton={false} render={<Link href="/assessment" />}>
+        <Link href="/assessment" className={cn(buttonVariants(), actionClass, "inline-flex")}>
           Find your own fit
-        </Button>
+        </Link>
       )}
 
       <WorkstyleCard

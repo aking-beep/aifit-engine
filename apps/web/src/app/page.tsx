@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { saveResult, saveSession } from "@/lib/session-store";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Compass, FileDown, Sparkles } from "lucide-react";
 
@@ -84,9 +85,9 @@ export default function HomePage() {
             ))}
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button nativeButton={false} render={<Link href="/assessment" />} size="lg" className="min-h-11">
+            <Link href="/assessment" className={cn(buttonVariants({ size: "lg" }), "min-h-11")}>
               Find my fit
-            </Button>
+            </Link>
             <Button size="lg" variant="outline" onClick={runDemo} disabled={demoLoading}>
               {demoLoading ? "Loading example…" : "See an example"}
             </Button>

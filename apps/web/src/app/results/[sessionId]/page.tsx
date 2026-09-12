@@ -6,7 +6,8 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { loadResult, loadSession, saveResult } from "@/lib/session-store";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ResultsView } from "@/components/results-view";
 
 export default function ResultsPage() {
@@ -55,9 +56,9 @@ export default function ResultsPage() {
       <div className="mx-auto max-w-3xl space-y-4 px-4 py-16">
         <h1 className="text-2xl font-semibold">Results unavailable</h1>
         <p className="text-muted-foreground">{error ?? "This session has no stored events."}</p>
-        <Button className="min-h-11" nativeButton={false} render={<Link href="/assessment" />}>
+        <Link href="/assessment" className={cn(buttonVariants(), "inline-flex min-h-11")}>
           Run the assessment
-        </Button>
+        </Link>
       </div>
     );
   }

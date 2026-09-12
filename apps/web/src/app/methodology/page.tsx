@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function MethodologyPage() {
   return (
@@ -56,9 +57,9 @@ export default function MethodologyPage() {
       </section>
 
       <div className="mt-10">
-        <Button className="min-h-11" nativeButton={false} render={<Link href="/assessment" />}>
+        <Link href="/assessment" className={cn(buttonVariants(), "min-h-11 inline-flex")}>
           Find my fit
-        </Button>
+        </Link>
       </div>
     </div>
   );
