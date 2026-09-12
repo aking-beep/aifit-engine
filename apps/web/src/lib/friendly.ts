@@ -82,8 +82,8 @@ export function friendlyWorkload(key: string): string {
   return WORKLOAD_LABELS[key] ?? humanize(key);
 }
 
-// Official product homepages for the seed catalog, used only to render an
-// "Open" link on results. Display-only; not part of scoring or ranking.
+// Official product homepages, used only to render an "Open" link on results.
+// Display-only; not part of scoring or ranking.
 const PRODUCT_HOMEPAGE: Record<string, string> = {
   claude: "https://claude.ai",
   chatgpt: "https://chatgpt.com",
@@ -108,8 +108,7 @@ export function productHomepage(id: string | null | undefined): string | null {
   return PRODUCT_HOMEPAGE[id] ?? null;
 }
 
-// Seed registry still ships illustrative placeholder model rows. Show an honest,
-// non-broken label to everyday users instead of the raw "... placeholder" text.
+// Guard leftover placeholder labels if a registry row is not yet a real model.
 export function cleanModelName(name: string | null | undefined): string {
   if (!name) return "Not matched yet";
   if (/placeholder/i.test(name)) {

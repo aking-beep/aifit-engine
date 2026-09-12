@@ -18,7 +18,9 @@ test("results offer a 'Use your persona now' hand-off", async ({ page }) => {
   await page.getByLabel(/what do you need help with/i).fill("Draft a friendly reply to this email.");
   await expect(copyBtn).toBeEnabled();
 
-  // Copying flips the label (clipboard write is best-effort in headless).
+  // Headless browsers often block the clipboard; we then show a copy box.
   await copyBtn.click();
-  await expect(page.getByRole("button", { name: /copied message/i })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /copied message/i }).or(page.getByRole("dialog", { name: /copy primed message/i })),
+  ).toBeVisible();
 });

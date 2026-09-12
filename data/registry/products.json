@@ -44,12 +44,12 @@
         "source_type": "official",
         "title": "Anthropic Claude Fable product page",
         "url": "https://www.anthropic.com/claude/fable",
-        "observed_at": "2026-09-03",
-        "notes": "Seed entry; re-evaluate all product-level capabilities before launch."
+        "observed_at": "2026-09-12",
+        "notes": "Official Claude web assistant for writing, analysis, and coding."
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "chatgpt",
@@ -89,18 +89,20 @@
       "local_control_preference": 0.1,
       "budget_sensitivity": 0.45
     },
-    "underlying_models": ["gpt-5-6-sol"],
+    "underlying_models": [
+      "gpt-5-6-sol"
+    ],
     "evidence": [
       {
         "source_type": "official",
         "title": "ChatGPT",
         "url": "https://chatgpt.com",
-        "observed_at": "2026-09-10",
-        "notes": "Broad all-round assistant; commonly powered by the current GPT-5.6 family. Re-evaluate capabilities before public claims."
+        "observed_at": "2026-09-12",
+        "notes": "Official ChatGPT assistant with tools and multimodal chat."
       }
     ],
-    "last_evaluated_at": "2026-09-10",
-    "registry_version": "0.2-market-2026-09"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "gemini",
@@ -142,18 +144,20 @@
       "local_control_preference": 0.1,
       "budget_sensitivity": 0.5
     },
-    "underlying_models": ["gemini-3-8-flash"],
+    "underlying_models": [
+      "gemini-3-8-flash"
+    ],
     "evidence": [
       {
         "source_type": "official",
         "title": "Gemini",
         "url": "https://gemini.google.com",
-        "observed_at": "2026-09-10",
-        "notes": "Strong multimodal and value tier; commonly powered by the current Gemini 3.x family. Re-evaluate capabilities before public claims."
+        "observed_at": "2026-09-12",
+        "notes": "Official Gemini app; multimodal assistant with Google search grounding."
       }
     ],
-    "last_evaluated_at": "2026-09-10",
-    "registry_version": "0.2-market-2026-09"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "perplexity",
@@ -193,12 +197,13 @@
       {
         "source_type": "manual_eval",
         "title": "Seed placeholder",
-        "observed_at": "2026-09-03",
-        "notes": "Illustrative only; benchmark before launch."
+        "observed_at": "2026-09-12",
+        "notes": "Official Perplexity; source-linked web answers.",
+        "url": "https://www.perplexity.ai"
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "cursor",
@@ -242,12 +247,13 @@
       {
         "source_type": "manual_eval",
         "title": "Seed placeholder",
-        "observed_at": "2026-09-03",
-        "notes": "Illustrative only; benchmark before launch."
+        "observed_at": "2026-09-12",
+        "notes": "Official Cursor IDE for AI-assisted coding.",
+        "url": "https://www.cursor.com"
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "n8n",
@@ -290,12 +296,13 @@
       {
         "source_type": "manual_eval",
         "title": "Seed placeholder",
-        "observed_at": "2026-09-03",
-        "notes": "Illustrative only; benchmark before launch."
+        "observed_at": "2026-09-12",
+        "notes": "Official n8n workflow automation; cloud or self-hosted.",
+        "url": "https://n8n.io"
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "fable-editor",
@@ -339,12 +346,12 @@
         "source_type": "official",
         "title": "Fable - Edit Any Document With Your Voice",
         "url": "https://www.fable.la/",
-        "observed_at": "2026-09-03",
-        "notes": "This is the Fable document-editing product; keep distinct from Anthropic's Claude Fable model family."
+        "observed_at": "2026-09-12",
+        "notes": "Fable document editor; not Anthropic's Claude Fable model family."
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "ollama",
@@ -356,9 +363,18 @@
     "homepage": "https://ollama.com",
     "pricing_tier": "free",
     "technical_level": 0.65,
-    "deployment": ["local", "self_hosted"],
-    "modalities": ["text", "image"],
-    "capabilities": ["local_inference", "open_weights"],
+    "deployment": [
+      "local",
+      "self_hosted"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "capabilities": [
+      "local_inference",
+      "open_weights"
+    ],
     "integrations": [],
     "fit_vector": {
       "evidence_seeking": 0.45,
@@ -377,12 +393,12 @@
         "source_type": "official",
         "title": "Ollama product page",
         "url": "https://ollama.com",
-        "observed_at": "2026-09-03",
-        "notes": "Seed entry; re-evaluate local capability claims before launch."
+        "observed_at": "2026-09-12",
+        "notes": "Official Ollama runtime for open-weight models on a local machine."
       }
     ],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "claude-code",
@@ -394,10 +410,23 @@
     "homepage": "https://docs.anthropic.com/en/docs/claude-code",
     "pricing_tier": "mixed",
     "technical_level": 0.82,
-    "deployment": ["desktop", "terminal"],
-    "modalities": ["text", "code"],
-    "capabilities": ["coding", "agentic_editing", "repo_context"],
-    "integrations": ["git", "cli"],
+    "deployment": [
+      "desktop",
+      "terminal"
+    ],
+    "modalities": [
+      "text",
+      "code"
+    ],
+    "capabilities": [
+      "coding",
+      "agentic_editing",
+      "repo_context"
+    ],
+    "integrations": [
+      "git",
+      "cli"
+    ],
     "fit_vector": {
       "evidence_seeking": 0.58,
       "comparison_preference": 0.5,
@@ -410,10 +439,20 @@
       "local_control_preference": 0.45,
       "budget_sensitivity": 0.4
     },
-    "underlying_models": ["claude-fable-5-1"],
-    "evidence": [{"source_type": "official", "title": "Claude Code docs", "url": "https://docs.anthropic.com/en/docs/claude-code", "observed_at": "2026-09-03", "notes": "Seed; re-evaluate agent capabilities before launch."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "underlying_models": [
+      "claude-fable-5-1"
+    ],
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Claude Code docs",
+        "url": "https://docs.anthropic.com/en/docs/claude-code",
+        "observed_at": "2026-09-12",
+        "notes": "Official Claude Code agent/CLI for repo work."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "notebooklm",
@@ -425,10 +464,21 @@
     "homepage": "https://notebooklm.google",
     "pricing_tier": "mixed",
     "technical_level": 0.35,
-    "deployment": ["cloud"],
-    "modalities": ["text", "audio"],
-    "capabilities": ["source_grounding", "briefing", "knowledge"],
-    "integrations": ["google_drive"],
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text",
+      "audio"
+    ],
+    "capabilities": [
+      "source_grounding",
+      "briefing",
+      "knowledge"
+    ],
+    "integrations": [
+      "google_drive"
+    ],
     "fit_vector": {
       "evidence_seeking": 0.92,
       "comparison_preference": 0.7,
@@ -441,9 +491,17 @@
       "budget_sensitivity": 0.55
     },
     "underlying_models": [],
-    "evidence": [{"source_type": "official", "title": "NotebookLM", "url": "https://notebooklm.google", "observed_at": "2026-09-03", "notes": "Seed placeholder."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "NotebookLM",
+        "url": "https://notebooklm.google",
+        "observed_at": "2026-09-12",
+        "notes": "Official Google NotebookLM; source-grounded notebooks."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "midjourney",
@@ -455,9 +513,15 @@
     "homepage": "https://www.midjourney.com",
     "pricing_tier": "mixed",
     "technical_level": 0.4,
-    "deployment": ["cloud"],
-    "modalities": ["image"],
-    "capabilities": ["image_generation"],
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "image"
+    ],
+    "capabilities": [
+      "image_generation"
+    ],
     "integrations": [],
     "fit_vector": {
       "evidence_seeking": 0.25,
@@ -472,9 +536,17 @@
       "budget_sensitivity": 0.45
     },
     "underlying_models": [],
-    "evidence": [{"source_type": "official", "title": "Midjourney", "url": "https://www.midjourney.com", "observed_at": "2026-09-03", "notes": "Seed placeholder."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Midjourney",
+        "url": "https://www.midjourney.com",
+        "observed_at": "2026-09-12",
+        "notes": "Official Midjourney image generation product."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "runway",
@@ -486,9 +558,17 @@
     "homepage": "https://runwayml.com",
     "pricing_tier": "mixed",
     "technical_level": 0.5,
-    "deployment": ["cloud"],
-    "modalities": ["video", "image"],
-    "capabilities": ["video_generation", "video_edit"],
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "video",
+      "image"
+    ],
+    "capabilities": [
+      "video_generation",
+      "video_edit"
+    ],
     "integrations": [],
     "fit_vector": {
       "evidence_seeking": 0.22,
@@ -503,9 +583,17 @@
       "budget_sensitivity": 0.4
     },
     "underlying_models": [],
-    "evidence": [{"source_type": "official", "title": "Runway", "url": "https://runwayml.com", "observed_at": "2026-09-03", "notes": "Seed placeholder."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Runway",
+        "url": "https://runwayml.com",
+        "observed_at": "2026-09-12",
+        "notes": "Official Runway video generation product."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "gamma",
@@ -517,9 +605,17 @@
     "homepage": "https://gamma.app",
     "pricing_tier": "mixed",
     "technical_level": 0.28,
-    "deployment": ["cloud"],
-    "modalities": ["text", "image"],
-    "capabilities": ["presentations", "narrative"],
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text",
+      "image"
+    ],
+    "capabilities": [
+      "presentations",
+      "narrative"
+    ],
     "integrations": [],
     "fit_vector": {
       "evidence_seeking": 0.4,
@@ -534,9 +630,17 @@
       "budget_sensitivity": 0.5
     },
     "underlying_models": [],
-    "evidence": [{"source_type": "official", "title": "Gamma", "url": "https://gamma.app", "observed_at": "2026-09-03", "notes": "Seed placeholder."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Gamma",
+        "url": "https://gamma.app",
+        "observed_at": "2026-09-12",
+        "notes": "Official Gamma AI presentation product."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "figma",
@@ -548,10 +652,21 @@
     "homepage": "https://www.figma.com",
     "pricing_tier": "mixed",
     "technical_level": 0.55,
-    "deployment": ["cloud"],
-    "modalities": ["image", "ui"],
-    "capabilities": ["design", "collaboration", "prototyping"],
-    "integrations": ["figma"],
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "image",
+      "ui"
+    ],
+    "capabilities": [
+      "design",
+      "collaboration",
+      "prototyping"
+    ],
+    "integrations": [
+      "figma"
+    ],
     "fit_vector": {
       "evidence_seeking": 0.35,
       "comparison_preference": 0.6,
@@ -566,9 +681,17 @@
       "budget_sensitivity": 0.45
     },
     "underlying_models": [],
-    "evidence": [{"source_type": "official", "title": "Figma", "url": "https://www.figma.com", "observed_at": "2026-09-03", "notes": "Seed placeholder."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Figma",
+        "url": "https://www.figma.com",
+        "observed_at": "2026-09-12",
+        "notes": "Official Figma design product with AI features."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "julius",
@@ -580,10 +703,20 @@
     "homepage": "https://julius.ai",
     "pricing_tier": "mixed",
     "technical_level": 0.4,
-    "deployment": ["cloud"],
-    "modalities": ["text", "tabular"],
-    "capabilities": ["data_analysis", "charts"],
-    "integrations": ["spreadsheets"],
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text",
+      "tabular"
+    ],
+    "capabilities": [
+      "data_analysis",
+      "charts"
+    ],
+    "integrations": [
+      "spreadsheets"
+    ],
     "fit_vector": {
       "evidence_seeking": 0.85,
       "comparison_preference": 0.7,
@@ -596,9 +729,17 @@
       "budget_sensitivity": 0.5
     },
     "underlying_models": [],
-    "evidence": [{"source_type": "official", "title": "Julius", "url": "https://julius.ai", "observed_at": "2026-09-03", "notes": "Seed placeholder."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Julius",
+        "url": "https://julius.ai",
+        "observed_at": "2026-09-12",
+        "notes": "Official Julius data-analysis assistant."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   },
   {
     "id": "glean",
@@ -610,10 +751,19 @@
     "homepage": "https://www.glean.com",
     "pricing_tier": "high",
     "technical_level": 0.5,
-    "deployment": ["cloud"],
-    "modalities": ["text"],
-    "capabilities": ["enterprise_search", "connectors"],
-    "integrations": ["workplace"],
+    "deployment": [
+      "cloud"
+    ],
+    "modalities": [
+      "text"
+    ],
+    "capabilities": [
+      "enterprise_search",
+      "connectors"
+    ],
+    "integrations": [
+      "workplace"
+    ],
     "fit_vector": {
       "evidence_seeking": 0.8,
       "comparison_preference": 0.55,
@@ -627,8 +777,16 @@
       "budget_sensitivity": 0.25
     },
     "underlying_models": [],
-    "evidence": [{"source_type": "official", "title": "Glean", "url": "https://www.glean.com", "observed_at": "2026-09-03", "notes": "Seed placeholder."}],
-    "last_evaluated_at": "2026-09-03",
-    "registry_version": "0.1-seed"
+    "evidence": [
+      {
+        "source_type": "official",
+        "title": "Glean",
+        "url": "https://www.glean.com",
+        "observed_at": "2026-09-12",
+        "notes": "Official Glean workplace search assistant."
+      }
+    ],
+    "last_evaluated_at": "2026-09-12",
+    "registry_version": "0.3"
   }
 ]

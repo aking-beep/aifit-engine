@@ -11,7 +11,7 @@ test("landing, privacy, transparency, and scored sample", async ({ page }) => {
 
   await page.goto("/methodology");
   await expect(page.getByRole("heading", { name: "How it works", exact: true })).toBeVisible();
-  await expect(page.getByRole("link", { name: /open the seed registry/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /open the product and model registry/i })).toBeVisible();
 
   await page.goto("/");
   await page.getByRole("button", { name: /see an example/i }).click();

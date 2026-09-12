@@ -6,7 +6,8 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { decodeSharePayload } from "@/lib/session-store";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ResultsView } from "@/components/results-view";
 
 export default function SharePage() {
@@ -42,7 +43,9 @@ export default function SharePage() {
       <div className="mx-auto max-w-3xl space-y-4 px-4 py-16">
         <h1 className="text-2xl font-semibold">{error ? "Share unavailable" : "Loading share…"}</h1>
         {error ? (
-          <Button render={<Link href="/assessment" />}>Build your own profile</Button>
+          <Link href="/assessment" className={cn(buttonVariants(), "inline-flex min-h-11")}>
+            Build your own profile
+          </Link>
         ) : null}
       </div>
     );

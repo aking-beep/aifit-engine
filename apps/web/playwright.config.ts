@@ -9,7 +9,14 @@ export default defineConfig({
     baseURL: web,
     trace: "on-first-retry",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "mobile",
+      testMatch: /mobile-release/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+    },
+  ],
   webServer: [
     {
       command:

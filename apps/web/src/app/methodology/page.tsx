@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function MethodologyPage() {
   return (
@@ -28,7 +29,7 @@ export default function MethodologyPage() {
           </p>
           <p className="mt-2">
             <Link href="/registry" className="underline underline-offset-4">
-              Open the seed registry
+              Open the product and model registry
             </Link>
           </p>
         </div>
@@ -42,21 +43,23 @@ export default function MethodologyPage() {
         <div>
           <h2 className="text-lg font-semibold">4. Version</h2>
           <p className="mt-2 text-muted-foreground">
-            Fit 0.3. Usually four scenes (about five minutes), continuing only when a core habit still is not clear.
-            Scoring stays on the server.
+            Fit 0.4. Usually four scenes (about five minutes), continuing only when a core habit still is not clear.
+            Scoring stays on the server. Catalog last reviewed 12 September 2026.
           </p>
         </div>
         <div>
           <h2 className="text-lg font-semibold">5. Limits</h2>
           <p className="mt-2 text-muted-foreground">
-            The catalog is starter data. Scores are not scientifically validated. This is not a personality test,
-            clinical tool, or hiring screen. Do not use it that way.
+            Scores are not scientifically validated. This is not a personality test, clinical tool, or hiring screen.
+            Do not use it that way.
           </p>
         </div>
       </section>
 
       <div className="mt-10">
-        <Button render={<Link href="/assessment" />}>Find my fit</Button>
+        <Link href="/assessment" className={cn(buttonVariants(), "min-h-11 inline-flex")}>
+          Find my fit
+        </Link>
       </div>
     </div>
   );

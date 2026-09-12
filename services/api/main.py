@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import base64
 import json
-import os
 import sys
 import uuid
 from pathlib import Path
@@ -27,7 +26,7 @@ from aifit.persona import generate_persona
 from aifit.registry import load_models, load_products
 from aifit.scenarios import load_scenarios
 
-app = FastAPI(title="Fit API", version="0.3.0")
+app = FastAPI(title="Fit API", version="0.4.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -35,32 +34,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from .store import STORE as RESULT_STORE
+
 PRODUCTS = load_products(ROOT / "data/registry/products.json")
 MODELS = load_models(ROOT / "data/registry/models.json")
 SESSIONS: dict[str, AssessmentSession] = {}
 SCORES: dict[str, dict[str, Any]] = {}
 SHARES: dict[str, dict[str, Any]] = {}
 FEEDBACK: list[dict[str, Any]] = []
-STORE = Path(os.environ.get("AIFIT_STORE", "/tmp/aifit-store"))
 
 
-def _persist(kind: str, key: str, payload: dict[str, Any]) -> None:
-    try:
-        folder = STORE / kind
-        folder.mkdir(parents=True, exist_ok=True)
-        (folder / f"{key}.json").write_text(json.dumps(payload))
-    except OSError:
-        return
+def _persist(kind: str, key: str, payload: dict[str, Any]) -> bool:
+    return RESULT_STORE.put(kind, key, payload)
 
 
 def _load_persisted(kind: str, key: str) -> dict[str, Any] | None:
-    path = STORE / kind / f"{key}.json"
-    try:
-        if not path.exists():
-            return None
-        return json.loads(path.read_text())
-    except OSError:
-        return None
+    return RESULT_STORE.get(kind, key)
 
 
 def _get_session(session_id: str) -> AssessmentSession | None:
@@ -127,6 +116,10 @@ class ScoreBody(BaseModel):
     filters: FitFilters | None = None
 
 
+class ShareBody(BaseModel):
+    result: dict[str, Any]
+
+
 def _score_and_store(session: AssessmentSession, filters: FitFilters | None = None) -> dict[str, Any]:
     result = score_session(session, filters=filters)
     SCORES[session.session_id] = result
@@ -138,7 +131,14 @@ def _score_and_store(session: AssessmentSession, filters: FitFilters | None = No
 
 @app.get("/health")
 def health():
-    return {"ok": True, "version": "0.3.0", "privacy": "anonymous", "product": "Fit"}
+    return {
+        "ok": True,
+        "version": "0.4.0",
+        "privacy": "anonymous",
+        "product": "Fit",
+        "store": RESULT_STORE.backend,
+        "durable": RESULT_STORE.durable,
+    }
 
 
 @app.get("/v1/scenarios")
@@ -239,9 +239,20 @@ def _store_share(result: dict[str, Any], session_id: str | None = None) -> dict[
         "privacy": result["privacy"],
     }
     SHARES[share_id] = snapshot
-    _persist("shares", share_id, snapshot)
+    persisted = _persist("shares", share_id, snapshot)
     track("session_shared", session_id=session_id)
-    return {"share_id": share_id, "path": f"/share/{share_id}"}
+    return {
+        "share_id": share_id,
+        "path": f"/share/{share_id}",
+        "durable": bool(persisted and RESULT_STORE.durable),
+    }
+
+
+@app.post("/v1/share")
+def publish_share(payload: ShareBody):
+    if not payload.result.get("persona"):
+        raise HTTPException(status_code=400, detail="Share payload needs a persona.")
+    return _store_share(payload.result)
 
 
 @app.get("/v1/share/{share_id}")
@@ -272,9 +283,7 @@ def delete_session(session_id: str):
     SESSIONS.pop(session_id, None)
     SCORES.pop(session_id, None)
     for kind in ("sessions", "scores"):
-        path = STORE / kind / f"{session_id}.json"
-        if path.exists():
-            path.unlink()
+        RESULT_STORE.delete(kind, session_id)
     track("session_deleted", session_id=session_id)
     return {"deleted": True, "session_id": session_id}
 
