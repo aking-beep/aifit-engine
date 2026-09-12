@@ -15,7 +15,7 @@ const steps = [
   {
     icon: Compass,
     title: "1. Play a few short scenes",
-    body: "Answer quick, everyday situations. No jargon, no wrong answers — about five minutes.",
+    body: "Four short scenes, about twelve questions — usually five minutes.",
   },
   {
     icon: Sparkles,
@@ -66,8 +66,8 @@ export default function HomePage() {
             Find the AI that fits you.
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
-            Five lively minutes. No résumé, no corporate jargon, no wrong answers. Fit watches how you ask, check, and
-            decide — then gives you a setup you can paste into ChatGPT, Claude, Gemini, Cursor, or an agent.
+            Five lively minutes. No résumé, no corporate form. Fit watches how you ask, check, and decide — then gives
+            you a setup you can paste into ChatGPT, Claude, Gemini, Cursor, or an agent.
           </p>
           <p className="max-w-2xl text-sm text-muted-foreground">
             Brand new to AI or using it every day? It works for both — switch between <strong>Simple</strong> and{" "}
