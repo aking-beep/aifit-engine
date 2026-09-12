@@ -9,6 +9,7 @@ import type { ScoreResult } from "@/lib/types";
 import { clearSession, encodeSharePayload, loadSession, saveResult } from "@/lib/session-store";
 import { useReadingLevel } from "@/components/reading-level";
 import { cleanModelName, friendlyCategory, friendlyMetric, friendlyWorkload, metricHelp, productHomepage } from "@/lib/friendly";
+import { buildPrimedMessage, CHAT_TARGETS, personaDeepLink } from "@/lib/persona-use";
 import { WorkstyleCard } from "@/components/workstyle-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,17 @@ export function ResultsView({
   const [maxPrice, setMaxPrice] = useState<string | null>(null);
   const [filterNote, setFilterNote] = useState<string | null>(null);
   const [filtering, setFiltering] = useState(false);
+  const [task, setTask] = useState("");
+  const [useToolId, setUseToolId] = useState("chatgpt");
+  const [personaName, setPersonaName] = useState(() => {
+    if (typeof window === "undefined") return "";
+    try {
+      return window.localStorage.getItem("fit.personaName") ?? "";
+    } catch {
+      return "";
+    }
+  });
+  const [primedCopied, setPrimedCopied] = useState(false);
 
   const workstyle = current.workstyle;
   const maturity = workstyle?.maturity;
@@ -62,6 +74,8 @@ export function ResultsView({
   const topTool =
     (stack ?? [])[0]?.product?.name ?? current.primary_stack.slots[0]?.recommendation?.name ?? null;
   const firstGuide = guides[0];
+  const useTarget = CHAT_TARGETS.find((item) => item.id === useToolId) ?? CHAT_TARGETS[0];
+  const personaTitle = personaName.trim() || current.workstyle?.label || current.persona.label;
 
   async function applyFilters(nextLocal: boolean, nextPrice: string | null) {
     if (!sessionId) return;
@@ -121,6 +135,35 @@ export function ResultsView({
     await navigator.clipboard.writeText(text).catch(() => undefined);
     setCopied(kind);
     window.setTimeout(() => setCopied(null), 2000);
+  }
+
+  function updatePersonaName(value: string) {
+    setPersonaName(value);
+    try {
+      window.localStorage.setItem("fit.personaName", value);
+    } catch {
+      // Ignore storage failures; the name still applies for this visit.
+    }
+  }
+
+  function flashPrimedCopied() {
+    setPrimedCopied(true);
+    window.setTimeout(() => setPrimedCopied(false), 2000);
+  }
+
+  async function usePersona() {
+    const target = CHAT_TARGETS.find((item) => item.id === useToolId) ?? CHAT_TARGETS[0];
+    const message = buildPrimedMessage(current, task, personaName);
+    await navigator.clipboard.writeText(message).catch(() => undefined);
+    const url = personaDeepLink(target, message);
+    if (url) window.open(url, "_blank", "noreferrer");
+    flashPrimedCopied();
+  }
+
+  async function copyPrimed() {
+    const message = buildPrimedMessage(current, task, personaName);
+    await navigator.clipboard.writeText(message).catch(() => undefined);
+    flashPrimedCopied();
   }
 
   async function remove() {
@@ -214,6 +257,74 @@ export function ResultsView({
         copied={copied === "card"}
         onCopy={shareMode ? undefined : () => copy(current.share_card || "", "card")}
       />
+
+      <section aria-labelledby="use-persona" className="rounded-2xl border p-5">
+        <h2 id="use-persona" className="text-lg font-semibold">
+          Use your persona now
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Type something you actually need help with. Fit adds your{" "}
+          <span className="font-medium text-foreground">{personaTitle}</span> style and hands it to the AI you pick —
+          ready to send.
+        </p>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div className="space-y-1">
+            <label htmlFor="persona-name" className="text-sm font-medium">
+              Name this setup (optional)
+            </label>
+            <input
+              id="persona-name"
+              value={personaName}
+              onChange={(event) => updatePersonaName(event.target.value)}
+              placeholder={current.workstyle?.label ?? "My AI setup"}
+              className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring"
+            />
+          </div>
+        </div>
+
+        <div className="mt-4 space-y-1">
+          <label htmlFor="persona-task" className="text-sm font-medium">
+            What do you need help with?
+          </label>
+          <Textarea
+            id="persona-task"
+            value={task}
+            onChange={(event) => setTask(event.target.value)}
+            placeholder="e.g. Draft a friendly reply to this email, or plan my week around three priorities."
+          />
+        </div>
+
+        <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium">Send it to</p>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Choose an AI">
+            {CHAT_TARGETS.map((target) => (
+              <Button
+                key={target.id}
+                size="sm"
+                variant={useToolId === target.id ? "default" : "outline"}
+                aria-pressed={useToolId === target.id}
+                onClick={() => setUseToolId(target.id)}
+              >
+                {target.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button onClick={usePersona} disabled={!task.trim()}>
+            {useTarget.base ? `Open in ${useTarget.label}` : "Copy for any AI"}
+          </Button>
+          <Button variant="outline" onClick={copyPrimed} disabled={!task.trim()}>
+            {primedCopied ? "Copied message" : "Copy primed message"}
+          </Button>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Nothing is sent to Fit — your message goes to the AI you choose. For Gemini and “Any AI” we copy it so you can
+          paste it in.
+        </p>
+      </section>
 
       {workstyle?.why?.length ? (
         <section className="space-y-3">
