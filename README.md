@@ -86,6 +86,8 @@ Import the Git repo in the Vercel dashboard if you prefer. Leave the root direct
 
 On Vercel, assessment events are buffered in the browser and scored in one request. Add Upstash Redis or Vercel KV so share IDs survive across instances. Without that, share links still work via a compressed snapshot in the URL hash.
 
+The public quiz stays ungated (`FIT_ACCESS_GATE=off`). To run an invite-first week, set `FIT_ACCESS_GATE=waitlist` or `FIT_ACCESS_GATE=code` plus `FIT_ACCESS_CODES` on the API service. How it works, the registry, privacy, and share links stay public. See `docs/MVP_LAUNCH.md` for the competitor / TAM / gate decision.
+
 ## Architecture
 
 ```text
@@ -127,3 +129,4 @@ The registry, methodology, and evidence live under **How it works**. They are cr
 6. `docs/ETHICS_PRIVACY.md`
 7. `docs/ROADMAP_4_WEEKS.md`
 8. `docs/DEFINITION_OF_DONE.md`
+9. `docs/MVP_LAUNCH.md`

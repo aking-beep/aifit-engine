@@ -56,6 +56,18 @@ Age bands. Stale rows lose confidence.
 ### GET /v1/analytics/summary
 Anonymous in-memory event counts.
 
+### GET /v1/access
+Launch-gate status: `{ mode: "off" | "waitlist" | "code", note }`. Default `off`. Does not return codes.
+
+### POST /v1/access/unlock
+`{ code }`. 200 when `FIT_ACCESS_GATE=code` and the code is in `FIT_ACCESS_CODES`. 403 otherwise. 404 when codes are not in use.
+
+### POST /v1/waitlist
+`{ email, source? }`. 200 when the waitlist or code gate is on. Stores email + timestamp. 404 when the public quiz is ungated.
+
+### GET /v1/waitlist
+`{ count, recent }` with redacted emails. Operator visibility only — not a public directory.
+
 
 ## Response requirement
 
