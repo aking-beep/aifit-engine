@@ -5,8 +5,10 @@ import { usePathname } from "next/navigation";
 import { api } from "@/lib/api";
 import {
   type AccessMode,
+  effectiveAccessMode,
   parseAccessMode,
   pathBypassesGate,
+  previewGateFromSearch,
   readStoredUnlock,
   writeStoredUnlock,
 } from "@/lib/access-gate";
@@ -22,6 +24,7 @@ type Props = {
 export function AccessGate({ children, initialMode, initialNote }: Props) {
   const pathname = usePathname();
   const [mode, setMode] = useState<AccessMode>(() => parseAccessMode(initialMode));
+  const [preview, setPreview] = useState<AccessMode>("off");
   const [note, setNote] = useState(initialNote ?? "");
   const [unlocked, setUnlocked] = useState(false);
   const [ready, setReady] = useState(() => parseAccessMode(initialMode) === "off");
@@ -33,6 +36,7 @@ export function AccessGate({ children, initialMode, initialNote }: Props) {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    setPreview(previewGateFromSearch(window.location.search));
     setUnlocked(readStoredUnlock());
     try {
       setListed(window.localStorage.getItem("aifit.waitlist.v1") === "1");
@@ -56,10 +60,11 @@ export function AccessGate({ children, initialMode, initialNote }: Props) {
     };
   }, []);
 
-  if (!ready) {
+  const active = effectiveAccessMode(mode, preview);
+  if (!ready && active === "off") {
     return <div className="mx-auto max-w-5xl px-4 py-16 text-sm text-muted-foreground">Loading Fit…</div>;
   }
-  if (mode === "off" || unlocked || pathBypassesGate(pathname)) {
+  if (active === "off" || unlocked || pathBypassesGate(pathname)) {
     return children;
   }
 
@@ -105,20 +110,20 @@ export function AccessGate({ children, initialMode, initialNote }: Props) {
     <div className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-12">
       <p className="text-sm font-medium uppercase tracking-[0.18em] text-primary">Invite first</p>
       <h1 className="text-3xl font-semibold tracking-tight">
-        {mode === "code" ? "Enter your access code" : "Fit is opening in waves"}
+        {active === "code" ? "Enter your access code" : "Fit is opening in waves"}
       </h1>
       <p className="text-muted-foreground">
         {note ||
-          (mode === "code"
+          (active === "code"
             ? "This week is invite-only so we can watch finish rate and whether the setup files get used."
             : "Leave an email if you want a slot. How it works, the registry, and shared results stay public.")}
       </p>
       <Card>
         <CardHeader>
-          <CardTitle>{mode === "code" ? "Access code" : "Join the waitlist"}</CardTitle>
+          <CardTitle>{active === "code" ? "Access code" : "Join the waitlist"}</CardTitle>
         </CardHeader>
         <CardContent>
-          {mode === "code" ? (
+          {active === "code" ? (
             <form onSubmit={onUnlock} className="space-y-3">
               <label className="block text-sm text-muted-foreground" htmlFor="access-code">
                 Code
@@ -158,7 +163,7 @@ export function AccessGate({ children, initialMode, initialNote }: Props) {
             </form>
           )}
           {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
-          {message || listed ? (
+          {active === "waitlist" && (message || listed) ? (
             <p className="mt-3 text-sm text-muted-foreground">
               {message ||
                 "You are on the list. We will open slots as we watch whether people finish and use the setup files."}

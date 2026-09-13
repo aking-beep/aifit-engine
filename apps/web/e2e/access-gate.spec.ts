@@ -23,7 +23,7 @@ test("waitlist gate covers the quiz and leaves privacy public", async ({ page })
     await route.continue();
   });
 
-  await page.goto("/");
+  await page.goto("/?preview_gate=waitlist");
   await expect(page.getByRole("heading", { name: /fit is opening in waves/i })).toBeVisible();
   await expect(page.getByText(/invite first for finish-rate learning/i)).toBeVisible();
   await page.getByLabel("Email").fill("founder@example.com");
@@ -53,7 +53,7 @@ test("access code unlocks the quiz", async ({ page }) => {
     await route.fulfill({ status: 403, body: "That code is not on the list" });
   });
 
-  await page.goto("/assessment");
+  await page.goto("/assessment?preview_gate=code");
   await expect(page.getByRole("heading", { name: /enter your access code/i })).toBeVisible();
   await page.getByLabel("Code").fill("let-me-in");
   await page.getByRole("button", { name: /open fit/i }).click();

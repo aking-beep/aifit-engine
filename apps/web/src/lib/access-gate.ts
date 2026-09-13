@@ -10,6 +10,19 @@ export function parseAccessMode(raw: string | undefined | null): AccessMode {
   return "off";
 }
 
+export function previewGateFromSearch(search: string | null | undefined): AccessMode {
+  if (!search) return "off";
+  const value = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search).get("preview_gate");
+  const preview = parseAccessMode(value);
+  // Preview can only turn a gate on, so a public quiz can be demoed as invite-first.
+  return preview === "off" ? "off" : preview;
+}
+
+export function effectiveAccessMode(mode: AccessMode, preview: AccessMode): AccessMode {
+  if (mode !== "off") return mode;
+  return preview;
+}
+
 export function pathBypassesGate(pathname: string | null | undefined): boolean {
   if (!pathname) return false;
   return OPEN_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

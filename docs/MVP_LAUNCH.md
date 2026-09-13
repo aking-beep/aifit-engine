@@ -149,7 +149,9 @@ Checked against how every close competitor ships: **the quiz is free and ungated
 
 **Default in production: gate off.** Set `FIT_ACCESS_GATE=waitlist` or `FIT_ACCESS_GATE=code` on Vercel when you want invite-first. Privacy, share links, How it works, and the registry stay public so a shared result still opens.
 
-You can see whether gating works: waitlist POSTs return 202 and `GET /v1/waitlist` returns a count (emails are redacted). Access codes are checked server-side and never sent to the browser.
+You can see whether gating works: waitlist POSTs return 200 and `GET /v1/waitlist` returns a count (emails are redacted). Access codes are checked server-side and never sent to the browser.
+
+To preview a gate without changing production env, open `/?preview_gate=waitlist` or `/?preview_gate=code`. The query can only turn a gate **on**, never off.
 
 ---
 
