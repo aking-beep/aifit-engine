@@ -24,6 +24,10 @@ export default defineConfig({
       cwd: "../..",
       url: "http://127.0.0.1:8472/health",
       reuseExistingServer: true,
+      env: {
+        ...process.env,
+        FIT_ACCESS_GATE: process.env.FIT_ACCESS_GATE || "off",
+      },
     },
     {
       command: "npm run start",

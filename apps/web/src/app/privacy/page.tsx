@@ -16,6 +16,10 @@ export default function PrivacyPage() {
           <p>A random session ID, interaction events, optional free text, and derived scores live in memory on the API process.</p>
           <p>Share links store a score snapshot without your notes unless those notes already became evidence strings.</p>
           <p>Feedback stores a 1–5 rating and an optional comment. Do not include identifying details.</p>
+          <p>
+            If an operator turns on the optional waitlist, Fit stores only the email you type, a random id, and a
+            timestamp. That list is not used for scoring. Shared results, How it works, and this page stay public.
+          </p>
         </CardContent>
       </Card>
       <Card>

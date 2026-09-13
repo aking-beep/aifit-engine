@@ -34,6 +34,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from .access import (
+    UnlockRequest,
+    WaitlistRequest,
+    access_mode,
+    access_note,
+    append_waitlist,
+    code_is_valid,
+    read_waitlist,
+    redact_email,
+)
 from .store import STORE as RESULT_STORE
 
 PRODUCTS = load_products(ROOT / "data/registry/products.json")
@@ -137,6 +147,7 @@ def health():
         "privacy": "anonymous",
         "product": "Fit",
         "store": RESULT_STORE.backend,
+        "access_gate": access_mode(),
         "durable": RESULT_STORE.durable,
     }
 
@@ -373,3 +384,35 @@ def feedback(payload: FeedbackRequest):
 @app.get("/v1/analytics/summary")
 def analytics():
     return {**analytics_summary(), "feedback_count": len(FEEDBACK)}
+
+
+@app.get("/v1/access")
+def access_status():
+    return {"mode": access_mode(), "note": access_note()}
+
+
+@app.post("/v1/access/unlock")
+def access_unlock(payload: UnlockRequest):
+    if access_mode() != "code":
+        raise HTTPException(status_code=404, detail="Access codes are not in use")
+    if not code_is_valid(payload.code):
+        raise HTTPException(status_code=403, detail="That code is not on the list")
+    return {"ok": True}
+
+
+@app.post("/v1/waitlist")
+def waitlist_join(payload: WaitlistRequest):
+    if access_mode() not in {"waitlist", "code"}:
+        raise HTTPException(status_code=404, detail="Waitlist is not open")
+    row = append_waitlist(payload.email, payload.source)
+    _persist("waitlist", row["id"], {**row, "email": redact_email(row["email"])})
+    return {"ok": True, "id": row["id"]}
+
+
+@app.get("/v1/waitlist")
+def waitlist_summary():
+    rows = read_waitlist()
+    return {
+        "count": len(rows),
+        "recent": [{"id": row.get("id"), "email": redact_email(str(row.get("email", ""))), "created_at": row.get("created_at")} for row in rows[-20:]],
+    }
