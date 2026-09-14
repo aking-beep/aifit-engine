@@ -173,3 +173,15 @@ Human-only leftovers (do not block a try-this launch):
 - [ ] First 25 real sessions with a finish/export note (roadmap Week 4)
 
 **Ship today:** public, gate off, tell people it is a beta quiz. Turn the gate on only if you want a closed first week.
+
+---
+
+## How safe is it?
+
+Safe enough for a public anonymous quiz. Not an enterprise control plane.
+
+Product guardrails (already in the engine): no MBTI / clinical / hiring labels, no sensitive-attribute metrics, LLM does not pick the winner.
+
+MVP network guardrails: size caps, per-IP rate limits, drop raw notes after classify, waitlist emails not listed publicly, CSP / nosniff / no-framing, CORS allowlist.
+
+See `docs/SECURITY.md`. Do not block launch on SSO, a WAF, or a pen-test program.

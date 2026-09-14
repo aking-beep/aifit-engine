@@ -38,6 +38,7 @@ An LLM may label optional free text. It never picks the winner. Ranking is dated
 - Keyword classification is first-class. The optional LLM classifier is off unless `AIFIT_LLM_CLASSIFIER=1` and an endpoint is set.
 - Fit scores are normalized similarity, not scientifically validated probabilities.
 - Not a personality test, clinical instrument, or hiring screen.
+- Public quiz traffic is rate-limited and notes are classified then dropped. See `docs/SECURITY.md`.
 
 ## Run locally
 
@@ -130,3 +131,4 @@ The registry, methodology, and evidence live under **How it works**. They are cr
 7. `docs/ROADMAP_4_WEEKS.md`
 8. `docs/DEFINITION_OF_DONE.md`
 9. `docs/MVP_LAUNCH.md`
+10. `docs/SECURITY.md`

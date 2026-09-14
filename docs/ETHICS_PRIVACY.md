@@ -33,6 +33,7 @@ For anonymous mode:
 - avoid requesting real name
 - avoid requesting employer
 - avoid requesting demographic attributes
+- classify optional notes, then drop the raw text (`source_text` is not stored)
 
 ## Explainability
 

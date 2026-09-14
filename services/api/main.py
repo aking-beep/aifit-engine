@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 import sys
 import uuid
 from pathlib import Path
@@ -10,7 +11,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "packages/core/src"))
 
-from fastapi import Body, FastAPI, HTTPException
+from fastapi import Body, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -21,18 +22,18 @@ from aifit.engine import normalize_free_text, score_session
 from aifit.exports import export_persona
 from aifit.fit import rank_models_by_workload, rank_products
 from aifit.freshness import freshness_report
+from aifit.guardrails import (
+    MAX_COMMENT_CHARS,
+    MAX_EVENTS_PER_BATCH,
+    MAX_EVENTS_PER_SESSION,
+    MAX_FREE_TEXT_CHARS,
+    clamp_text,
+    scrub_event,
+)
 from aifit.models import AssessmentSession, FitFilters, InteractionEvent, UserFitVector
 from aifit.persona import generate_persona
 from aifit.registry import load_models, load_products
 from aifit.scenarios import load_scenarios
-
-app = FastAPI(title="Fit API", version="0.4.0")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 from .access import (
     UnlockRequest,
@@ -44,7 +45,18 @@ from .access import (
     read_waitlist,
     redact_email,
 )
+from .limits import RateLimitMiddleware, SecurityHeadersMiddleware, cors_origins, operator_authorized
 from .store import STORE as RESULT_STORE
+
+app = FastAPI(title="Fit API", version="0.4.0")
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins(),
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Fit-Operator-Key"],
+)
 
 PRODUCTS = load_products(ROOT / "data/registry/products.json")
 MODELS = load_models(ROOT / "data/registry/models.json")
@@ -79,6 +91,24 @@ def _put_session(session: AssessmentSession) -> None:
     _persist("sessions", session.session_id, session.model_dump())
 
 
+def _require_id(value: str, label: str = "id") -> str:
+    text = (value or "").strip()
+    if not re.fullmatch(r"[A-Za-z0-9._-]{1,64}", text):
+        raise HTTPException(status_code=400, detail=f"Invalid {label}")
+    return text
+
+
+def _ingest_events(incoming: list[InteractionEvent], scenario_id: str | None, turn_id: str | None) -> list[InteractionEvent]:
+    cleaned: list[InteractionEvent] = []
+    for event in incoming:
+        if not event.scenario_id and scenario_id:
+            event.scenario_id = scenario_id
+        if not event.turn_id and turn_id:
+            event.turn_id = turn_id
+        cleaned.append(scrub_event(event))
+    return cleaned
+
+
 class FitRequest(BaseModel):
     values: dict[str, float]
     confidence: dict[str, float] = Field(default_factory=dict)
@@ -91,10 +121,10 @@ class PersonaRequest(BaseModel):
 
 
 class EventBatch(BaseModel):
-    events: list[InteractionEvent] = Field(default_factory=list)
-    free_text: str | None = None
-    scenario_id: str | None = None
-    turn_id: str | None = None
+    events: list[InteractionEvent] = Field(default_factory=list, max_length=MAX_EVENTS_PER_BATCH)
+    free_text: str | None = Field(default=None, max_length=MAX_FREE_TEXT_CHARS)
+    scenario_id: str | None = Field(default=None, max_length=64)
+    turn_id: str | None = Field(default=None, max_length=64)
 
 
 class ExportRequest(BaseModel):
@@ -103,16 +133,16 @@ class ExportRequest(BaseModel):
 
 
 class ClassifyRequest(BaseModel):
-    text: str
-    scenario_id: str
-    turn_id: str | None = None
+    text: str = Field(min_length=1, max_length=MAX_FREE_TEXT_CHARS)
+    scenario_id: str = Field(max_length=64)
+    turn_id: str | None = Field(default=None, max_length=64)
 
 
 class FeedbackRequest(BaseModel):
     session_id: str | None = None
     share_id: str | None = None
     rating: int = Field(ge=1, le=5)
-    comment: str = ""
+    comment: str = Field(default="", max_length=MAX_COMMENT_CHARS)
     useful: bool | None = None
 
 
@@ -121,8 +151,8 @@ class ScoreRequest(BaseModel):
 
 
 class ScoreBody(BaseModel):
-    session_id: str
-    events: list[InteractionEvent] = Field(default_factory=list)
+    session_id: str = Field(max_length=64)
+    events: list[InteractionEvent] = Field(default_factory=list, max_length=MAX_EVENTS_PER_SESSION)
     filters: FitFilters | None = None
 
 
@@ -149,6 +179,7 @@ def health():
         "store": RESULT_STORE.backend,
         "access_gate": access_mode(),
         "durable": RESULT_STORE.durable,
+        "guardrails": True,
     }
 
 
@@ -178,6 +209,7 @@ def demo_session():
 
 @app.get("/v1/sessions/{session_id}")
 def get_session(session_id: str):
+    session_id = _require_id(session_id, "session id")
     session = _get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Unknown session")
@@ -190,25 +222,26 @@ def get_session(session_id: str):
 
 @app.post("/v1/sessions/{session_id}/events")
 def add_events(session_id: str, batch: EventBatch):
+    session_id = _require_id(session_id, "session id")
     session = _get_session(session_id)
     if session is None:
         session = AssessmentSession(session_id=session_id, events=[])
     incoming = list(batch.events)
-    if batch.free_text and batch.scenario_id:
-        incoming.extend(normalize_free_text(batch.free_text, batch.scenario_id, batch.turn_id))
-    for event in incoming:
-        if not event.scenario_id and batch.scenario_id:
-            event.scenario_id = batch.scenario_id
-        if not event.turn_id and batch.turn_id:
-            event.turn_id = batch.turn_id
-    session.events.extend(incoming)
+    free_text = clamp_text(batch.free_text, MAX_FREE_TEXT_CHARS)
+    if free_text and batch.scenario_id:
+        incoming.extend(normalize_free_text(free_text, batch.scenario_id, batch.turn_id))
+    cleaned = _ingest_events(incoming, batch.scenario_id, batch.turn_id)
+    if len(session.events) + len(cleaned) > MAX_EVENTS_PER_SESSION:
+        raise HTTPException(status_code=413, detail="Session is full")
+    session.events.extend(cleaned)
     _put_session(session)
-    track("events_added", session_id=session_id, metadata={"count": len(incoming)})
+    track("events_added", session_id=session_id, metadata={"count": len(cleaned)})
     return {"session_id": session_id, "event_count": len(session.events)}
 
 
 @app.post("/v1/sessions/{session_id}/score")
 def score_stored_session(session_id: str, payload: ScoreRequest | None = Body(default=None)):
+    session_id = _require_id(session_id, "session id")
     session = _get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Unknown session")
@@ -218,6 +251,7 @@ def score_stored_session(session_id: str, payload: ScoreRequest | None = Body(de
 
 @app.post("/v1/sessions/{session_id}/share")
 def share_session(session_id: str):
+    session_id = _require_id(session_id, "session id")
     result = SCORES.get(session_id) or _load_persisted("scores", session_id)
     if result is None:
         session = _get_session(session_id)
@@ -268,6 +302,7 @@ def publish_share(payload: ShareBody):
 
 @app.get("/v1/share/{share_id}")
 def get_share(share_id: str):
+    share_id = _require_id(share_id, "share id")
     snapshot = SHARES.get(share_id) or _load_persisted("shares", share_id)
     if snapshot is None:
         raise HTTPException(status_code=404, detail="Unknown share")
@@ -276,6 +311,7 @@ def get_share(share_id: str):
 
 @app.get("/v1/sessions/{session_id}/export")
 def export_session(session_id: str):
+    session_id = _require_id(session_id, "session id")
     session = _get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Unknown session")
@@ -288,6 +324,7 @@ def export_session(session_id: str):
 
 @app.delete("/v1/sessions/{session_id}")
 def delete_session(session_id: str):
+    session_id = _require_id(session_id, "session id")
     existed = _get_session(session_id) is not None or session_id in SCORES or _load_persisted("scores", session_id)
     if not existed:
         raise HTTPException(status_code=404, detail="Unknown session")
@@ -301,7 +338,10 @@ def delete_session(session_id: str):
 
 @app.post("/v1/score")
 def score(payload: ScoreBody):
-    session = AssessmentSession(session_id=payload.session_id, events=payload.events)
+    session = AssessmentSession(
+        session_id=_require_id(payload.session_id, "session id"),
+        events=_ingest_events(payload.events, None, None),
+    )
     return _score_and_store(session, payload.filters)
 
 
@@ -309,7 +349,10 @@ def score(payload: ScoreBody):
 def signal(payload: ScoreBody):
     from aifit.adaptive import diagnostic_signal
 
-    session = AssessmentSession(session_id=payload.session_id, events=payload.events)
+    session = AssessmentSession(
+        session_id=_require_id(payload.session_id, "session id"),
+        events=_ingest_events(payload.events, None, None),
+    )
     return diagnostic_signal(session)
 
 
@@ -351,7 +394,7 @@ def persona(payload: PersonaRequest):
 
 @app.post("/v1/classify")
 def classify(payload: ClassifyRequest):
-    events = classify_text(payload.text, payload.scenario_id, payload.turn_id)
+    events = [scrub_event(event) for event in classify_text(payload.text, payload.scenario_id, payload.turn_id)]
     return {"events": [e.model_dump() for e in events], "note": "Classifier output is a feature source, not a recommendation."}
 
 
@@ -410,9 +453,16 @@ def waitlist_join(payload: WaitlistRequest):
 
 
 @app.get("/v1/waitlist")
-def waitlist_summary():
+def waitlist_summary(request: Request):
     rows = read_waitlist()
-    return {
-        "count": len(rows),
-        "recent": [{"id": row.get("id"), "email": redact_email(str(row.get("email", ""))), "created_at": row.get("created_at")} for row in rows[-20:]],
-    }
+    payload: dict[str, Any] = {"count": len(rows)}
+    if operator_authorized(request):
+        payload["recent"] = [
+            {
+                "id": row.get("id"),
+                "email": redact_email(str(row.get("email", ""))),
+                "created_at": row.get("created_at"),
+            }
+            for row in rows[-20:]
+        ]
+    return payload

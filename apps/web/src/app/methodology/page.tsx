@@ -48,10 +48,11 @@ export default function MethodologyPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold">5. Limits</h2>
+          <h2 className="text-lg font-semibold">5. Limits and guardrails</h2>
           <p className="mt-2 text-muted-foreground">
             Scores are not scientifically validated. This is not a personality test, clinical tool, or hiring screen.
-            Do not use it that way.
+            Do not use it that way. Fit does not infer race, health, or other protected attributes. A chat model never
+            picks the product or model winner. Notes are classified, then discarded.
           </p>
         </div>
       </section>

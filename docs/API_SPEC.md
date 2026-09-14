@@ -66,7 +66,7 @@ Launch-gate status: `{ mode: "off" | "waitlist" | "code", note }`. Default `off`
 `{ email, source? }`. 200 when the waitlist or code gate is on. Stores email + timestamp. 404 when the public quiz is ungated.
 
 ### GET /v1/waitlist
-`{ count, recent }` with redacted emails. Operator visibility only — not a public directory.
+`{ count }` publicly. Redacted `recent` rows only when `X-Fit-Operator-Key` matches `FIT_OPERATOR_KEY`.
 
 
 ## Response requirement

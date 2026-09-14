@@ -40,7 +40,7 @@ def test_waitlist_and_code_endpoints(tmp_path, monkeypatch) -> None:
     assert listed.status_code == 200
     payload = listed.json()
     assert payload["count"] == 1
-    assert payload["recent"][0]["email"].startswith("f***@")
+    assert "recent" not in payload
     assert "founder@example.com" not in listed.text
     status = client.get("/v1/access").json()
     assert status["mode"] == "waitlist"
