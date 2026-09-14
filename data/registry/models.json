@@ -24,15 +24,15 @@
       "cost_efficiency": 0.45,
       "local_control": 0.1
     },
-    "context_notes": "~1M-token context, 128K max output. Extended thinking always on. Knowledge cutoff mid-2026. Revalidate published limits before public display.",
-    "cost_notes": "Premium tier (~$10 in / $50 out per 1M tokens at seed date); 75% cheaper cached reads than Fable 5. Pricing is time-sensitive; query the official source before display.",
+    "context_notes": "1M-token context, 128K max output. Adaptive thinking always on; default effort high. Knowledge cutoff Jun 2026. Revalidate published limits before public display.",
+    "cost_notes": "Premium tier ($10 in / $50 out per 1M tokens); cache reads $0.25/MTok, 75% cheaper than Fable 5. Pricing is time-sensitive; query the official source before display.",
     "evidence": [
       {
         "source_type": "official",
-        "title": "Anthropic Claude Fable",
-        "url": "https://www.anthropic.com/claude/fable",
-        "observed_at": "2026-09-12",
-        "notes": "Released Sep 2026; positioned as long-horizon agentic/reasoning workhorse."
+        "title": "Claude Fable 5.1 model overview",
+        "url": "https://platform.claude.com/docs/en/models/fable-5-1/overview",
+        "observed_at": "2026-09-14",
+        "notes": "Official docs: 1M context, 128K max output, $10/$50 per MTok, knowledge cutoff Jun 2026, released Sep 1 2026."
       },
       {
         "source_type": "secondary_analysis",
@@ -42,7 +42,7 @@
         "notes": "Leads Terminal-Bench-Science (52.6%) and SWE Pro (81.2%). Third-party benchmark; re-verify before public claims."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-09-14",
     "registry_version": "0.3"
   },
   {
@@ -56,8 +56,7 @@
     ],
     "modalities": [
       "text",
-      "image",
-      "audio"
+      "image"
     ],
     "workload_scores": {
       "deep_reasoning": 0.92,
@@ -70,9 +69,16 @@
       "cost_efficiency": 0.7,
       "local_control": 0.1
     },
-    "context_notes": "~1M-token context, 128K max output. Tunable effort levels up to xhigh. Broad tool surface (function calling, web/file search, code interpreter, computer use, MCP).",
-    "cost_notes": "Mid tier (~$5 in / $30 out per 1M tokens at seed date). Token-efficient for high-throughput work. Verify current pricing before display.",
+    "context_notes": "1,050,000-token context, 128K max output. Effort none/low/medium/high/xhigh/max. Knowledge cutoff Feb 16, 2026. Requests with >272K input tokens billed at 2x input and 1.5x output for the full request. API model does not support audio.",
+    "cost_notes": "Promotional short-context pricing $4 in / $20 out per 1M tokens at least through Nov 21, 2026 (cached input $0.40); long-context band $8 / $30. Verify current pricing before display.",
     "evidence": [
+      {
+        "source_type": "official",
+        "title": "GPT-5.6 Sol Model | OpenAI API",
+        "url": "https://developers.openai.com/api/docs/models/gpt-5.6-sol",
+        "observed_at": "2026-09-14",
+        "notes": "Official model card: $4/$20 promotional pricing through at least 2026-11-21; 1,050,000 context; audio not supported."
+      },
       {
         "source_type": "secondary_analysis",
         "title": "Gemini 3.8 Flash vs Claude Fable 5.1 vs GPT-5.6 Sol (DEV Community)",
@@ -81,7 +87,7 @@
         "notes": "Artificial Analysis Intelligence Index 59 at xhigh; leads FrontierMath Tier 1-3 and ARC-AGI-2. Third-party benchmark; re-verify before public claims."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-09-14",
     "registry_version": "0.3"
   },
   {
@@ -112,8 +118,15 @@
       "local_control": 0.12
     },
     "context_notes": "~1M-token context, 65K max output. thinking_level low/medium/high. Knowledge cutoff March 2026. Search-grounded and strongly multimodal.",
-    "cost_notes": "Value tier (~$0.75 in / $3.75 out per 1M tokens introductory at seed date). Verify current pricing before display.",
+    "cost_notes": "Value tier: introductory $0.75 in / $3.75 out per 1M tokens through Dec 31, 2026; standard $1.50 / $7.50 from Jan 1, 2027. Verify current pricing before display.",
     "evidence": [
+      {
+        "source_type": "official",
+        "title": "Introducing Gemini 3.8 Flash and 3.8 Flash Cyber",
+        "url": "https://blog.google/innovation-and-ai/models-and-research/gemini-models/3-8-flash-and-3-8-flash-cyber/",
+        "observed_at": "2026-09-14",
+        "notes": "Official announcement dated 2026-09-02: introductory $0.75/$3.75 through 2026-12-31, then $1.50/$7.50."
+      },
       {
         "source_type": "secondary_analysis",
         "title": "GPT-5.6 Sol vs Fable 5.1 vs Gemini 3.8 Flash (2026)",
@@ -122,7 +135,7 @@
         "notes": "Highest GPQA Diamond (95.3%) of the trio at a fraction of flagship price. Third-party benchmark; re-verify before public claims."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-09-14",
     "registry_version": "0.3"
   },
   {
