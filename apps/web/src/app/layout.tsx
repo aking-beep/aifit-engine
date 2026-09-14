@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { AccessGate } from "@/components/access-gate";
 import { ReadingLevelProvider } from "@/components/reading-level";
 import { themeInitScript } from "@/components/theme";
 import "./globals.css";
@@ -74,7 +75,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </a>
           <SiteHeader />
           <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-            {children}
+            <AccessGate
+              initialMode={process.env.FIT_ACCESS_GATE || process.env.NEXT_PUBLIC_FIT_ACCESS_GATE || "off"}
+              initialNote={process.env.FIT_WAITLIST_NOTE || ""}
+            >
+              {children}
+            </AccessGate>
           </main>
           <SiteFooter />
         </ReadingLevelProvider>

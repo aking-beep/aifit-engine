@@ -75,4 +75,8 @@ export const api = {
   freshness: () => request<{ needs_review: unknown[]; products: unknown[]; models: unknown[] }>("/v1/registry/freshness"),
   feedback: (body: { session_id?: string; share_id?: string; rating: number; comment: string; useful?: boolean }) =>
     request<{ ok: boolean }>("/v1/feedback", { method: "POST", body: JSON.stringify(body) }),
+  access: () => request<{ mode: "off" | "waitlist" | "code"; note: string }>("/v1/access"),
+  unlock: (code: string) => request<{ ok: boolean }>("/v1/access/unlock", { method: "POST", body: JSON.stringify({ code }) }),
+  joinWaitlist: (email: string, source = "web") =>
+    request<{ ok: boolean; id: string }>("/v1/waitlist", { method: "POST", body: JSON.stringify({ email, source }) }),
 };

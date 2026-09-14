@@ -20,6 +20,7 @@ from .profile import (
     share_card_text,
 )
 from .freshness import freshness_report
+from .guardrails import safety_payload
 from .registry import load_models, load_products, validate_models, validate_products
 
 
@@ -76,8 +77,9 @@ def score_session(
             "mode": "anonymous",
             "stores_name": False,
             "stores_employer": False,
-            "retention": "In-memory session until delete or process restart. Share snapshots contain scores only.",
+            "retention": "Session until delete, process restart, or store TTL. Share snapshots are scores, not raw notes.",
         },
+        "safety": safety_payload(),
         "disclaimer": "Fit scores are normalized similarity scores, not scientifically validated probabilities.",
     }
     payload["share_card"] = share_card_text(payload)

@@ -38,6 +38,7 @@ An LLM may label optional free text. It never picks the winner. Ranking is dated
 - Keyword classification is first-class. The optional LLM classifier is off unless `AIFIT_LLM_CLASSIFIER=1` and an endpoint is set.
 - Fit scores are normalized similarity, not scientifically validated probabilities.
 - Not a personality test, clinical instrument, or hiring screen.
+- Public quiz traffic is rate-limited and notes are classified then dropped. See `docs/SECURITY.md`.
 
 ## Run locally
 
@@ -86,6 +87,8 @@ Import the Git repo in the Vercel dashboard if you prefer. Leave the root direct
 
 On Vercel, assessment events are buffered in the browser and scored in one request. Add Upstash Redis or Vercel KV so share IDs survive across instances. Without that, share links still work via a compressed snapshot in the URL hash.
 
+The public quiz stays ungated (`FIT_ACCESS_GATE=off`). To run an invite-first week, set `FIT_ACCESS_GATE=waitlist` or `FIT_ACCESS_GATE=code` plus `FIT_ACCESS_CODES` on the API service. How it works, the registry, privacy, and share links stay public. Preview a gate without changing env: `/?preview_gate=waitlist` or `/?preview_gate=code` (can only turn a gate on). See `docs/MVP_LAUNCH.md` for the competitor / TAM / gate decision.
+
 ## Architecture
 
 ```text
@@ -127,3 +130,5 @@ The registry, methodology, and evidence live under **How it works**. They are cr
 6. `docs/ETHICS_PRIVACY.md`
 7. `docs/ROADMAP_4_WEEKS.md`
 8. `docs/DEFINITION_OF_DONE.md`
+9. `docs/MVP_LAUNCH.md`
+10. `docs/SECURITY.md`
