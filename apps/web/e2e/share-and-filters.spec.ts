@@ -18,7 +18,10 @@ test("share link never carries the session id and cost filter has no no-op optio
   await page.getByRole("button", { name: /copy share link/i }).click();
   const link = page.getByRole("link", { name: /\/share\/profile#/ });
   const dialog = page.getByRole("dialog", { name: /copy share link/i });
-  await expect(link.or(dialog)).toBeVisible();
+  // The share URL is always rendered. Headless browsers often block the
+  // clipboard, so the fallback dialog may also be open at the same time.
+  // locator.or() then matches both and toBeVisible() fails strict mode.
+  await expect(link).toBeVisible();
   if (await dialog.isVisible()) await page.keyboard.press("Escape");
   const href = (await link.getAttribute("href")) ?? "";
   expect(href).toContain("/share/profile#");
