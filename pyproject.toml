@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aifit"
-version = "0.3.0"
+version = "0.4.0"
 description = "Fit: everyday AI style quiz and installable setup"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "httpx>=0.27"]
+dev = ["pytest>=8.0", "httpx>=0.27", "ruff>=0.6"]
 
 [project.scripts]
 aifit = "aifit.cli:app"
@@ -34,3 +34,17 @@ entrypoint = "services.api.main:app"
 [tool.pytest.ini_options]
 pythonpath = ["packages/core/src", "."]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+src = ["packages/core/src", "."]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+# FastAPI declares request bodies and headers via call defaults.
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# The API puts the core package on sys.path before importing it.
+"services/api/main.py" = ["E402"]

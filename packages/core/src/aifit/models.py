@@ -115,6 +115,7 @@ class Recommendation(BaseModel):
     category: str | None = None
     base_fit: float | None = None
     freshness: float | None = None
+    coverage: float | None = None
 
 
 class FitFilters(BaseModel):

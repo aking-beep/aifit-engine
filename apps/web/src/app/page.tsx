@@ -40,7 +40,7 @@ export default function HomePage() {
     setDemoError(null);
     try {
       const demo = await api.demoSession();
-      saveSession(demo.session);
+      saveSession({ ...demo.session, session_id: demo.session_id, token: demo.token, notes: [] });
       saveResult(demo.session_id, demo.result);
       router.push(`/results/${demo.session_id}`);
     } catch (err) {

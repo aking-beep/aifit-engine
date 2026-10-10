@@ -42,13 +42,20 @@ The user should be able to see:
 - which evidence contributed
 - how to correct or delete the result
 
-## Deletion
+## Deletion and retention
 
-Before public launch:
-- implement delete session/profile
-- document retention period
-- provide export
-- provide a no-account mode if practical
+- Answers and notes are stored server-side under a random session id for up to
+  30 days, then expire. The browser keeps its own copy.
+- `DELETE /v1/sessions/{id}` removes the session, its events and scores, and
+  every share link made from it.
+- `GET /v1/sessions/{id}/export` returns the stored record.
+- Session calls need the session's token, so a leaked session id alone can't
+  read or delete it.
+- Share snapshots hold scores only: no notes, raw answers, per-metric evidence
+  or user vector.
+- No accounts.
+- The optional LLM classifier (`AIFIT_LLM_CLASSIFIER=1`) sends note text to an
+  operator-configured endpoint. It is off by default.
 
 ## Benchmark integrity
 

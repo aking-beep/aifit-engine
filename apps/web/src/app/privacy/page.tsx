@@ -5,16 +5,26 @@ export default function PrivacyPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-12">
       <h1 className="text-3xl font-semibold tracking-tight">Privacy</h1>
       <p className="text-muted-foreground">
-        Fit runs in anonymous mode. It does not ask for your name, employer, or demographic attributes, and it
-        does not infer protected characteristics.
+        Fit runs in anonymous mode. It does not ask for your name, an account, your employer, or demographic
+        attributes, and it does not infer protected characteristics.
       </p>
       <Card>
         <CardHeader>
           <CardTitle>What is stored</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>A random session ID, interaction events, optional free text, and derived scores live in memory on the API process.</p>
-          <p>Share links store a score snapshot without your notes unless those notes already became evidence strings.</p>
+          <p>
+            Your answers — the choices you pick and any notes you type — are saved on our server under a random,
+            anonymous session ID for up to 30 days, or until you delete them. A copy is also kept in this browser.
+          </p>
+          <p>
+            Share links hold a snapshot of your scores and suggestions for 30 days. They do not include your notes or
+            your raw answers.
+          </p>
+          <p>
+            Notes are scored on our server. They are only sent to a third-party AI classifier if the operator of this
+            site turns on the optional LLM classifier (<code>AIFIT_LLM_CLASSIFIER</code>). It is off by default.
+          </p>
           <p>Feedback stores a 1–5 rating and an optional comment. Do not include identifying details.</p>
         </CardContent>
       </Card>
@@ -23,8 +33,11 @@ export default function PrivacyPage() {
           <CardTitle>Delete and export</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>From results, export the session or delete it. Deletion drops events and scores for that ID.</p>
-          <p>Your answers stay in this browser until you delete the session. There is no account database.</p>
+          <p>From your results page you can export your data as JSON or delete the session.</p>
+          <p>
+            Deleting removes the server session, its scores, and any share links created from it, plus the copy in
+            this browser.
+          </p>
         </CardContent>
       </Card>
       <p className="text-xs text-muted-foreground">

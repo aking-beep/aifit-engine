@@ -2,7 +2,20 @@ from __future__ import annotations
 
 from datetime import date
 
-from .config import DEFAULT_WEIGHTS, MODEL_WORKLOADS, PRICING_RANK
+from .config import (
+    CATEGORY_THRESHOLDS,
+    CONFIDENCE_FLOOR,
+    CONFIDENCE_SPAN,
+    COVERAGE_FLOOR,
+    DEFAULT_DIMENSION_CONFIDENCE,
+    DEFAULT_WEIGHTS,
+    FRESHNESS_BANDS,
+    FRESHNESS_FLOOR_FACTOR,
+    FRESHNESS_UNKNOWN_FACTOR,
+    MODEL_WORKLOADS,
+    NEGATIVE_FACTOR_DISTANCE,
+    PRICING_RANK,
+)
 from .models import (
     AIStack,
     FitFilters,
@@ -14,19 +27,22 @@ from .models import (
 )
 
 
-def _freshness_factor(last_evaluated_at: str) -> float:
+def record_age_days(last_evaluated_at: str, as_of: date | None = None) -> int | None:
     try:
         evaluated = date.fromisoformat(last_evaluated_at)
-        age = (date.today() - evaluated).days
-    except Exception:
-        return 0.7
-    if age <= 30:
-        return 1.0
-    if age <= 90:
-        return 0.95
-    if age <= 180:
-        return 0.85
-    return 0.70
+    except (TypeError, ValueError):
+        return None
+    return ((as_of or date.today()) - evaluated).days
+
+
+def _freshness_factor(last_evaluated_at: str, as_of: date | None = None) -> float:
+    age = record_age_days(last_evaluated_at, as_of)
+    if age is None:
+        return FRESHNESS_UNKNOWN_FACTOR
+    for max_age, factor, _band in FRESHNESS_BANDS:
+        if age <= max_age:
+            return factor
+    return FRESHNESS_FLOOR_FACTOR
 
 
 def _passes_filters(product: ProductRecord, filters: FitFilters | None) -> bool:
@@ -60,6 +76,8 @@ def rank_products(
     products: list[ProductRecord],
     weights: dict[str, float] | None = None,
     filters: FitFilters | None = None,
+    *,
+    as_of: date | None = None,
 ) -> list[Recommendation]:
     weights = weights or DEFAULT_WEIGHTS
     out: list[Recommendation] = []
@@ -72,27 +90,39 @@ def rank_products(
         total_weight = 0.0
         weighted_distance = 0.0
         confidence_values: list[float] = []
+        product_weight = 0.0
 
         for dim, product_value in product.fit_vector.items():
-            if dim not in user.values or dim not in weights:
+            if dim not in weights:
                 continue
             w = weights[dim]
+            product_weight += w
+            if dim not in user.values:
+                continue
             distance = abs(user.values[dim] - product_value)
             weighted_distance += w * distance
             total_weight += w
-            confidence_values.append(user.confidence.get(dim, 0.5))
+            confidence_values.append(user.confidence.get(dim, DEFAULT_DIMENSION_CONFIDENCE))
             comparisons.append((dim, distance))
 
         if total_weight == 0:
             continue
 
         base_fit = max(0.0, 1.0 - weighted_distance / total_weight)
-        freshness = _freshness_factor(product.last_evaluated_at)
-        mean_conf = (sum(confidence_values) / len(confidence_values)) if confidence_values else 0.5
-        fit = base_fit * freshness * (0.7 + 0.3 * mean_conf)
+        coverage = total_weight / product_weight
+        freshness = _freshness_factor(product.last_evaluated_at, as_of)
+        mean_conf = (
+            sum(confidence_values) / len(confidence_values) if confidence_values else DEFAULT_DIMENSION_CONFIDENCE
+        )
+        fit = (
+            base_fit
+            * freshness
+            * (CONFIDENCE_FLOOR + CONFIDENCE_SPAN * mean_conf)
+            * (COVERAGE_FLOOR + (1 - COVERAGE_FLOOR) * coverage)
+        )
         comparisons.sort(key=lambda x: x[1])
         positives = [f"{d} aligned" for d, _ in comparisons[:3]]
-        negatives = [f"{d} less aligned" for d, dist in comparisons[-2:] if dist > 0.35]
+        negatives = [f"{d} less aligned" for d, dist in comparisons[-2:] if dist > NEGATIVE_FACTOR_DISTANCE]
 
         out.append(
             Recommendation(
@@ -106,17 +136,20 @@ def rank_products(
                 category=product.category,
                 base_fit=round(base_fit, 4),
                 freshness=round(freshness, 4),
+                coverage=round(coverage, 4),
             )
         )
     return sorted(out, key=lambda r: r.fit, reverse=True)
 
 
-def rank_models_for_workload(models: list[ModelRecord], workload: str) -> list[Recommendation]:
+def rank_models_for_workload(
+    models: list[ModelRecord], workload: str, *, as_of: date | None = None
+) -> list[Recommendation]:
     results: list[Recommendation] = []
     for model in models:
         if workload not in model.workload_scores:
             continue
-        freshness = _freshness_factor(model.last_evaluated_at)
+        freshness = _freshness_factor(model.last_evaluated_at, as_of)
         score = model.workload_scores[workload] * freshness
         results.append(
             Recommendation(
@@ -135,28 +168,34 @@ def rank_models_for_workload(models: list[ModelRecord], workload: str) -> list[R
     return sorted(results, key=lambda r: r.fit, reverse=True)
 
 
-def rank_models_by_workload(models: list[ModelRecord]) -> dict[str, list[Recommendation]]:
-    return {workload: rank_models_for_workload(models, workload)[:5] for workload in MODEL_WORKLOADS}
+def rank_models_by_workload(
+    models: list[ModelRecord], *, as_of: date | None = None
+) -> dict[str, list[Recommendation]]:
+    return {workload: rank_models_for_workload(models, workload, as_of=as_of)[:5] for workload in MODEL_WORKLOADS}
 
 
 def relevant_categories(user: UserFitVector) -> list[str]:
     values = user.values
+    t = CATEGORY_THRESHOLDS
     categories = ["general_assistant"]
-    if values.get("code_comfort", 0) >= 0.45:
+    if values.get("code_comfort", 0) >= t["code_comfort"]:
         categories.append("ide")
         categories.append("coding_agent")
-    if values.get("evidence_seeking", 0) >= 0.55:
+    if values.get("evidence_seeking", 0) >= t["evidence_seeking"]:
         categories.append("research")
         categories.append("knowledge")
-    if values.get("automation_appetite", 0) >= 0.55:
+    if values.get("automation_appetite", 0) >= t["automation_appetite"]:
         categories.append("automation")
-    if values.get("integration_appetite", 0) >= 0.55:
+    if values.get("integration_appetite", 0) >= t["integration_appetite"]:
         categories.append("enterprise_search")
-    if values.get("multimodal_preference", 0) >= 0.55:
+    if values.get("multimodal_preference", 0) >= t["multimodal_preference"]:
         categories.extend(["writing", "image", "design", "presentation", "video"])
-    if values.get("structure_preference", 0) >= 0.65 and values.get("evidence_seeking", 0) >= 0.5:
+    if (
+        values.get("structure_preference", 0) >= t["data_analysis_structure"]
+        and values.get("evidence_seeking", 0) >= t["data_analysis_evidence"]
+    ):
         categories.append("data_analysis")
-    if values.get("local_control_preference", 0) >= 0.6:
+    if values.get("local_control_preference", 0) >= t["local_control_preference"]:
         categories.append("local_open_source")
     # Preserve order while dropping duplicates.
     seen: set[str] = set()

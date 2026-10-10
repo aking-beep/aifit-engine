@@ -66,12 +66,6 @@ export function useReadingLevel(): { level: ReadingLevel; detailed: boolean; set
   return { level, detailed: level === "detailed", setLevel: setReadingLevel };
 }
 
-// Kept as a thin wrapper so the layout can opt future global UI in without
-// another refactor. The store itself is module-level, so this is a passthrough.
-export function ReadingLevelProvider({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
-}
-
 export function ReadingLevelToggle({ className }: { className?: string }) {
   const { level, setLevel } = useReadingLevel();
   const options: { id: ReadingLevel; label: string; hint: string }[] = [

@@ -25,18 +25,15 @@ export default function ResultsPage() {
           if (!cancelled) setResult(cached);
           return;
         }
-        try {
-          const scored = await api.score(params.sessionId);
-          saveResult(params.sessionId, scored);
-          if (!cancelled) setResult(scored);
-          return;
-        } catch {
-          const stored = loadSession(params.sessionId);
-          if (!stored) throw new Error("This session is no longer on the server. Run the assessment again.");
-          const scored = await api.scoreFull(stored);
-          saveResult(params.sessionId, scored);
-          if (!cancelled) setResult(scored);
-        }
+        const stored = loadSession(params.sessionId);
+        if (!stored) throw new Error("This session is not saved in this browser. Run the assessment again.");
+        const scored = await api.scoreFull({
+          session_id: stored.session_id,
+          events: stored.events,
+          notes: stored.notes,
+        });
+        saveResult(params.sessionId, scored);
+        if (!cancelled) setResult(scored);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not load results.");
       } finally {

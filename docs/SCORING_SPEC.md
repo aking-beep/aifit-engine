@@ -36,6 +36,16 @@ confidence = min(1.0, observations / target_observations)
 
 Target observations default to 4 but may vary by metric.
 
+## Absence of a habit
+
+Events only record what a person did, so a habit they never showed would
+otherwise be missing from the vector and never count against a product.
+When a completed scenario tests a habit (its `dimensions`) and the person never
+showed that habit in any scenario, the habit gets one observation at
+`ABSENCE_STRENGTH` (0.2) per such scenario. Habits the person did show keep
+their observed average. The adaptive stopping rule still uses positive signal
+only.
+
 ## Product fit
 
 Each product entry has a fit vector using the same compatible dimensions plus capability flags.
@@ -43,9 +53,14 @@ Each product entry has a fit vector using the same compatible dimensions plus ca
 Initial fit calculation:
 
 ```text
-weighted_distance = Σ weight[d] * abs(user[d] - product_preference_fit[d])
-fit = 1 - weighted_distance / Σ weights
+weighted_distance = Σ weight[d] * abs(user[d] - product_preference_fit[d])   (d measured for the user)
+base_fit = 1 - weighted_distance / Σ weights over measured d
+coverage = Σ weights over measured d / Σ weights over all of the product's d
+fit = base_fit * freshness * (0.7 + 0.3 * mean_confidence) * (0.6 + 0.4 * coverage)
 ```
+
+Coverage stops a product matched on one dimension from outranking one matched
+on six. Every constant here lives in `aifit/config.py`.
 
 Then apply:
 - capability requirement filters
@@ -58,7 +73,11 @@ Then apply:
 
 ## Freshness penalty
 
-Registry records older than a configured threshold should lose confidence, not automatically become "bad."
+Registry records older than a configured threshold (`FRESHNESS_THRESHOLD_DAYS`,
+30) should lose confidence, not automatically become "bad." Anything past the
+threshold is listed in the freshness report's `needs_review`. Scoring takes an
+optional `as_of` date so tests and evals don't drift with the calendar; the eval
+harness defaults it to the newest registry date.
 
 Example:
 - <= 30 days: 1.00

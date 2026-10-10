@@ -60,13 +60,12 @@ def classify_text(
 
 
 def _maybe_llm_events(text: str, scenario_id: str, turn_id: str | None) -> list[InteractionEvent]:
-    key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("OPENAI_API_KEY")
-    if not key or not text.strip():
+    if not text.strip():
         return []
     # v0.1 ships the adapter and schema. Live provider calls stay optional so
     # local/dev scoring never depends on a model as the decision maker.
     try:
-        payload = _post_structured(text, key)
+        payload = _post_structured(text)
     except Exception:
         return []
     results: list[InteractionEvent] = []
@@ -89,8 +88,14 @@ def _maybe_llm_events(text: str, scenario_id: str, turn_id: str | None) -> list[
     return results
 
 
-def _post_structured(text: str, _key: str) -> dict:
-    """Provider-agnostic hook. Disabled unless AIFIT_LLM_CLASSIFIER=1."""
+def _post_structured(text: str) -> dict:
+    """Provider-agnostic hook. Disabled unless AIFIT_LLM_CLASSIFIER=1.
+
+    When enabled, the user's note text is sent to AIFIT_LLM_CLASSIFIER_URL, an
+    operator-run adapter that talks to whichever provider it likes. If
+    AIFIT_LLM_CLASSIFIER_TOKEN is set it is sent as a bearer token. Provider
+    API keys stay with that adapter, never with this process.
+    """
     if os.environ.get("AIFIT_LLM_CLASSIFIER") != "1":
         return {"events": [], "model": None, "version": "disabled"}
     # Keep the HTTP shape explicit without binding scoring to one vendor.
@@ -98,6 +103,10 @@ def _post_structured(text: str, _key: str) -> dict:
     endpoint = os.environ.get("AIFIT_LLM_CLASSIFIER_URL")
     if not endpoint:
         return {"events": [], "model": None, "version": "no_endpoint"}
-    req = urllib.request.Request(endpoint, data=body, headers={"Content-Type": "application/json"})
+    headers = {"Content-Type": "application/json"}
+    token = os.environ.get("AIFIT_LLM_CLASSIFIER_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    req = urllib.request.Request(endpoint, data=body, headers=headers)
     with urllib.request.urlopen(req, timeout=8) as response:
         return json.loads(response.read().decode())

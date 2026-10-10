@@ -6,6 +6,13 @@ export type InteractionEvent = {
   evidence?: string | null;
 };
 
+/** A free-text note typed during the quiz. The server classifies it into events. */
+export type QuizNote = {
+  text: string;
+  scenario_id: string;
+  turn_id?: string | null;
+};
+
 export type Choice = {
   id: string;
   label: string;
@@ -15,7 +22,6 @@ export type Choice = {
 export type ScenarioTurn = {
   id: string;
   prompt: string;
-  hidden_information?: string | null;
   choices: Choice[];
   allow_free_text: boolean;
 };
@@ -50,6 +56,8 @@ export type Recommendation = {
   category?: string | null;
   base_fit?: number | null;
   freshness?: number | null;
+  /** Share of the user's dimensions the registry has evidence for (0–1). */
+  coverage?: number | null;
 };
 
 export type Stack = {

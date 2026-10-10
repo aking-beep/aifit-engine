@@ -137,7 +137,10 @@ def test_exports_cover_required_targets():
     from aifit.engine import score_session
     from aifit.exports import export_pack_zip
 
-    packed_name, packed = export_pack_zip(score_session(AssessmentSession(session_id="x", events=[{"event_type": "requested_evidence", "scenario_id": "s", "strength": 1.0}])))
+    session = AssessmentSession(
+        session_id="x", events=[{"event_type": "requested_evidence", "scenario_id": "s", "strength": 1.0}]
+    )
+    packed_name, packed = export_pack_zip(score_session(session))
     assert packed_name == "ai-profile.zip"
     assert packed[:2] == b"PK"
 
@@ -186,8 +189,10 @@ def test_api_health_and_score():
     assert client.get("/health").json()["ok"] is True
     created = client.post("/v1/sessions").json()
     session_id = created["session_id"]
+    auth = {"X-Session-Token": created["token"]}
     add = client.post(
         f"/v1/sessions/{session_id}/events",
+        headers=auth,
         json={
             "scenario_id": "launch-risk",
             "turn_id": "lr-1",
@@ -196,7 +201,7 @@ def test_api_health_and_score():
         },
     )
     assert add.status_code == 200
-    scored = client.post(f"/v1/sessions/{session_id}/score")
+    scored = client.post(f"/v1/sessions/{session_id}/score", headers=auth)
     assert scored.status_code == 200
     body = scored.json()
     assert body["products"]
@@ -212,7 +217,7 @@ def test_api_health_and_score():
     assert packed.status_code == 200
     assert packed.json()["encoding"] == "base64"
     assert packed.json()["filename"] == "ai-profile.zip"
-    deleted = client.delete(f"/v1/sessions/{session_id}")
+    deleted = client.delete(f"/v1/sessions/{session_id}", headers=auth)
     assert deleted.json()["deleted"] is True
 
 
@@ -274,16 +279,17 @@ def test_local_only_filter_drops_cloud_products():
 
 
 def test_api_demo_share_feedback_freshness_and_scenarios():
-    from services.api.main import FEEDBACK, app
+    from services.api.main import app
 
     client = TestClient(app)
     demo = client.post("/v1/sessions/demo")
     assert demo.status_code == 200
     session_id = demo.json()["session_id"]
+    auth = {"X-Session-Token": demo.json()["token"]}
     scored = demo.json()["result"]
     assert scored["products_by_category"]
     assert scored["primary_stack"]["slots"]
-    shared = client.post(f"/v1/sessions/{session_id}/share")
+    shared = client.post(f"/v1/sessions/{session_id}/share", headers=auth)
     assert shared.status_code == 200
     share_id = shared.json()["share_id"]
     snapshot = client.get(f"/v1/share/{share_id}")
@@ -291,12 +297,13 @@ def test_api_demo_share_feedback_freshness_and_scenarios():
     assert snapshot.json()["persona"]
     filtered = client.post(
         f"/v1/sessions/{session_id}/score",
+        headers=auth,
         json={"filters": {"local_only": True}},
     )
     assert filtered.status_code == 200
     feedback = client.post("/v1/feedback", json={"session_id": session_id, "rating": 5, "comment": "useful"})
     assert feedback.json()["ok"] is True
-    assert FEEDBACK
+    assert client.get("/v1/analytics/summary").json()["feedback_count"] >= 1
     freshness = client.get("/v1/registry/freshness")
     assert "needs_review" in freshness.json()
     classified = client.post(
@@ -307,17 +314,20 @@ def test_api_demo_share_feedback_freshness_and_scenarios():
     assert "requested_comparison" in types
     analytics = client.get("/v1/analytics/summary")
     assert analytics.json()["event_count"] >= 1
-    exported = client.get(f"/v1/sessions/{session_id}/export")
+    exported = client.get(f"/v1/sessions/{session_id}/export", headers=auth)
     assert exported.status_code == 200
 
     scenarios = client.get("/v1/scenarios").json()
     assert len(scenarios) == 8
-    walk = client.post("/v1/sessions").json()["session_id"]
+    walk_session = client.post("/v1/sessions").json()
+    walk = walk_session["session_id"]
+    walk_auth = {"X-Session-Token": walk_session["token"]}
     for scenario in scenarios:
         for turn in scenario["turns"]:
             choice = turn["choices"][0]
             added = client.post(
                 f"/v1/sessions/{walk}/events",
+                headers=walk_auth,
                 json={
                     "scenario_id": scenario["id"],
                     "turn_id": turn["id"],
@@ -326,12 +336,12 @@ def test_api_demo_share_feedback_freshness_and_scenarios():
                 },
             )
             assert added.status_code == 200
-    walked = client.post(f"/v1/sessions/{walk}/score")
+    walked = client.post(f"/v1/sessions/{walk}/score", headers=walk_auth)
     assert walked.status_code == 200
     body = walked.json()
     assert body["metrics"]
     assert body["persona"]["disclaimer"]
-    assert client.delete(f"/v1/sessions/{walk}").json()["deleted"] is True
+    assert client.delete(f"/v1/sessions/{walk}", headers=walk_auth).json()["deleted"] is True
 
 
 def test_stateless_score_endpoint_accepts_full_session():
