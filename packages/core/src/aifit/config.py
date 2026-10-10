@@ -76,6 +76,58 @@ PRICING_RANK = {
 
 FRESHNESS_THRESHOLD_DAYS = 30
 HIGH_CONFIDENCE_SCENARIO_COUNT = 2
+
+# Registry age bands: (max age in days, confidence factor, band name). Records
+# older than the last band get FRESHNESS_FLOOR_FACTOR. The first band ends at
+# FRESHNESS_THRESHOLD_DAYS; anything past it needs review.
+FRESHNESS_BANDS: tuple[tuple[int, float, str], ...] = (
+    (FRESHNESS_THRESHOLD_DAYS, 1.0, "current"),
+    (90, 0.95, "aging"),
+    (180, 0.85, "stale"),
+)
+FRESHNESS_FLOOR_FACTOR = 0.70
+FRESHNESS_FLOOR_BAND = "expired_confidence"
+FRESHNESS_UNKNOWN_FACTOR = 0.70
+
+# Product fit = base_fit * freshness * (CONFIDENCE_FLOOR + CONFIDENCE_SPAN * mean_conf)
+#             * (COVERAGE_FLOOR + (1 - COVERAGE_FLOOR) * coverage)
+# coverage is the share of a product's weighted dimensions the user was
+# actually measured on, so one matching dimension cannot beat six.
+CONFIDENCE_FLOOR = 0.7
+CONFIDENCE_SPAN = 0.3
+DEFAULT_DIMENSION_CONFIDENCE = 0.5
+COVERAGE_FLOOR = 0.6
+NEGATIVE_FACTOR_DISTANCE = 0.35
+
+# A habit the user never showed in any scenario that tested it counts as one
+# weak observation per such scenario, so absence lowers fit instead of being
+# ignored.
+ABSENCE_STRENGTH = 0.2
+
+# Thresholds on the user vector that pull a category into the stack.
+CATEGORY_THRESHOLDS: dict[str, float] = {
+    "code_comfort": 0.45,
+    "evidence_seeking": 0.55,
+    "automation_appetite": 0.55,
+    "integration_appetite": 0.55,
+    "multimodal_preference": 0.55,
+    "data_analysis_structure": 0.65,
+    "data_analysis_evidence": 0.5,
+    "local_control_preference": 0.6,
+}
+
+# Adaptive quiz stopping rule.
+ADAPTIVE_MIN_SCENARIOS = 4
+ADAPTIVE_MAX_SCENARIOS = 8
+ADAPTIVE_READY_CONFIDENCE = 0.42
+ADAPTIVE_MIN_CORE_METRICS = 4
+ADAPTIVE_CORE_METRICS = (
+    "evidence_seeking",
+    "assumption_challenge",
+    "iteration_preference",
+    "autonomy_preference",
+    "comparison_preference",
+)
 MODEL_WORKLOADS = (
     "deep_reasoning",
     "fast_reasoning",

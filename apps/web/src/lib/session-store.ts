@@ -1,12 +1,15 @@
-import type { InteractionEvent, ScoreResult } from "./types";
+import type { InteractionEvent, QuizNote, ScoreResult } from "./types";
+import { normalizeResult } from "./share-snapshot";
 
 const SESSION_PREFIX = "aifit:session:";
 const RESULT_PREFIX = "aifit:result:";
-const LAST_SESSION_KEY = "aifit:last-session";
 
 export type StoredSession = {
   session_id: string;
+  /** Proves this browser owns the server copy. Sent as X-Session-Token. */
+  token?: string | null;
   events: InteractionEvent[];
+  notes?: QuizNote[];
 };
 
 function browserStore(): Storage | null {
@@ -22,13 +25,12 @@ function browserStore(): Storage | null {
   }
 }
 
-function readJson<T>(key: string): T | null {
+function readJson(key: string): unknown {
   const store = browserStore();
   if (!store) return null;
-  const raw = store.getItem(key);
-  if (!raw) return null;
   try {
-    return JSON.parse(raw) as T;
+    const raw = store.getItem(key);
+    return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
@@ -37,67 +39,47 @@ function readJson<T>(key: string): T | null {
 function writeJson(key: string, value: unknown) {
   const store = browserStore();
   if (!store) return;
-  store.setItem(key, JSON.stringify(value));
+  try {
+    store.setItem(key, JSON.stringify(value));
+  } catch {
+    // Quota or privacy mode: the in-memory copy still works for this visit.
+  }
 }
 
 function removeKey(key: string) {
-  const store = browserStore();
-  store?.removeItem(key);
+  try {
+    browserStore()?.removeItem(key);
+  } catch {
+    // Ignore storage failures.
+  }
 }
 
 export function saveSession(session: StoredSession) {
   writeJson(SESSION_PREFIX + session.session_id, session);
-  writeJson(LAST_SESSION_KEY, session.session_id);
 }
 
 export function loadSession(sessionId: string): StoredSession | null {
-  return readJson<StoredSession>(SESSION_PREFIX + sessionId);
+  const raw = readJson(SESSION_PREFIX + sessionId);
+  if (typeof raw !== "object" || raw === null) return null;
+  const value = raw as Partial<StoredSession>;
+  if (typeof value.session_id !== "string" || !Array.isArray(value.events)) return null;
+  return {
+    session_id: value.session_id,
+    token: typeof value.token === "string" ? value.token : null,
+    events: value.events,
+    notes: Array.isArray(value.notes) ? value.notes : [],
+  };
 }
 
 export function saveResult(sessionId: string, result: ScoreResult) {
   writeJson(RESULT_PREFIX + sessionId, result);
-  writeJson(LAST_SESSION_KEY, sessionId);
 }
 
 export function loadResult(sessionId: string): ScoreResult | null {
-  return readJson<ScoreResult>(RESULT_PREFIX + sessionId);
-}
-
-export function lastSessionId(): string | null {
-  const store = browserStore();
-  return store?.getItem(LAST_SESSION_KEY) ?? null;
+  return normalizeResult(readJson(RESULT_PREFIX + sessionId));
 }
 
 export function clearSession(sessionId: string) {
   removeKey(SESSION_PREFIX + sessionId);
   removeKey(RESULT_PREFIX + sessionId);
-  const store = browserStore();
-  if (store?.getItem(LAST_SESSION_KEY) === sessionId) {
-    store.removeItem(LAST_SESSION_KEY);
-  }
-}
-
-export async function encodeSharePayload(result: ScoreResult): Promise<string> {
-  const bytes = new TextEncoder().encode(JSON.stringify(result));
-  const compressed = await new Response(
-    new Blob([bytes]).stream().pipeThrough(new CompressionStream("deflate-raw")),
-  ).arrayBuffer();
-  return btoa(String.fromCharCode(...new Uint8Array(compressed)))
-    .replaceAll("+", "-")
-    .replaceAll("/", "_")
-    .replaceAll("=", "");
-}
-
-export async function decodeSharePayload(payload: string): Promise<ScoreResult | null> {
-  try {
-    const padded = payload.replaceAll("-", "+").replaceAll("_", "/");
-    const binary = atob(padded);
-    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    const json = await new Response(
-      new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw")),
-    ).text();
-    return JSON.parse(json) as ScoreResult;
-  } catch {
-    return null;
-  }
 }

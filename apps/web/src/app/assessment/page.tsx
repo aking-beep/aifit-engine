@@ -3,13 +3,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import type { InteractionEvent, Scenario } from "@/lib/types";
+import type { InteractionEvent, QuizNote, Scenario } from "@/lib/types";
 import { saveResult, saveSession } from "@/lib/session-store";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+
+const NOTE_LIMIT = 2000;
+const POST_CHOICE_LOCK_MS = 280;
 
 export default function AssessmentPage() {
   const router = useRouter();
@@ -24,19 +27,22 @@ export default function AssessmentPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const submittingRef = useRef(false);
+  // Briefly blocks a second tap right after a choice advances the quiz. Rendered
+  // as disabled buttons so the lock is visible, not just an ignored click.
+  const [locked, setLocked] = useState(false);
+  const busyRef = useRef(false);
   const [events, setEvents] = useState<InteractionEvent[]>([]);
   const [completed, setCompleted] = useState(0);
   const [signalNote, setSignalNote] = useState<string | null>(null);
   const eventsRef = useRef<InteractionEvent[]>([]);
+  const notesRef = useRef<QuizNote[]>([]);
+  const tokenRef = useRef<string | null>(null);
   const turnIndexRef = useRef(0);
-
-  useEffect(() => {
-    eventsRef.current = events;
-  }, [events]);
-  useEffect(() => {
-    turnIndexRef.current = turnIndex;
-  }, [turnIndex]);
+  const completedRef = useRef(0);
+  // Turns already recorded, keyed by scene number + scenario + turn, so a retry
+  // after a failed finish never appends the same answer twice.
+  const recordedRef = useRef<Set<string>>(new Set());
+  const pendingSavesRef = useRef<Set<Promise<unknown>>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -48,9 +54,14 @@ export default function AssessmentPage() {
         if (loaded[0]) setScenarioId(loaded[0].id);
         try {
           const session = await api.createSession();
-          if (!cancelled) setSessionId(session.session_id);
+          if (cancelled) return;
+          tokenRef.current = session.token;
+          setSessionId(session.session_id);
         } catch {
-          if (!cancelled) setSessionId(crypto.randomUUID());
+          // The events endpoint adopts a client-made id + token on first write.
+          if (cancelled) return;
+          tokenRef.current = crypto.randomUUID();
+          setSessionId(crypto.randomUUID());
         }
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "Could not start. Try again in a moment.");
@@ -76,12 +87,84 @@ export default function AssessmentPage() {
   const turnsInScene = scenario?.turns.length ?? 0;
   const expectedTotal = typicalTurns;
   const progress = Math.min(100, Math.round((completedTurns / expectedTotal) * 100));
+  const choicesDisabled = submitting || locked;
 
-  async function finish(nextEvents: InteractionEvent[]) {
-    if (!sessionId) return;
-    const scored = await api.scoreFull({ session_id: sessionId, events: nextEvents });
-    saveResult(sessionId, scored);
-    router.push(`/results/${sessionId}`);
+  function storeLocally(id: string) {
+    saveSession({ session_id: id, token: tokenRef.current, events: eventsRef.current, notes: notesRef.current });
+  }
+
+  function trackSave(promise: Promise<unknown>) {
+    const tracked = promise.catch(() => {
+      // Serverless instances may not share memory. The local buffer is enough to score.
+    });
+    pendingSavesRef.current.add(tracked);
+    void tracked.finally(() => pendingSavesRef.current.delete(tracked));
+  }
+
+  async function flushSaves() {
+    await Promise.all(Array.from(pendingSavesRef.current));
+  }
+
+  function recordAnswer(id: string, currentScenario: Scenario, currentTurn: Scenario["turns"][number], choiceId: string) {
+    const key = `${completedRef.current}:${currentScenario.id}:${currentTurn.id}`;
+    if (recordedRef.current.has(key)) return;
+    const choice = currentTurn.choices.find((item) => item.id === choiceId);
+    if (!choice) return;
+    recordedRef.current.add(key);
+    const freeText = note.trim().slice(0, NOTE_LIMIT);
+    const mapped = choice.events.map((event) => ({
+      ...event,
+      scenario_id: currentScenario.id,
+      turn_id: currentTurn.id,
+      evidence: event.evidence || choice.label,
+    }));
+    eventsRef.current = [...eventsRef.current, ...mapped];
+    if (freeText) {
+      notesRef.current = [...notesRef.current, { text: freeText, scenario_id: currentScenario.id, turn_id: currentTurn.id }];
+    }
+    setEvents(eventsRef.current);
+    storeLocally(id);
+    setNote("");
+    trackSave(
+      api.addEvents(id, tokenRef.current, {
+        scenario_id: currentScenario.id,
+        turn_id: currentTurn.id,
+        events: mapped,
+        free_text: freeText || undefined,
+      }),
+    );
+  }
+
+  async function finish(id: string) {
+    const scored = await api.scoreFull({ session_id: id, events: eventsRef.current, notes: notesRef.current });
+    saveResult(id, scored);
+    router.push(`/results/${id}`);
+  }
+
+  // Ends the current scene: wait for saves, ask the server whether to continue,
+  // then either load the next scene or score. Safe to call again after a failure.
+  async function endScene(id: string) {
+    setSubmitting(true);
+    setError(null);
+    try {
+      await flushSaves();
+      const signal = await api.signal({ session_id: id, events: eventsRef.current }).catch(() => null);
+      if (!signal || signal.ready || !signal.next_scenario_id) {
+        await finish(id);
+        return;
+      }
+      completedRef.current += 1;
+      setCompleted(completedRef.current);
+      setSignalNote(signal.note);
+      setScenarioId(signal.next_scenario_id);
+      turnIndexRef.current = 0;
+      setTurnIndex(0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not score your answers. Try again.");
+    } finally {
+      busyRef.current = false;
+      setSubmitting(false);
+    }
   }
 
   function handleChoiceKeys(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -114,74 +197,34 @@ export default function AssessmentPage() {
   }
 
   async function pickChoice(choiceId: string) {
-    if (submittingRef.current || !sessionId || !scenario) return;
+    if (busyRef.current || locked || !sessionId || !scenario) return;
     const currentTurnIndex = turnIndexRef.current;
     const currentTurn = scenario.turns[currentTurnIndex];
-    if (!currentTurn) return;
-    const choice = currentTurn.choices.find((item) => item.id === choiceId);
-    if (!choice) return;
-    submittingRef.current = true;
-    setSelected(choiceId);
+    if (!currentTurn || !currentTurn.choices.some((item) => item.id === choiceId)) return;
+    busyRef.current = true;
     setError(null);
-    const freeText = note.trim();
-    const mapped = choice.events.map((event) => ({
-      ...event,
-      scenario_id: scenario.id,
-      turn_id: currentTurn.id,
-      evidence: event.evidence || choice.label,
-    }));
-    const nextEvents = [...eventsRef.current, ...mapped];
-    const lastTurn = currentTurnIndex >= scenario.turns.length - 1;
-    eventsRef.current = nextEvents;
-    setEvents(nextEvents);
-    saveSession({ session_id: sessionId, events: nextEvents });
+    recordAnswer(sessionId, scenario, currentTurn, choiceId);
     setSelected(null);
-    setNote("");
 
-    const persist = () =>
-      api
-        .addEvents(sessionId, {
-          scenario_id: scenario.id,
-          turn_id: currentTurn.id,
-          events: mapped,
-          free_text: freeText || undefined,
-        })
-        .catch(() => {
-          // Serverless instances may not share memory. The local buffer is enough to score.
-        });
-
-    if (!lastTurn) {
+    if (currentTurnIndex < scenario.turns.length - 1) {
       const nextIndex = currentTurnIndex + 1;
       turnIndexRef.current = nextIndex;
       setTurnIndex(nextIndex);
-      setSubmitting(false);
+      setLocked(true);
       window.setTimeout(() => {
-        submittingRef.current = false;
-      }, 280);
-      void persist();
+        busyRef.current = false;
+        setLocked(false);
+      }, POST_CHOICE_LOCK_MS);
       return;
     }
 
-    setSubmitting(true);
-    try {
-      await persist();
-      const signal = await api.signal({ session_id: sessionId, events: nextEvents }).catch(() => null);
-      const doneCount = completed + 1;
-      setCompleted(doneCount);
-      if (!signal || signal.ready || !signal.next_scenario_id) {
-        await finish(nextEvents);
-        return;
-      }
-      setSignalNote(signal.note);
-      setScenarioId(signal.next_scenario_id);
-      turnIndexRef.current = 0;
-      setTurnIndex(0);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not save that response.");
-    } finally {
-      submittingRef.current = false;
-      setSubmitting(false);
-    }
+    await endScene(sessionId);
+  }
+
+  function retry() {
+    if (busyRef.current || !sessionId) return;
+    busyRef.current = true;
+    void endScene(sessionId);
   }
 
   if (error && !scenario) {
@@ -272,6 +315,7 @@ export default function AssessmentPage() {
             ref={choicesRef}
             role="radiogroup"
             aria-label={turn.prompt}
+            aria-busy={choicesDisabled}
             onKeyDown={handleChoiceKeys}
             className="space-y-3"
           >
@@ -287,7 +331,8 @@ export default function AssessmentPage() {
                   tabIndex={isTabStop ? 0 : -1}
                   data-choice={choice.id}
                   onClick={() => void pickChoice(choice.id)}
-                  disabled={submitting}
+                  disabled={choicesDisabled}
+                  aria-disabled={choicesDisabled}
                   className={`block min-h-11 w-full rounded-xl border px-4 py-3 text-left text-sm transition disabled:opacity-70 ${
                     isSelected ? "border-primary bg-primary/10" : "border-border hover:bg-muted/50"
                   }`}
@@ -306,14 +351,22 @@ export default function AssessmentPage() {
                 id="free-text-note"
                 value={note}
                 onChange={(event) => setNote(event.target.value)}
+                maxLength={NOTE_LIMIT}
                 placeholder="Optional — anything you want to add."
               />
             </div>
           ) : null}
           {error ? (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
+            <div className="space-y-2">
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+              {turnIndex === turnsInScene - 1 ? (
+                <Button variant="outline" className="min-h-11" onClick={retry} disabled={submitting}>
+                  Try again
+                </Button>
+              ) : null}
+            </div>
           ) : null}
           {submitting ? (
             <p className="text-sm text-muted-foreground" role="status">

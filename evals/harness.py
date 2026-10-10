@@ -62,10 +62,22 @@ def validate_seed():
 
 
 @app.command("run-cases")
-def run_cases():
+def run_cases(
+    as_of: str = typer.Option(
+        "",
+        help="Score as of this ISO date. Defaults to the newest registry date so results don't drift with the calendar.",
+    ),
+):
     """Score fixture cases. Every case must assert something, or the run fails."""
     root = repo_root()
-    products = {p.id: p for p in load_products(root / "data/registry/products.json")}
+    registry_products = load_products(root / "data/registry/products.json")
+    registry_models = load_models(root / "data/registry/models.json")
+    products = {p.id: p for p in registry_products}
+    scored_on = (
+        date.fromisoformat(as_of)
+        if as_of
+        else max(date.fromisoformat(x.last_evaluated_at) for x in [*registry_products, *registry_models])
+    )
     failures: list[str] = []
     checked = 0
     for path in sorted((_evals_root() / "cases").glob("*.json")):
@@ -73,7 +85,9 @@ def run_cases():
         session_file = case.get("session_file", "examples/sample_session.json")
         session = AssessmentSession.model_validate_json((root / session_file).read_text())
         filters = FitFilters(**case["filters"]) if case.get("filters") else None
-        result = score_session(session, filters=filters)
+        result = score_session(
+            session, filters=filters, products=registry_products, models=registry_models, as_of=scored_on
+        )
         expect = case.get("expect") or {}
         if not expect:
             failures.append(f"{case.get('id', path.name)}: no expect block, so this case asserts nothing")
@@ -106,7 +120,7 @@ def run_cases():
         for row in failures:
             console.print(f"[red]{row}[/red]")
         raise typer.Exit(1)
-    console.print(f"[green]{checked} eval cases passed.[/green]")
+    console.print(f"[green]{checked} eval cases passed (as of {scored_on.isoformat()}).[/green]")
 
 
 if __name__ == "__main__":

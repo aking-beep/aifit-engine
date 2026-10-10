@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { api } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
-import { clearSession, encodeSharePayload, loadSession, saveResult } from "@/lib/session-store";
+import { clearSession, loadSession, saveResult } from "@/lib/session-store";
+import { encodeSharePayload, trimForShare } from "@/lib/share-snapshot";
 import { copyText, isAppleTouch, shareOrCopy } from "@/lib/copy-text";
 import { useReadingLevel } from "@/components/reading-level";
 import { cleanModelName, friendlyCategory, friendlyMetric, friendlyWorkload, metricHelp, productHomepage } from "@/lib/friendly";
@@ -23,6 +24,20 @@ import { Textarea } from "@/components/ui/textarea";
 
 function pct(value: number) {
   return `${Math.round(value * 100)}%`;
+}
+
+const FEEDBACK_LIMIT = 2000;
+
+function saveFile(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 const ruleGroupLabel: Record<"interaction_rules" | "response_rules" | "decision_rules" | "tool_rules", string> = {
@@ -51,6 +66,10 @@ export function ResultsView({
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [feedbackNote, setFeedbackNote] = useState<string | null>(null);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [shareNote, setShareNote] = useState<string | null>(null);
+  const [dataNote, setDataNote] = useState<string | null>(null);
+  const filterRequest = useRef(0);
   const [localOnly, setLocalOnly] = useState(false);
   const [maxPrice, setMaxPrice] = useState<string | null>(null);
   const [filterNote, setFilterNote] = useState<string | null>(null);
@@ -78,26 +97,36 @@ export function ResultsView({
   const guides = current.install_guides ?? [];
   const activeGuide = guides.find((guide) => guide.id === activeInstall) ?? guides[0];
   const topTool =
-    (stack ?? [])[0]?.product?.name ?? current.primary_stack.slots[0]?.recommendation?.name ?? null;
+    (stack ?? [])[0]?.product?.name ?? current.primary_stack?.slots?.[0]?.recommendation?.name ?? null;
   const firstGuide = guides[0];
   const useTarget = CHAT_TARGETS.find((item) => item.id === useToolId) ?? CHAT_TARGETS[0];
-  const personaTitle = personaName.trim() || current.workstyle?.label || current.persona.label;
+  const personaLabel = current.persona?.label || "Your AI style";
+  const personaTitle = personaName.trim() || current.workstyle?.label || personaLabel;
 
   async function applyFilters(nextLocal: boolean, nextPrice: string | null) {
     if (!sessionId) return;
-    setFiltering(true);
+    const requestId = ++filterRequest.current;
     setFilterNote(null);
+    const stored = loadSession(sessionId);
+    if (!stored) {
+      setFilterNote("Your answers are not saved in this browser, so filters cannot re-rank them.");
+      return;
+    }
+    setFiltering(true);
     try {
-      const stored = loadSession(sessionId);
-      const scored = stored
-        ? await api.scoreFull(stored, { local_only: nextLocal, max_pricing_tier: nextPrice })
-        : await api.score(sessionId, { local_only: nextLocal, max_pricing_tier: nextPrice });
+      const scored = await api.scoreFull(
+        { session_id: stored.session_id, events: stored.events, notes: stored.notes },
+        { local_only: nextLocal, max_pricing_tier: nextPrice },
+      );
+      // A newer toggle has already fired; drop this stale answer.
+      if (requestId !== filterRequest.current) return;
       setCurrent(scored);
       saveResult(sessionId, scored);
     } catch (err) {
+      if (requestId !== filterRequest.current) return;
       setFilterNote(err instanceof Error ? err.message : "Could not re-rank with those filters.");
     } finally {
-      setFiltering(false);
+      if (requestId === filterRequest.current) setFiltering(false);
     }
   }
 
@@ -119,12 +148,7 @@ export function ResultsView({
       const blob = binary
         ? new Blob([Uint8Array.from(atob(artifact.content), (char) => char.charCodeAt(0))])
         : new Blob([artifact.content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = artifact.filename.split("/").pop() || artifact.filename;
-      link.click();
-      URL.revokeObjectURL(url);
+      saveFile(blob, artifact.filename.split("/").pop() || artifact.filename);
       setExportNote(`Downloaded ${artifact.filename}`);
     } catch (err) {
       if (current.instructions) {
@@ -139,29 +163,34 @@ export function ResultsView({
   }
 
   async function share() {
-    let path = sessionId ? `/share/${sessionId}` : "/share/profile";
-    let durable = false;
+    setShareNote(null);
+    const stored = sessionId ? loadSession(sessionId) : null;
+    let url: string | null = null;
     try {
-      const created = await api.publishShare(current);
-      path = created.path;
-      durable = Boolean(created.durable);
-    } catch {
-      if (sessionId) {
-        try {
-          const created = await api.share(sessionId);
-          path = created.path;
-          durable = Boolean(created.durable);
-        } catch {
-          // Hash fallback still works without server storage.
-        }
+      const snapshot = trimForShare(current);
+      // Linking lets "delete" remove the share too. If this server can't link
+      // (no token, or the session lives on another instance), share unlinked.
+      const created = await api
+        .publishShare(snapshot, sessionId, stored?.token)
+        .catch(() => (sessionId ? api.publishShare(snapshot) : Promise.reject(new Error("share failed"))));
+      if (created.durable) {
+        url = `${window.location.origin}${created.path}`;
+      } else {
+        // The server copy may not outlive this instance; carry the snapshot in the hash too.
+        const encoded = await encodeSharePayload(current);
+        url = `${window.location.origin}${created.path}${encoded ? `#${encoded}` : ""}`;
       }
+    } catch {
+      // Hash fallback works without server storage. The session id never goes in the URL.
+      const encoded = await encodeSharePayload(current);
+      if (encoded) url = `${window.location.origin}/share/profile#${encoded}`;
     }
-    const encoded = await encodeSharePayload(current);
-    const url = durable
-      ? `${window.location.origin}${path}`
-      : `${window.location.origin}${path}#${encoded}`;
+    if (!url) {
+      setShareNote("We could not create a share link right now, and this browser cannot build one offline. Try again later.");
+      return;
+    }
     setShareUrl(url);
-    const outcome = await shareOrCopy(url, workstyle?.label ?? current.persona.label);
+    const outcome = await shareOrCopy(url, workstyle?.label ?? personaLabel);
     if (outcome === "fallback") setFallback({ text: url, label: "share link" });
   }
 
@@ -209,15 +238,40 @@ export function ResultsView({
 
   async function remove() {
     if (!sessionId) return;
+    const stored = loadSession(sessionId);
+    await api.deleteSession(sessionId, stored?.token ?? null).catch(() => undefined);
     clearSession(sessionId);
-    await api.deleteSession(sessionId).catch(() => undefined);
     router.push("/");
+  }
+
+  async function exportData() {
+    if (!sessionId) return;
+    setDataNote(null);
+    const stored = loadSession(sessionId);
+    let data: unknown;
+    try {
+      data = await api.exportSession(sessionId, stored?.token ?? null);
+    } catch {
+      data = {
+        session: stored ? { session_id: stored.session_id, events: stored.events, notes: stored.notes ?? [] } : null,
+        result: current,
+        notice: "Exported from this browser. The server copy was not available.",
+      };
+    }
+    saveFile(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }), "aifit-my-data.json");
+    setDataNote("Downloaded your data as JSON.");
   }
 
   async function sendFeedback() {
     if (!rating) return;
-    await api.feedback({ session_id: sessionId, rating, comment, useful: rating >= 4 });
-    setFeedbackNote("Saved. The question that matters: did you install or change anything?");
+    setFeedbackError(null);
+    try {
+      await api.feedback({ session_id: sessionId, rating, comment: comment.slice(0, FEEDBACK_LIMIT), useful: rating >= 4 });
+      setFeedbackNote("Saved. The question that matters: did you install or change anything?");
+    } catch {
+      setFeedbackNote(null);
+      setFeedbackError("Could not send feedback right now. Please try again in a moment.");
+    }
   }
 
   return (
@@ -228,8 +282,8 @@ export function ResultsView({
         </p>
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row">
           <div className="max-w-2xl space-y-3">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{workstyle?.label ?? current.persona.label}</h1>
-            <p className="text-base text-muted-foreground sm:text-lg">{workstyle?.narrative ?? workstyle?.summary ?? current.persona.purpose}</p>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{workstyle?.label ?? personaLabel}</h1>
+            <p className="text-base text-muted-foreground sm:text-lg">{workstyle?.narrative ?? workstyle?.summary ?? current.persona?.purpose}</p>
           </div>
           {maturity ? (
             <div className="w-full rounded-xl border px-4 py-3 text-left sm:w-auto sm:text-right">
@@ -285,6 +339,11 @@ export function ResultsView({
               </Button>
             ) : null}
           </div>
+          {shareNote ? (
+            <p className="mt-3 text-sm text-destructive" role="alert">
+              {shareNote}
+            </p>
+          ) : null}
         </section>
       ) : (
         <Link href="/assessment" className={cn(buttonVariants(), actionClass, "inline-flex")}>
@@ -382,8 +441,8 @@ export function ResultsView({
                   <p>{reason.text}</p>
                   {reason.evidence?.length ? (
                     <ul className="list-disc space-y-1 pl-5">
-                      {reason.evidence.map((item) => (
-                        <li key={item}>{item}</li>
+                      {reason.evidence.map((item, index) => (
+                        <li key={`${index}-${item}`}>{item}</li>
                       ))}
                     </ul>
                   ) : null}
@@ -418,7 +477,7 @@ export function ResultsView({
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Tools that fit you</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          {(stack ?? current.primary_stack.slots.map((slot) => ({
+          {(stack ?? (current.primary_stack?.slots ?? []).map((slot) => ({
             role: slot.category,
             label: friendlyCategory(slot.category),
             handles: undefined,
@@ -503,14 +562,14 @@ export function ResultsView({
         <h2 className="text-lg font-semibold">How your AI should talk to you</h2>
         <Card>
           <CardHeader>
-            <CardTitle>{current.persona.label}</CardTitle>
-            <p className="text-sm text-muted-foreground">{current.persona.purpose}</p>
+            <CardTitle>{personaLabel}</CardTitle>
+            <p className="text-sm text-muted-foreground">{current.persona?.purpose}</p>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
-            {current.persona.traits?.length ? (
+            {current.persona?.traits?.length ? (
               <div className="flex flex-wrap gap-2">
-                {current.persona.traits.map((trait) => (
-                  <Badge key={trait} variant="secondary">
+                {current.persona.traits.map((trait, index) => (
+                  <Badge key={`${index}-${trait}`} variant="secondary">
                     {trait}
                   </Badge>
                 ))}
@@ -520,8 +579,8 @@ export function ResultsView({
               <div key={key}>
                 <p className="mb-1 font-medium">{ruleGroupLabel[key]}</p>
                 <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-                  {current.persona[key].map((item) => (
-                    <li key={item}>{item}</li>
+                  {(current.persona?.[key] ?? []).map((item, index) => (
+                    <li key={`${index}-${item}`}>{item}</li>
                   ))}
                 </ul>
               </div>
@@ -550,8 +609,8 @@ export function ResultsView({
             </CardHeader>
             <CardContent className="space-y-4 text-sm">
               <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
-                {activeGuide.steps.map((step) => (
-                  <li key={step}>{step}</li>
+                {activeGuide.steps.map((step, index) => (
+                  <li key={`${index}-${step}`}>{step}</li>
                 ))}
               </ol>
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -590,7 +649,7 @@ export function ResultsView({
                 <Button
                   size="sm"
                   variant={localOnly ? "default" : "outline"}
-                  disabled={filtering}
+                  aria-pressed={localOnly}
                   onClick={() => {
                     const next = !localOnly;
                     setLocalOnly(next);
@@ -599,19 +658,24 @@ export function ResultsView({
                 >
                   Local only
                 </Button>
-                {(["low", "mixed", "high"] as const).map((tier) => (
+              </div>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Cost">
+                {([
+                  { tier: null, label: "Any cost" },
+                  { tier: "mixed", label: "Skip premium-only tools" },
+                ] as const).map((option) => (
                   <Button
-                    key={tier}
+                    key={option.label}
                     size="sm"
-                    variant={maxPrice === tier ? "default" : "outline"}
-                    disabled={filtering}
+                    variant={maxPrice === option.tier ? "default" : "outline"}
+                    aria-pressed={maxPrice === option.tier}
                     onClick={() => {
-                      const next = maxPrice === tier ? null : tier;
-                      setMaxPrice(next);
-                      void applyFilters(localOnly, next);
+                      if (maxPrice === option.tier) return;
+                      setMaxPrice(option.tier);
+                      void applyFilters(localOnly, option.tier);
                     }}
                   >
-                    Max {tier} cost
+                    {option.label}
                   </Button>
                 ))}
               </div>
@@ -646,7 +710,7 @@ export function ResultsView({
                     </p>
                     <Progress className="my-2" value={metric.score * 100} />
                     <ul className="mt-2 list-disc space-y-1 pl-5">
-                      {metric.evidence.length ? metric.evidence.map((item) => <li key={item}>{item}</li>) : <li>No quoted evidence for this metric.</li>}
+                      {metric.evidence.length ? metric.evidence.map((item, index) => <li key={`${index}-${item}`}>{item}</li>) : <li>No quoted evidence for this metric.</li>}
                     </ul>
                   </CardContent>
                 </Card>
@@ -713,10 +777,15 @@ export function ResultsView({
                   Export zip
                 </Button>
               ) : null}
+              <Button className={actionClass} variant="outline" onClick={exportData}>
+                Export my data (JSON)
+              </Button>
               <Button className={actionClass} variant="destructive" onClick={remove}>
                 Delete this session
               </Button>
             </div>
+            {shareNote ? <p className="text-destructive">{shareNote}</p> : null}
+            {dataNote ? <p className="text-muted-foreground">{dataNote}</p> : null}
             {shareUrl ? (
               <p>
                 Share URL copied:{" "}
@@ -726,19 +795,42 @@ export function ResultsView({
               </p>
             ) : null}
             <div className="space-y-2">
-              <p className="font-medium">Did this actually help you use AI?</p>
-              <div className="flex gap-2">
+              <p id="feedback-question" className="font-medium">
+                Did this actually help you use AI?
+              </p>
+              <div className="flex gap-2" role="group" aria-labelledby="feedback-question">
                 {[1, 2, 3, 4, 5].map((value) => (
-                  <Button key={value} variant={rating === value ? "default" : "outline"} size="sm" onClick={() => setRating(value)}>
+                  <Button
+                    key={value}
+                    variant={rating === value ? "default" : "outline"}
+                    size="sm"
+                    aria-pressed={rating === value}
+                    aria-label={`${value} out of 5`}
+                    onClick={() => setRating(value)}
+                  >
                     {value}
                   </Button>
                 ))}
               </div>
-              <Textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Optional. Did you install a file, switch a tool, or change a workflow?" />
+              <label htmlFor="feedback-comment" className="block font-medium">
+                Comment (optional)
+              </label>
+              <Textarea
+                id="feedback-comment"
+                value={comment}
+                maxLength={FEEDBACK_LIMIT}
+                onChange={(event) => setComment(event.target.value)}
+                placeholder="Did you install a file, switch a tool, or change a workflow? Please leave out names and personal details."
+              />
               <Button variant="outline" onClick={sendFeedback} disabled={!rating}>
                 Send feedback
               </Button>
               {feedbackNote ? <p className="text-muted-foreground">{feedbackNote}</p> : null}
+              {feedbackError ? (
+                <p className="text-destructive" role="alert">
+                  {feedbackError}
+                </p>
+              ) : null}
             </div>
           </CardContent>
         </Card>

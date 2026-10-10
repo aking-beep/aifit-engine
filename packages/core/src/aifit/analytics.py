@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, deque
 from datetime import datetime, timezone
 
-_EVENTS: list[dict] = []
+MAX_RECENT_EVENTS = 500
+
+_RECENT: deque[dict] = deque(maxlen=MAX_RECENT_EVENTS)
+_COUNTS: Counter[str] = Counter()
 
 
 def track(name: str, *, session_id: str | None = None, metadata: dict | None = None) -> dict:
@@ -15,18 +18,22 @@ def track(name: str, *, session_id: str | None = None, metadata: dict | None = N
         "session_id": session_id,
         "metadata": metadata or {},
     }
-    _EVENTS.append(event)
+    _RECENT.append(event)
+    _COUNTS[name] += 1
     return event
 
 
 def summary() -> dict:
-    counts = Counter(event["name"] for event in _EVENTS)
     return {
-        "event_count": len(_EVENTS),
-        "counts": dict(counts),
-        "retention": "Anonymous in-memory events for the current process only. Not written to disk.",
+        "event_count": sum(_COUNTS.values()),
+        "counts": dict(_COUNTS),
+        "retention": (
+            f"Anonymous in-memory counts for this server process, plus the last {MAX_RECENT_EVENTS} events. "
+            "Not written to disk."
+        ),
     }
 
 
 def reset() -> None:
-    _EVENTS.clear()
+    _RECENT.clear()
+    _COUNTS.clear()

@@ -93,7 +93,8 @@ def routing_json(result: dict) -> str:
 def export_persona(persona: dict, target: str, result: dict | None = None) -> tuple[str, str]:
     result = result or {"persona": persona}
     if target == "json":
-        return "ai-fit-profile.json", json.dumps({"persona": persona, **{k: result.get(k) for k in ("workstyle", "operating_stack", "model_routing")}}, indent=2)
+        extra = {k: result.get(k) for k in ("workstyle", "operating_stack", "model_routing")}
+        return "ai-fit-profile.json", json.dumps({"persona": persona, **extra}, indent=2)
     if target == "profile":
         return "PROFILE.md", profile_markdown(result)
     if target == "routing":

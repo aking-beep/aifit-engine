@@ -12,6 +12,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -e ".[dev]"
+      - run: ruff check packages services tests evals
       - run: pytest
       - run: PYTHONPATH=packages/core/src python -m evals.harness validate-seed
       - run: PYTHONPATH=packages/core/src python -m evals.harness run-cases
@@ -27,7 +28,44 @@ jobs:
           cache-dependency-path: apps/web/package-lock.json
       - run: npm ci
         working-directory: apps/web
+      - run: npm run lint
+        working-directory: apps/web
+      - run: npx tsc --noEmit
+        working-directory: apps/web
       - run: npm run build
         working-directory: apps/web
         env:
           API_ORIGIN: http://127.0.0.1:8472
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: [python, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: pip install -e .
+      - run: npm ci
+        working-directory: apps/web
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/web
+      - run: npm run build
+        working-directory: apps/web
+        env:
+          API_ORIGIN: http://127.0.0.1:8472
+      - run: npx playwright test
+        working-directory: apps/web
+        env:
+          API_ORIGIN: http://127.0.0.1:8472
+          AIFIT_STORE: ${{ runner.temp }}/aifit-store
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report

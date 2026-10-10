@@ -1,13 +1,23 @@
-import type { InteractionEvent, Scenario, ScoreResult } from "./types";
+import type { InteractionEvent, QuizNote, Scenario, ScoreResult } from "./types";
 
 export type FitFilterInput = { local_only?: boolean; max_pricing_tier?: string | null };
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+export type ScoreInput = {
+  session_id?: string;
+  events: InteractionEvent[];
+  notes?: QuizNote[];
+};
+
+type ShareCreated = { share_id: string; path: string; durable?: boolean };
+
+async function request<T>(path: string, init?: RequestInit & { token?: string | null }): Promise<T> {
+  const { token, ...rest } = init ?? {};
   const response = await fetch(path, {
-    ...init,
+    ...rest,
     headers: {
       "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
+      ...(token ? { "X-Session-Token": token } : {}),
+      ...(rest.headers ?? {}),
     },
   });
   if (!response.ok) {
@@ -18,32 +28,35 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  health: () => request<{ ok: boolean }>("/health"),
   scenarios: () => request<Scenario[]>("/v1/scenarios"),
-  createSession: () => request<{ session_id: string }>("/v1/sessions", { method: "POST" }),
+  createSession: () => request<{ session_id: string; token: string }>("/v1/sessions", { method: "POST" }),
   demoSession: () =>
-    request<{ session_id: string; session: { session_id: string; events: InteractionEvent[] }; result: ScoreResult }>(
-      "/v1/sessions/demo",
-      { method: "POST" },
-    ),
+    request<{
+      session_id: string;
+      token: string;
+      session: { session_id: string; events: InteractionEvent[] };
+      result: ScoreResult;
+    }>("/v1/sessions/demo", { method: "POST" }),
   addEvents: (
     sessionId: string,
+    token: string | null,
     body: {
       events: InteractionEvent[];
       free_text?: string;
       scenario_id: string;
       turn_id: string;
     },
-  ) => request<{ event_count: number }>(`/v1/sessions/${sessionId}/events`, { method: "POST", body: JSON.stringify(body) }),
-  score: (sessionId: string, filters?: FitFilterInput) =>
-    request<ScoreResult>(`/v1/sessions/${sessionId}/score`, {
+  ) =>
+    request<{ event_count: number }>(`/v1/sessions/${sessionId}/events`, {
       method: "POST",
-      body: JSON.stringify({ filters: filters ?? null }),
+      body: JSON.stringify(body),
+      token,
     }),
-  scoreFull: (session: { session_id: string; events: InteractionEvent[] }, filters?: FitFilterInput) =>
+  /** Stateless scoring: the server classifies notes and returns a result without storing anything. */
+  scoreFull: (input: ScoreInput, filters?: FitFilterInput) =>
     request<ScoreResult>("/v1/score", {
       method: "POST",
-      body: JSON.stringify({ ...session, filters: filters ?? null }),
+      body: JSON.stringify({ ...input, notes: input.notes ?? [], filters: filters ?? null }),
     }),
   signal: (session: { session_id: string; events: InteractionEvent[] }) =>
     request<{
@@ -53,18 +66,18 @@ export const api = {
       scenarios_completed: number;
       note: string;
     }>("/v1/signal", { method: "POST", body: JSON.stringify(session) }),
-  share: (sessionId: string) =>
-    request<{ share_id: string; path: string; durable?: boolean }>(`/v1/sessions/${sessionId}/share`, { method: "POST" }),
-  publishShare: (result: ScoreResult) =>
-    request<{ share_id: string; path: string; durable?: boolean }>("/v1/share", {
+  /** Publish a snapshot. With a session id + token the share is deleted along with the session. */
+  publishShare: (result: ScoreResult, sessionId?: string, token?: string | null) =>
+    request<ShareCreated>("/v1/share", {
       method: "POST",
-      body: JSON.stringify({ result }),
+      body: JSON.stringify(sessionId ? { result, session_id: sessionId } : { result }),
+      token: sessionId ? token : null,
     }),
-  getShare: (shareId: string) => request<ScoreResult>(`/v1/share/${shareId}`),
-  exportSession: (sessionId: string) =>
-    request<{ session: unknown; result: ScoreResult | null }>(`/v1/sessions/${sessionId}/export`),
-  deleteSession: (sessionId: string) =>
-    request<{ deleted: boolean }>(`/v1/sessions/${sessionId}`, { method: "DELETE" }),
+  getShare: (shareId: string) => request<unknown>(`/v1/share/${shareId}`),
+  exportSession: (sessionId: string, token: string | null) =>
+    request<{ session: unknown; result: ScoreResult | null }>(`/v1/sessions/${sessionId}/export`, { token }),
+  deleteSession: (sessionId: string, token: string | null) =>
+    request<{ deleted: boolean }>(`/v1/sessions/${sessionId}`, { method: "DELETE", token }),
   exportPersona: (target: string, result: ScoreResult) =>
     request<{ filename: string; content: string; encoding?: string }>(`/v1/export/${target}`, {
       method: "POST",
@@ -73,6 +86,6 @@ export const api = {
   products: () => request<Record<string, unknown>[]>("/v1/registry/products"),
   models: () => request<Record<string, unknown>[]>("/v1/registry/models"),
   freshness: () => request<{ needs_review: unknown[]; products: unknown[]; models: unknown[] }>("/v1/registry/freshness"),
-  feedback: (body: { session_id?: string; share_id?: string; rating: number; comment: string; useful?: boolean }) =>
+  feedback: (body: { session_id?: string; rating: number; comment: string; useful?: boolean }) =>
     request<{ ok: boolean }>("/v1/feedback", { method: "POST", body: JSON.stringify(body) }),
 };

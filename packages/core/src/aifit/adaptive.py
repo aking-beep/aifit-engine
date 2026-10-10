@@ -2,19 +2,15 @@
 
 from __future__ import annotations
 
+from .config import (
+    ADAPTIVE_CORE_METRICS as CORE_METRICS,
+    ADAPTIVE_MAX_SCENARIOS as MAX_SCENARIOS,
+    ADAPTIVE_MIN_CORE_METRICS,
+    ADAPTIVE_MIN_SCENARIOS as MIN_SCENARIOS,
+    ADAPTIVE_READY_CONFIDENCE as READY_CONFIDENCE,
+)
 from .metrics import build_user_vector, score_metrics
 from .models import AssessmentSession
-
-MIN_SCENARIOS = 4
-MAX_SCENARIOS = 8
-READY_CONFIDENCE = 0.42
-CORE_METRICS = (
-    "evidence_seeking",
-    "assumption_challenge",
-    "iteration_preference",
-    "autonomy_preference",
-    "comparison_preference",
-)
 
 
 def diagnostic_signal(session: AssessmentSession) -> dict:
@@ -26,7 +22,7 @@ def diagnostic_signal(session: AssessmentSession) -> dict:
     confs = [user.confidence.get(key, 0.0) for key in present]
     mean_conf = sum(confs) / len(confs) if confs else 0.0
     ready = n >= MAX_SCENARIOS or (
-        n >= MIN_SCENARIOS and len(present) >= 4 and mean_conf >= READY_CONFIDENCE
+        n >= MIN_SCENARIOS and len(present) >= ADAPTIVE_MIN_CORE_METRICS and mean_conf >= READY_CONFIDENCE
     )
     nxt = None if ready else _next_scenario_id(completed, user.confidence)
     return {

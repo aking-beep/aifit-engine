@@ -1,12 +1,23 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Mapping, Sequence
 
-from .config import EVENT_TO_METRICS, HIGH_CONFIDENCE_SCENARIO_COUNT, TARGET_OBSERVATIONS
+from .config import ABSENCE_STRENGTH, EVENT_TO_METRICS, HIGH_CONFIDENCE_SCENARIO_COUNT, TARGET_OBSERVATIONS
 from .models import AssessmentSession, MetricResult, UserFitVector
 
 
-def score_metrics(session: AssessmentSession) -> list[MetricResult]:
+def score_metrics(
+    session: AssessmentSession,
+    scenario_dimensions: Mapping[str, Sequence[str]] | None = None,
+) -> list[MetricResult]:
+    """Average observed event strengths per metric.
+
+    When ``scenario_dimensions`` maps scenario ids to the habits they test, a
+    habit the user never showed in any completed scenario that tested it gets
+    one ``ABSENCE_STRENGTH`` observation per such scenario. Habits the user did
+    show are left as observed. Without the mapping, only positive signal counts.
+    """
     values: dict[str, list[float]] = defaultdict(list)
     evidence: dict[str, list[str]] = defaultdict(list)
     scenarios: dict[str, set[str]] = defaultdict(set)
@@ -17,6 +28,15 @@ def score_metrics(session: AssessmentSession) -> list[MetricResult]:
             scenarios[metric].add(event.scenario_id)
             if event.evidence:
                 evidence[metric].append(event.evidence)
+
+    if scenario_dimensions:
+        shown = set(values)
+        completed = sorted({event.scenario_id for event in session.events if event.scenario_id})
+        for scenario_id in completed:
+            for metric in scenario_dimensions.get(scenario_id, ()):
+                if metric in TARGET_OBSERVATIONS and metric not in shown:
+                    values[metric].append(ABSENCE_STRENGTH)
+                    scenarios[metric].add(scenario_id)
 
     results: list[MetricResult] = []
     for metric, observations in values.items():
