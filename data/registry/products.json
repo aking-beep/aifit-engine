@@ -312,7 +312,7 @@
     "description": "AI document editor with voice-directed editing workflows.",
     "status": "active",
     "homepage": "https://www.fable.la/",
-    "pricing_tier": "unknown",
+    "pricing_tier": "mixed",
     "technical_level": 0.3,
     "deployment": [
       "desktop"
@@ -346,11 +346,11 @@
         "source_type": "official",
         "title": "Fable - Edit Any Document With Your Voice",
         "url": "https://www.fable.la/",
-        "observed_at": "2026-09-12",
-        "notes": "Fable document editor; not Anthropic's Claude Fable model family."
+        "observed_at": "2026-09-14",
+        "notes": "Official homepage: Starter free ($5 credits, 1 project) and Pro $20/month; desktop macOS and Windows. Not Anthropic's Claude Fable model family."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-09-14",
     "registry_version": "0.3"
   },
   {
@@ -358,14 +358,15 @@
     "name": "Ollama",
     "provider": "Ollama",
     "category": "local_open_source",
-    "description": "Local model runner for self-hosted open-weight models.",
+    "description": "Local model runner for self-hosted open-weight models, with optional paid cloud inference.",
     "status": "active",
     "homepage": "https://ollama.com",
-    "pricing_tier": "free",
+    "pricing_tier": "mixed",
     "technical_level": 0.65,
     "deployment": [
       "local",
-      "self_hosted"
+      "self_hosted",
+      "cloud"
     ],
     "modalities": [
       "text",
@@ -391,13 +392,13 @@
     "evidence": [
       {
         "source_type": "official",
-        "title": "Ollama product page",
-        "url": "https://ollama.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official Ollama runtime for open-weight models on a local machine."
+        "title": "Ollama pricing",
+        "url": "https://ollama.com/pricing",
+        "observed_at": "2026-09-14",
+        "notes": "Local inference remains unlimited and free; cloud plans include Free, Pro $20, Max $100, and Team $500 as of the 2026-08-31 pricing post."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-09-14",
     "registry_version": "0.3"
   },
   {
@@ -407,12 +408,13 @@
     "category": "coding_agent",
     "description": "Terminal and repo-native coding agent distinct from the Claude chat product.",
     "status": "active",
-    "homepage": "https://docs.anthropic.com/en/docs/claude-code",
+    "homepage": "https://claude.com/product/claude-code",
     "pricing_tier": "mixed",
     "technical_level": 0.82,
     "deployment": [
       "desktop",
-      "terminal"
+      "terminal",
+      "cloud"
     ],
     "modalities": [
       "text",
@@ -445,21 +447,21 @@
     "evidence": [
       {
         "source_type": "official",
-        "title": "Claude Code docs",
-        "url": "https://docs.anthropic.com/en/docs/claude-code",
-        "observed_at": "2026-09-12",
-        "notes": "Official Claude Code agent/CLI for repo work."
+        "title": "Claude Code by Anthropic",
+        "url": "https://claude.com/product/claude-code",
+        "observed_at": "2026-09-14",
+        "notes": "Official product homepage; terminal, IDE, Slack, web, and mobile. Docs now live at code.claude.com."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-09-14",
     "registry_version": "0.3"
   },
   {
     "id": "notebooklm",
-    "name": "NotebookLM",
+    "name": "Gemini Notebook",
     "provider": "Google",
     "category": "knowledge",
-    "description": "Source-grounded notebook for research corpora and briefing.",
+    "description": "Source-grounded research notebook (formerly NotebookLM) for corpora and briefing.",
     "status": "active",
     "homepage": "https://notebooklm.google",
     "pricing_tier": "mixed",
@@ -494,13 +496,13 @@
     "evidence": [
       {
         "source_type": "official",
-        "title": "NotebookLM",
-        "url": "https://notebooklm.google",
-        "observed_at": "2026-09-12",
-        "notes": "Official Google NotebookLM; source-grounded notebooks."
+        "title": "NotebookLM is now Gemini Notebook",
+        "url": "https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/",
+        "observed_at": "2026-09-14",
+        "notes": "Google renamed NotebookLM to Gemini Notebook on 2026-07-16; notebooklm.google remains the product URL."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-09-14",
     "registry_version": "0.3"
   },
   {
