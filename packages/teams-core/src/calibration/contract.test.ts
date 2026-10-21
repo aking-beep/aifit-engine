@@ -7,7 +7,7 @@ import { fetchCalibration } from './client.js';
 import { resolveCallShape } from './priors.js';
 import { assess } from '../assess/index.js';
 import { CALL_SHAPE } from '../assess/architecture.js';
-import { SUPPORT_TRIAGE } from '../fixtures.js';
+import { FIXTURES, SUPPORT_TRIAGE } from '../fixtures.js';
 import type { Basis } from '../schema/provenance.js';
 
 /**
@@ -136,7 +136,7 @@ describe('Control unreachable', () => {
     assert.equal(await fetchCalibration({ baseUrl: 'not a url', fetch: serve(fixture('measured')) }), null);
   });
 
-  test('ARK_CONTROL_URL unset: no request, and no figure reads calibrated or measured', async () => {
+  test('ARK_CONTROL_URL unset: no request, and every figure reads heuristic', async () => {
     const prev = process.env.ARK_CONTROL_URL;
     delete process.env.ARK_CONTROL_URL;
     const seen: Seen[] = [];
@@ -149,9 +149,11 @@ describe('Control unreachable', () => {
       assert.equal(a.trust.weakestBasis, 'heuristic');
       assert.equal(a.cost.perUnit.basis, 'heuristic');
       assert.equal(a.cost.perMonth.basis, 'heuristic');
-      const found = bases(a);
-      assert.ok(found.length > 3);
-      assert.deepEqual(found.filter((b) => b === 'calibrated' || b === 'measured'), []);
+      for (const w of FIXTURES) {
+        const found = bases(assess(w, { depth: 'business', calibration: cal }));
+        assert.ok(found.length > 3, w.id);
+        assert.deepEqual(found.filter((b) => b !== 'heuristic'), [], w.id);
+      }
     } finally {
       if (prev !== undefined) process.env.ARK_CONTROL_URL = prev;
     }
