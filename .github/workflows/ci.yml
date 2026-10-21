@@ -37,6 +37,24 @@ jobs:
         env:
           API_ORIGIN: http://127.0.0.1:8472
 
+  teams:
+    # AI Fit Teams (apps/teams) and its packages: one npm workspace from the
+    # repository-root package.json. apps/web is not part of it.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      # Contract fixtures, teams-core (engine, calibration client), ui, then the app's own tests.
+      - run: npm run test:teams
+      - run: npm run typecheck:teams
+      # No ARK_CONTROL_URL: the build must not need Control.
+      - run: npm run build:teams
+
   e2e:
     runs-on: ubuntu-latest
     needs: [python, web]
