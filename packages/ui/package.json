@@ -1,0 +1,25 @@
+{
+  "name": "@aifit/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The @ark/ui primitives and Tailwind preset that AI Fit Teams uses, vendored from aking-beep/ark.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./tailwind-preset": "./tailwind-preset.cjs"
+  },
+  "files": ["dist", "src", "tailwind-preset.cjs"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --experimental-strip-types --test src/tone.test.ts src/format.test.ts"
+  },
+  "peerDependencies": { "react": "^18.3.1" },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "react": "^18.3.1",
+    "typescript": "^5.6.0"
+  }
+}
