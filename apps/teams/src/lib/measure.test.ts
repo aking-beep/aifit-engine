@@ -1,15 +1,19 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { INVOICE_LOOKUP, SUPPORT_TRIAGE } from '@ark/core';
-import { ArkIngest } from '@ark/sdk';
-import { ProviderError, type ProviderAdapter } from '@ark/providers';
+import { INVOICE_LOOKUP, SUPPORT_TRIAGE, estimate } from '@aifit/teams-core';
 import {
+  BUNDLED_EXECUTOR,
   MEASURE_TIMEOUT_MS,
+  SampleError,
+  measureEnabled,
   measureGate,
   measureWorkload,
   sampleModelId,
   sampleRequestFor,
   sampleWorkloadId,
+  type SampleExecutor,
+  type SampleRequest,
+  type SampleRun,
 } from './measure.ts';
 import { MEASURE_CLIENT_TIMEOUT_MS, MEASURE_TIMEOUT_MS as CLIENT_COPY_MS } from './measure-timeout.ts';
 import { RateLimiter, clientIp, readJsonBody } from './request-guard.ts';
@@ -17,39 +21,32 @@ import {
   describeClientFailure, describeMeasureFailure, describeTelemetry, measureFailureKind,
 } from './measure-errors.ts';
 
-function fakeLocal(complete: ProviderAdapter['complete']): ProviderAdapter {
+/**
+ * In ark these tests drove ARK Runtime with a fake Ollama adapter and a
+ * capturing ingest client. This build carries no Runtime, so the same
+ * behaviours are pinned against the SampleExecutor seam: what the executor is
+ * handed, how its failures map, and that a timeout aborts it and reports
+ * nothing.
+ */
+function run(over: Partial<SampleRun> = {}): SampleRun {
   return {
-    id: 'ollama',
-    catalogProvider: 'local',
-    residency: 'local',
-    capabilities: ['text'],
-    latencyClass: 'fast',
-    configured: () => true,
-    defaultModel: () => 'llama3.2',
-    complete,
+    modelId: 'llama3.2',
+    adapterId: 'ollama',
+    latencyMs: 3,
+    cost: estimate(0, 'heuristic', 'test'),
+    telemetry: { attempted: true, ok: true },
+    routing: { selected: 'ollama', rationale: [] },
+    ...over,
   };
 }
 
-function capturingIngest(posted: unknown[]): ArkIngest {
-  return new ArkIngest({
-    baseUrl: 'http://control.test',
-    orgId: 'org_demo',
-    timeoutMs: 50,
-    fetch: (async (_url, init) => {
-      posted.push(JSON.parse(String(init?.body)));
-      return new Response(
-        JSON.stringify({
-          accepted: 1,
-          tracesClosed: 1,
-          priced: 1,
-          unpriced: 0,
-          alerts: 0,
-          circuitBreaks: [],
-        }),
-        { status: 202 },
-      );
-    }) as typeof fetch,
-  });
+/** An executor that records what it would have posted to Control's /api/v1/events. */
+function reporting(posted: SampleRequest[], fn?: SampleExecutor): SampleExecutor {
+  return async (req, opts) => {
+    const out = fn ? await fn(req, opts) : run({ modelId: req.model ?? 'llama3.2' });
+    if (!opts.signal.aborted) posted.push(req);
+    return out;
+  };
 }
 
 describe('sampleRequestFor', () => {
@@ -83,13 +80,19 @@ describe('sampleModelId', () => {
 });
 
 describe('measureWorkload', () => {
+  test('this build bundles no executor, so the default is no_provider and nothing is sent', async () => {
+    assert.equal(BUNDLED_EXECUTOR, null);
+    const out = await measureWorkload(SUPPORT_TRIAGE);
+    assert.equal(out.ok, false);
+    if (!out.ok) assert.equal(out.reason, 'no_provider');
+  });
+
   test('refuses not-ai without calling a provider', async () => {
     let called = 0;
-    const adapter = fakeLocal(async () => {
-        called++;
-        throw new Error('should not run');
-      });
-    const out = await measureWorkload(INVOICE_LOOKUP, { adapters: [adapter] });
+    const out = await measureWorkload(INVOICE_LOOKUP, async () => {
+      called++;
+      throw new Error('should not run');
+    });
     assert.equal(out.ok, false);
     if (!out.ok) {
       assert.equal(out.reason, 'not-ai');
@@ -100,20 +103,10 @@ describe('measureWorkload', () => {
 
   test('does not send the catalog estimate id as the sample model', async () => {
     let seen: string | undefined = 'unset';
-    const adapter = fakeLocal(async (req) => {
+    const out = await measureWorkload(SUPPORT_TRIAGE, async (req) => {
       seen = req.model;
-      return {
-        text: 'OK',
-        modelId: req.model ?? 'llama3.2',
-        adapterId: 'ollama',
-        catalogProvider: 'local',
-        inputTokens: 8,
-        outputTokens: 2,
-        latencyMs: 3,
-        finishReason: 'stop' as const,
-      };
-    });
-    const out = await measureWorkload(SUPPORT_TRIAGE, { adapters: [adapter] }, 15_000, {});
+      return run();
+    }, 15_000, {});
     assert.equal(out.ok, true);
     assert.notEqual(seen, 'local-70b');
     assert.equal(seen, undefined);
@@ -121,120 +114,63 @@ describe('measureWorkload', () => {
 
   test('uses ARK_OLLAMA_MODEL when set', async () => {
     let seen: string | undefined;
-    const adapter = fakeLocal(async (req) => {
+    const out = await measureWorkload(SUPPORT_TRIAGE, async (req) => {
       seen = req.model;
-      return {
-        text: 'OK',
-        modelId: req.model ?? 'missing',
-        adapterId: 'ollama',
-        catalogProvider: 'local',
-        inputTokens: 8,
-        outputTokens: 2,
-        latencyMs: 3,
-        finishReason: 'stop' as const,
-      };
-    });
-    const out = await measureWorkload(
-      SUPPORT_TRIAGE,
-      { adapters: [adapter] },
-      15_000,
-      { ARK_OLLAMA_MODEL: 'smollm2:135m' },
-    );
+      return run();
+    }, 15_000, { ARK_OLLAMA_MODEL: 'smollm2:135m' });
     assert.equal(out.ok, true);
     assert.equal(seen, 'smollm2:135m');
   });
 
-  test('runs a support sample and posts ingest', async () => {
-    const posted: unknown[] = [];
-    let called = 0;
-    const adapter = fakeLocal(async (req) => {
-        called++;
-        const user = req.messages.find((m) => m.role === 'user')?.content ?? '';
-        assert.equal(String(user).includes('40 agents'), false);
-        return {
-          text: 'OK',
-          modelId: 'llama3.2',
-          adapterId: 'ollama',
-          catalogProvider: 'local',
-          inputTokens: 12,
-          outputTokens: 2,
-          latencyMs: 4,
-          finishReason: 'stop' as const,
-        };
-      });
-    const out = await measureWorkload(SUPPORT_TRIAGE, {
-      adapters: [adapter],
-      ingest: capturingIngest(posted),
-    });
+  test('runs a support sample and reports it', async () => {
+    const posted: SampleRequest[] = [];
+    const out = await measureWorkload(SUPPORT_TRIAGE, reporting(posted, async (req) => {
+      assert.equal(req.messages.map((m) => m.content).join(' ').includes('40 agents'), false);
+      return run();
+    }));
     assert.equal(out.ok, true);
     if (out.ok) {
       assert.equal(out.result.telemetry.ok, true);
       assert.equal(out.result.telemetry.attempted, true);
     }
-    assert.equal(called, 1);
     assert.equal(posted.length, 1);
   });
 
-  test('no eligible adapter is no_provider, not a throw', async () => {
-    const out = await measureWorkload(SUPPORT_TRIAGE, { adapters: [] });
+  test('an executor with no eligible provider is no_provider, not a throw', async () => {
+    const out = await measureWorkload(SUPPORT_TRIAGE, async () => {
+      throw new SampleError('no_provider', 'no eligible adapter remains after policy');
+    }, 15_000, {}, () => {});
     assert.equal(out.ok, false);
     if (!out.ok) assert.equal(out.reason, 'no_provider');
   });
 
-  test('timeout wins over a hung adapter', async () => {
-    const adapter = fakeLocal(
-        () =>
-          new Promise((resolve) => {
-            setTimeout(
-              () =>
-                resolve({
-                  text: 'late',
-                  modelId: 'llama3.2',
-                  adapterId: 'ollama',
-                  catalogProvider: 'local',
-                  inputTokens: 1,
-                  outputTokens: 1,
-                  latencyMs: 200,
-                  finishReason: 'stop' as const,
-                }),
-              200,
-            );
-          }),
-      );
-    const out = await measureWorkload(SUPPORT_TRIAGE, { adapters: [adapter] }, 30);
-    assert.equal(out.ok, false);
-    if (!out.ok) assert.equal(out.reason, 'timeout');
-  });
-
-  test('timeout aborts the provider call and ingests nothing', async () => {
-    const posted: unknown[] = [];
-    let aborted = false;
-    const adapter = fakeLocal(
-      (_req, opts) =>
-        new Promise((resolve, reject) => {
-          const late = setTimeout(
-            () =>
-              resolve({
-                text: 'late', modelId: 'llama3.2', adapterId: 'ollama', catalogProvider: 'local',
-                inputTokens: 1, outputTokens: 1, latencyMs: 200, finishReason: 'stop' as const,
-              }),
-            200,
-          );
-          opts?.signal?.addEventListener('abort', () => {
-            aborted = true;
-            clearTimeout(late);
-            reject(new ProviderError('aborted', 'aborted', 'ollama'));
-          });
-        }),
-    );
+  test('timeout wins over a hung executor', async () => {
     const out = await measureWorkload(
       SUPPORT_TRIAGE,
-      { adapters: [adapter], ingest: capturingIngest(posted) },
+      () => new Promise((resolve) => setTimeout(() => resolve(run()), 200)),
       30,
     );
     assert.equal(out.ok, false);
     if (!out.ok) assert.equal(out.reason, 'timeout');
-    // Let any straggling work settle, then confirm nothing reached Control.
+  });
+
+  test('timeout aborts the executor and reports nothing', async () => {
+    const posted: SampleRequest[] = [];
+    let aborted = false;
+    const executor = reporting(posted, (_req, opts) =>
+      new Promise((resolve, reject) => {
+        const late = setTimeout(() => resolve(run()), 200);
+        opts.signal.addEventListener('abort', () => {
+          aborted = true;
+          clearTimeout(late);
+          reject(new SampleError('aborted', 'aborted'));
+        });
+      }),
+    );
+    const out = await measureWorkload(SUPPORT_TRIAGE, executor, 30);
+    assert.equal(out.ok, false);
+    if (!out.ok) assert.equal(out.reason, 'timeout');
+    // Let any straggling work settle, then confirm nothing was reported.
     await new Promise((r) => setTimeout(r, 250));
     assert.equal(aborted, true);
     assert.equal(posted.length, 0);
@@ -242,12 +178,11 @@ describe('measureWorkload', () => {
 
   test('provider error text is logged, not returned', async () => {
     const logged: string[] = [];
-    const adapter = fakeLocal(async () => {
-      throw new ProviderError('http', 'ollama HTTP 500: LEAK_SENTINEL internal body', 'ollama');
-    });
     const out = await measureWorkload(
       SUPPORT_TRIAGE,
-      { adapters: [adapter] },
+      async () => {
+        throw new SampleError('failed', 'ollama HTTP 500: LEAK_SENTINEL internal body');
+      },
       15_000,
       {},
       (m) => logged.push(m),
@@ -261,18 +196,16 @@ describe('measureWorkload', () => {
   });
 
   test('no_provider message does not echo routing internals', async () => {
-    const out = await measureWorkload(SUPPORT_TRIAGE, { adapters: [] }, 15_000, {}, () => {});
+    const out = await measureWorkload(SUPPORT_TRIAGE, async () => {
+      throw new SampleError('no_provider', 'no eligible provider: rationale ollama not configured');
+    }, 15_000, {}, () => {});
     assert.equal(out.ok, false);
     if (!out.ok) assert.equal(/rationale|not configured|no eligible provider:/.test(out.message), false);
   });
 
-  test('ingested sample uses the teams_sample_ workload namespace', async () => {
-    const posted: unknown[] = [];
-    const adapter = fakeLocal(async () => ({
-      text: 'OK', modelId: 'llama3.2', adapterId: 'ollama', catalogProvider: 'local',
-      inputTokens: 1, outputTokens: 1, latencyMs: 1, finishReason: 'stop' as const,
-    }));
-    const out = await measureWorkload(SUPPORT_TRIAGE, { adapters: [adapter], ingest: capturingIngest(posted) });
+  test('the reported sample uses the teams_sample_ workload namespace', async () => {
+    const posted: SampleRequest[] = [];
+    const out = await measureWorkload(SUPPORT_TRIAGE, reporting(posted));
     assert.equal(out.ok, true);
     const json = JSON.stringify(posted);
     assert.match(json, /"workloadId":"teams_sample_wl_support_triage"/);
@@ -292,29 +225,41 @@ describe('sample workload namespace', () => {
 });
 
 describe('measure gate (C6)', () => {
+  const fake: SampleExecutor = async () => run();
+
   test('disabled unless ARK_MEASURE_ENABLED=1', () => {
     const limiter = new RateLimiter(5, 60_000);
-    assert.equal(measureGate('1.2.3.4', limiter, {})?.status, 404);
-    assert.equal(measureGate('1.2.3.4', limiter, { ARK_MEASURE_ENABLED: 'true' })?.status, 404);
-    assert.equal(measureGate('1.2.3.4', limiter, { ARK_MEASURE_ENABLED: '1' }), null);
+    assert.equal(measureGate('1.2.3.4', limiter, {}, undefined, fake)?.status, 404);
+    assert.equal(measureGate('1.2.3.4', limiter, { ARK_MEASURE_ENABLED: 'true' }, undefined, fake)?.status, 404);
+    assert.equal(measureGate('1.2.3.4', limiter, { ARK_MEASURE_ENABLED: '1' }, undefined, fake), null);
+  });
+
+  test('this build is disabled even with ARK_MEASURE_ENABLED=1, because it carries no executor', () => {
+    const limiter = new RateLimiter(5, 60_000);
+    const env = { ARK_MEASURE_ENABLED: '1' };
+    assert.equal(measureEnabled(env), false);
+    const refused = measureGate('1.2.3.4', limiter, env);
+    assert.equal(refused?.status, 404);
+    assert.equal(refused?.body.reason, 'disabled');
+    assert.match(refused!.body.message, /not part of this build/);
   });
 
   test('rate limits to 5 per minute per client', () => {
     const limiter = new RateLimiter(5, 60_000);
     const env = { ARK_MEASURE_ENABLED: '1' };
-    for (let i = 0; i < 5; i++) assert.equal(measureGate('1.2.3.4', limiter, env), null);
-    const refused = measureGate('1.2.3.4', limiter, env);
+    for (let i = 0; i < 5; i++) assert.equal(measureGate('1.2.3.4', limiter, env, undefined, fake), null);
+    const refused = measureGate('1.2.3.4', limiter, env, undefined, fake);
     assert.equal(refused?.status, 429);
     assert.ok(Number(refused?.headers['retry-after']) > 0);
-    assert.equal(measureGate('5.6.7.8', limiter, env), null);
+    assert.equal(measureGate('5.6.7.8', limiter, env, undefined, fake), null);
   });
 
   test('a rotating client address cannot escape the global ceiling', () => {
     const limiter = new RateLimiter(5, 60_000);
     const global = new RateLimiter(3, 60_000);
     const env = { ARK_MEASURE_ENABLED: '1' };
-    for (let i = 0; i < 3; i++) assert.equal(measureGate(`10.0.0.${i}`, limiter, env, global), null);
-    assert.equal(measureGate('10.0.0.99', limiter, env, global)?.status, 429);
+    for (let i = 0; i < 3; i++) assert.equal(measureGate(`10.0.0.${i}`, limiter, env, global, fake), null);
+    assert.equal(measureGate('10.0.0.99', limiter, env, global, fake)?.status, 429);
   });
 
   test('rate limiter window resets', () => {
@@ -423,7 +368,7 @@ describe('measure failures in plain language', () => {
   });
 
   test('the real no-provider failure renders without adapter dialect', async () => {
-    const out = await measureWorkload(SUPPORT_TRIAGE, { adapters: [] });
+    const out = await measureWorkload(SUPPORT_TRIAGE);
     assert.equal(out.ok, false);
     if (!out.ok) {
       const m = describeMeasureFailure(out.reason);

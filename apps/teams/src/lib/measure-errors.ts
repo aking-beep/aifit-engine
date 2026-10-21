@@ -36,7 +36,7 @@ const MESSAGES: Record<MeasureFailureKind, MeasureMessage> = {
   },
   disabled: {
     line: 'Sampling is switched off on this deployment.',
-    recovery: 'Set ARK_MEASURE_ENABLED=1 on this app if this deployment should send samples to ARK Control. It is off by default because each sample spends model tokens.',
+    recovery: 'Sampling needs ARK_MEASURE_ENABLED=1 on this app and a build that includes ARK Runtime. It is off by default because each sample spends model tokens.',
   },
   rate_limited: {
     line: 'Too many samples from here in a short time. Nothing is wrong with the workload.',

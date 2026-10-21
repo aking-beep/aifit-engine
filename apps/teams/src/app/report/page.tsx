@@ -8,12 +8,13 @@ import {
   GOLDEN_SET_RULE,
   type Estimate,
   type Verdict,
-} from '@ark/core';
+} from '@aifit/teams-core';
 import {
   Panel, Grid, Stat, Badge, BasisTag, Callout, CardTable, DimensionList, fmt, toneFor, type Tone,
-} from '@ark/ui';
+} from '@aifit/ui';
 import { decodeWorkload } from '@/lib/encode';
 import { MeasureSample } from '@/components/measure-sample';
+import { measureEnabled } from '@/lib/measure';
 import { ReportFooter, ReportPrintStyles, intakeHref } from '@/components/report-footer';
 import { VerdictOnlyReport } from '@/components/report-verdict-only';
 
@@ -184,12 +185,13 @@ export default async function Report({
               )}
             </p>
             <p className="mt-2">
-              <span className="font-mono text-ink-200">POST /api/measure</span> on this app sends one synthetic
-              Runtime sample on the model in <span className="font-mono text-ink-200">ARK_OLLAMA_MODEL</span>{' '}
-              (not the catalog estimate) and posts the trace to Control. It is off unless{' '}
-              <span className="font-mono text-ink-200">ARK_MEASURE_ENABLED=1</span>. It is not a gateway and does not sit in
-              the path of production traffic. One sample does not clear the 30-trace floor; it is how Control
-              stops being empty.
+              <span className="font-mono text-ink-200">POST /api/measure</span> sends one synthetic sample on the
+              model in <span className="font-mono text-ink-200">ARK_OLLAMA_MODEL</span>{' '}
+              (not the catalog estimate) and posts the trace to Control. It needs{' '}
+              <span className="font-mono text-ink-200">ARK_MEASURE_ENABLED=1</span> and a build that carries ARK
+              Runtime; this build does not, so the calibration read is the only call it makes to Control. It is not a
+              gateway and does not sit in the path of production traffic. One sample does not clear the 30-trace
+              floor; it is how Control stops being empty.
             </p>
           </details>
         </Callout>
@@ -198,7 +200,7 @@ export default async function Report({
       {!notAi && (
         <MeasureSample
           workload={workload}
-          enabled={process.env.ARK_MEASURE_ENABLED?.trim() === '1'}
+          enabled={measureEnabled()}
           controlUrl={controlUrl}
         />
       )}

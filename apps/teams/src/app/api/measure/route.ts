@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { Workload } from '@ark/core';
+import { Workload } from '@aifit/teams-core';
 import {
+  BUNDLED_EXECUTOR,
   MEASURE_TIMEOUT_MS,
   SAMPLE_WORKLOAD_PREFIX,
   measureEnabled,
+  measureRequested,
   measureGate,
   measureWorkload,
   sampleWorkloadId,
@@ -27,13 +29,15 @@ const globalLimiter = new RateLimiter(30, 60_000);
 const NO_STORE = { 'cache-control': 'no-store' };
 
 /**
- * First-party Runtime caller. One synthetic sample for a teams workload,
- * ingested to Control when ARK_CONTROL_URL is set. Not a model gateway —
- * the report still estimates; this is the opt-in measurement.
+ * One synthetic sample for a teams workload, reported to Control by the
+ * executor. Not a model gateway — the report still estimates; this is the
+ * opt-in measurement.
  *
- * Off unless ARK_MEASURE_ENABLED=1. Rate limited per client. The workload id
- * is forced into the `teams_sample_` namespace so a caller cannot write
- * traces into a real workload.
+ * Off unless ARK_MEASURE_ENABLED=1 *and* the build carries an executor. This
+ * build carries none (see `lib/measure.ts`), so POST is always a 404
+ * `disabled` here and no trace is sent to Control's /api/v1/events. Rate
+ * limited per client. The workload id is forced into the `teams_sample_`
+ * namespace so a caller cannot write traces into a real workload.
  */
 export async function POST(req: Request) {
   const refused = measureGate(clientIp(req), limiter, process.env, globalLimiter);
@@ -83,6 +87,8 @@ export async function GET() {
   return NextResponse.json({
     endpoint: 'POST /api/measure',
     enabled: measureEnabled(),
+    requested: measureRequested(),
+    runtimeBundled: BUNDLED_EXECUTOR !== null,
     accepts: `A Workload object (the same shape as POST /api/assess), at most ${MAX_BODY_BYTES} bytes.`,
     returns:
       'One Runtime sample: model, latency, cost estimate, and whether Control ingest succeeded. not-ai is 422 and does not call a provider.',
@@ -90,7 +96,8 @@ export async function GET() {
     workloadId: `Recorded as ${SAMPLE_WORKLOAD_PREFIX}<id>, never the raw id.`,
     rateLimit: '5 samples per minute per client address.',
     env: {
-      ARK_MEASURE_ENABLED: 'Must be 1. Unset = POST returns 404 and no model is called.',
+      ARK_MEASURE_ENABLED:
+        'Must be 1, and the build must carry an executor (this one does not). Otherwise POST returns 404 and no model is called.',
       ARK_CONTROL_URL: 'Control origin. Unset = sample still runs, ingest is skipped and telemetry.ok is false.',
       ARK_CONTROL_TOKEN: 'Bearer matching an org_tokens row.',
       ARK_OLLAMA_URL: 'Local adapter. Other adapters follow Runtime from-env rules.',
