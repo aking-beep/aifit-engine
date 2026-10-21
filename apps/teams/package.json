@@ -1,17 +1,17 @@
 {
-  "name": "@ark/business",
+  "name": "@aifit/teams",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
+    "dev": "npm run build:packages --prefix ../.. && next dev -p 3001",
+    "build": "npm run build:packages --prefix ../.. && next build",
     "start": "next start -p 3001",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "npm run build:packages --prefix ../.. && tsc -p tsconfig.json --noEmit",
+    "test": "npm run build:packages --prefix ../.. && node --experimental-strip-types --test src/lib/measure.test.ts src/lib/intake-verdict.test.ts src/lib/intake-state.test.ts"
   },
   "dependencies": {
-    "@ark/core": "*",
-    "@ark/runtime": "*",
-    "@ark/ui": "*",
+    "@aifit/teams-core": "*",
+    "@aifit/ui": "*",
     "next": "15.5.25",
     "react": "18.3.1",
     "react-dom": "18.3.1",

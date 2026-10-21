@@ -1,6 +1,6 @@
 'use client';
 
-import { estimateTokens, type TaskShape } from '@ark/core';
+import { estimateTokens, type TaskShape } from '@aifit/teams-core';
 import type { IntakeState, LatencyMs, Regime } from '@/lib/intake-state';
 import { DATA_CLASS_GROUPS, REGIME_GROUPS, SHAPE_GROUPS } from './options';
 import {

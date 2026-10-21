@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { SUPPORT_TRIAGE, Workload, urlCodec, encodeForUrlClient } from '@ark/core';
+import { SUPPORT_TRIAGE, Workload, urlCodec, encodeForUrlClient } from '@aifit/teams-core';
 import {
   LAST_STEP,
   PLACEHOLDERS,

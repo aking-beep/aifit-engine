@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Workload } from '@ark/core';
+import type { Workload } from '@aifit/teams-core';
 import { MEASURE_CLIENT_TIMEOUT_MS } from '@/lib/measure-timeout';
 import {
   describeClientFailure,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Workload, assess, fetchCalibration, ASSESS_API_LIMITS } from '@ark/core';
+import { Workload, assess, fetchCalibration, ASSESS_API_LIMITS } from '@aifit/teams-core';
 import { readJsonBody } from '@/lib/request-guard';
 
 export const dynamic = 'force-dynamic';

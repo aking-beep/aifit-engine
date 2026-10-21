@@ -1,4 +1,4 @@
-import { DETERMINISTIC_SHAPES, type TaskShape } from '@ark/core';
+import { DETERMINISTIC_SHAPES, type TaskShape } from '@aifit/teams-core';
 
 /**
  * The provisional verdict the intake shows after "The job".

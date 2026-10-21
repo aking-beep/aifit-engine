@@ -7,7 +7,7 @@ import {
   ErrorTolerance,
   TaskShape,
   Workload,
-} from '@ark/core';
+} from '@aifit/teams-core';
 
 /**
  * The intake's state, and the only place it becomes a Workload.

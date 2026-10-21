@@ -1,4 +1,4 @@
-import { Workload, urlCodec, encodeForUrlClient } from '@ark/core';
+import { Workload, urlCodec, encodeForUrlClient } from '@aifit/teams-core';
 
 /**
  * The business app stores nothing either. The reasoning, and the shared

@@ -1,4 +1,4 @@
-const preset = require('@ark/ui/tailwind-preset');
+const preset = require('@aifit/ui/tailwind-preset');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {

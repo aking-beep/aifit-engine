@@ -1,5 +1,5 @@
-import { Panel, CardTable, BasisTag } from '@ark/ui';
-import { ASSESS_API_LIMITS, CALL_SHAPE, PATTERN_LABEL, SUITABILITY_RUBRIC, type Pattern } from '@ark/core';
+import { Panel, CardTable, BasisTag } from '@aifit/ui';
+import { ASSESS_API_LIMITS, CALL_SHAPE, PATTERN_LABEL, SUITABILITY_RUBRIC, type Pattern } from '@aifit/teams-core';
 
 export const metadata = { title: 'Methodology — AI Fit Teams' };
 

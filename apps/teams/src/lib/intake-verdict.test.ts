@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { assess, TaskShape, Workload } from '@ark/core';
+import { assess, TaskShape, Workload } from '@aifit/teams-core';
 import { decidedNotAi, provisionalVerdict } from './intake-verdict.ts';
 import { emptyIntake, shortCircuitWorkload } from './intake-state.ts';
 

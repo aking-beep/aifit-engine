@@ -5,8 +5,8 @@ import {
   roadmap,
   PATTERN_LABEL,
   type Workload,
-} from '@ark/core';
-import { Panel, Badge, BasisTag, Callout, DimensionList } from '@ark/ui';
+} from '@aifit/teams-core';
+import { Panel, Badge, BasisTag, Callout, DimensionList } from '@aifit/ui';
 import { ReportFooter, intakeHref } from './report-footer';
 
 /**

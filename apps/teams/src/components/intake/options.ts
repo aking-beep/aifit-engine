@@ -1,4 +1,4 @@
-import type { DataClass, TaskShape } from '@ark/core';
+import type { DataClass, TaskShape } from '@aifit/teams-core';
 import type { Regime } from '@/lib/intake-state';
 
 /**
