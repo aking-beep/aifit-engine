@@ -28,11 +28,11 @@ The estimator does not get more confident over time. It gets more informed, and 
 
 ## Operating Context
 
-- Local: `npm run dev:business` on :3001. Optional `ARK_CONTROL_URL` + `ARK_CONTROL_TOKEN` against Control :3002.
+- Local: `npm run dev:teams` (repository root) on :3001. Optional `ARK_CONTROL_URL` + `ARK_CONTROL_TOKEN` against Control :3002.
 - Intake is encoded into the report link and the assessment is recomputed on every view. Nothing the user enters is stored on the server.
 - Nav may link to ARK Control. It must not invite the person to take the AI Fit consumer quiz.
 - Route map: `/` (intro), `/assess` (intake), `/report` (result), `/methodology`.
-- `POST /api/assess` scores one workload or a backlog in CI. `POST /api/measure` (non-`not-ai` only) sends one synthetic Runtime sample into Control.
+- `POST /api/assess` scores one workload or a backlog in CI. `POST /api/measure` (non-`not-ai` only) sent one synthetic Runtime sample into Control in the ARK monorepo; this build carries no Runtime, so it is always disabled and calibration is the only call to Control.
 
 ## Capabilities and Constraints
 
@@ -58,11 +58,11 @@ Spec `specs/my-ai-names.md` approved “MY AI for teams”; that string is **not
 
 ## Evidence on Hand
 
-- Shipped report and intake under `apps/business`.
+- Shipped report and intake under `apps/teams` (moved from ARK's `apps/business`).
 - Methodology page in-product.
 - Seeded Control calibration path documented in README demo orgs.
 - Factory evidence under `evidence/` for Teams/Control loop specs.
-- Measure unit tests at `apps/business/src/lib/measure.test.ts`.
+- Measure unit tests at `apps/teams/src/lib/measure.test.ts`; calibration contract tests in `packages/calibration-contract` and `packages/teams-core/src/calibration/contract.test.ts`.
 
 **Do not fabricate:** customer ROI outcomes, production drift percentages, or named design-partner case studies. Seeded demo drift (e.g. 18% on synthetic bounded-agent turns) is demo data, not a customer result.
 
