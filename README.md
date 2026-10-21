@@ -117,6 +117,10 @@ Product list        Model list
 
 The registry, methodology, and evidence live under **How it works**. They are credibility infrastructure, not the homepage.
 
+## AI Fit Teams
+
+`apps/teams` is a separate product, AI Fit Teams, with its own Vercel project and its own TypeScript packages (`packages/teams-core`, `packages/ui`, `packages/calibration-contract`). It does not share code with Fit or link to it. See `apps/teams/README.md`.
+
 ## Pack docs
 
 1. `docs/PRODUCT_SPEC.md`

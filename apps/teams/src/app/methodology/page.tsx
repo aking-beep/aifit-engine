@@ -22,7 +22,7 @@ export default function Methodology() {
         <p className="mt-4 text-sm leading-relaxed text-ink-400">
           This product is the estimator. ARK Control is the measurement. They are the only two surfaces that
           talk. The map — Assess → Measure → Control, four grains on one trace, how a figure is promoted
-          from heuristic to measured — is <code className="font-mono text-ink-200">docs/08-how-ark-works.md</code>.
+          from heuristic to measured — is <code className="font-mono text-ink-200">docs/08-how-ark-works.md</code> in the ARK repository.
           Connect production at Control <code className="font-mono text-ink-200">/start</code>.
         </p>
       </section>

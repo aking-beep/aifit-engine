@@ -2,6 +2,9 @@
   "name": "@aifit/teams",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.6"
+  },
   "scripts": {
     "dev": "npm run build:packages --prefix ../.. && next dev -p 3001",
     "build": "npm run build:packages --prefix ../.. && next build",
