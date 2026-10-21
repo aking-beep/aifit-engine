@@ -1,0 +1,22 @@
+{
+  "description": "An org below the 30-trace floor, with 3 or more other orgs contributing: Control returns fleet priors as calibrated. The payload never names the source orgs.",
+  "status": 200,
+  "body": {
+    "basis": "calibrated",
+    "generatedAt": "2026-10-21T00:00:00.000Z",
+    "windowDays": 30,
+    "orgId": "org_fixture",
+    "patterns": [
+      {
+        "pattern": "bounded-agent",
+        "turnsPerOutcome": 8,
+        "contextGrowthPerTurn": 700,
+        "failureRate": 0.12,
+        "retriesPerFailure": 1.2,
+        "cacheHitRate": 0.35,
+        "sampleSize": 90,
+        "p95TurnsPerOutcome": 11
+      }
+    ]
+  }
+}

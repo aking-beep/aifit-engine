@@ -1,0 +1,22 @@
+{
+  "description": "An org below the 30-trace floor and too few other orgs for fleet priors: Control returns the thin own set, still labelled measured. Teams must ignore any pattern under 30 outcomes, so every figure stays heuristic.",
+  "status": 200,
+  "body": {
+    "basis": "measured",
+    "generatedAt": "2026-10-21T00:00:00.000Z",
+    "windowDays": 30,
+    "orgId": "org_fixture",
+    "patterns": [
+      {
+        "pattern": "bounded-agent",
+        "turnsPerOutcome": 4,
+        "contextGrowthPerTurn": 100,
+        "failureRate": 0.5,
+        "retriesPerFailure": 3,
+        "cacheHitRate": 0.1,
+        "sampleSize": 12,
+        "p95TurnsPerOutcome": 6
+      }
+    ]
+  }
+}

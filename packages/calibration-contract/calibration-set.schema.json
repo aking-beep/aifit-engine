@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aking-beep/aifit-engine/packages/calibration-contract/calibration-set.schema.json",
+  "title": "CalibrationSet",
+  "description": "Body of a 200 from ARK Control GET /api/v1/calibration. Contract version 1.0.0, copied from aking-beep/ark@f4f52ce packages/core/src/calibration/priors.ts. A client treats any other status, or a body that does not match, as no calibration.",
+  "type": "object",
+  "required": ["basis", "generatedAt", "windowDays", "patterns"],
+  "properties": {
+    "basis": { "enum": ["measured", "calibrated"] },
+    "generatedAt": { "type": "string" },
+    "windowDays": { "type": "number" },
+    "orgId": { "type": "string" },
+    "patterns": { "type": "array", "items": { "$ref": "#/$defs/PatternPrior" } },
+    "buildCostActualsUsd": { "type": "object", "additionalProperties": { "type": "number" } }
+  },
+  "$defs": {
+    "PatternPrior": {
+      "type": "object",
+      "required": ["pattern", "turnsPerOutcome", "contextGrowthPerTurn", "failureRate", "retriesPerFailure", "cacheHitRate", "sampleSize"],
+      "properties": {
+        "pattern": { "type": "string" },
+        "turnsPerOutcome": { "type": "number" },
+        "contextGrowthPerTurn": { "type": "number" },
+        "failureRate": { "type": "number" },
+        "retriesPerFailure": { "type": "number" },
+        "cacheHitRate": { "type": "number" },
+        "costPerOutcomeUsd": { "type": "number" },
+        "sampleSize": { "type": "number" },
+        "p95TurnsPerOutcome": { "type": "number" }
+      }
+    }
+  }
+}
