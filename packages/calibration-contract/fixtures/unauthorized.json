@@ -1,0 +1,5 @@
+{
+  "description": "No bearer token and no session cookie, or a token that maps to no org.",
+  "status": 401,
+  "body": { "error": "unauthorized" }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@aifit/teams",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "dev": "npm run build:packages --prefix ../.. && next dev -p 3001",
+    "build": "npm run build:packages --prefix ../.. && next build",
+    "start": "next start -p 3001",
+    "typecheck": "npm run build:packages --prefix ../.. && tsc -p tsconfig.json --noEmit",
+    "test": "npm run build:packages --prefix ../.. && node --experimental-strip-types --test src/lib/measure.test.ts src/lib/intake-verdict.test.ts src/lib/intake-state.test.ts"
+  },
+  "dependencies": {
+    "@aifit/teams-core": "*",
+    "@aifit/ui": "*",
+    "next": "15.5.25",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.15",
+    "typescript": "^5.6.0"
+  }
+}

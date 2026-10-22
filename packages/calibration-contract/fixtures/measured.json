@@ -1,0 +1,23 @@
+{
+  "description": "An org with at least 30 of its own traces in the window: Control returns its own set as measured.",
+  "status": 200,
+  "body": {
+    "basis": "measured",
+    "generatedAt": "2026-10-21T00:00:00.000Z",
+    "windowDays": 30,
+    "orgId": "org_fixture",
+    "patterns": [
+      {
+        "pattern": "bounded-agent",
+        "turnsPerOutcome": 9,
+        "contextGrowthPerTurn": 637.5,
+        "failureRate": 0.1,
+        "retriesPerFailure": 1,
+        "cacheHitRate": 0.4,
+        "costPerOutcomeUsd": 0.044,
+        "sampleSize": 200,
+        "p95TurnsPerOutcome": 12
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@aifit/calibration-contract",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Frozen copy of ARK Control's GET /api/v1/calibration response contract (CalibrationSet), with fixtures.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./calibration-set.schema.json": "./calibration-set.schema.json",
+    "./fixtures/*": "./fixtures/*"
+  },
+  "files": ["dist", "fixtures", "calibration-set.schema.json"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json && node --test dist/contract.test.js"
+  },
+  "dependencies": { "zod": "^3.23.8" },
+  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.9.0" }
+}

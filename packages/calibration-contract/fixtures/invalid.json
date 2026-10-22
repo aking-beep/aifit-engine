@@ -1,0 +1,19 @@
+{
+  "description": "A 200 whose body does not match the contract (basis outside the enum, a pattern missing sampleSize). A client must treat it as no calibration, not apply the parts that parse.",
+  "status": 200,
+  "body": {
+    "basis": "observed",
+    "generatedAt": "2026-10-21T00:00:00.000Z",
+    "windowDays": 30,
+    "patterns": [
+      {
+        "pattern": "bounded-agent",
+        "turnsPerOutcome": 9,
+        "contextGrowthPerTurn": 637.5,
+        "failureRate": 0.1,
+        "retriesPerFailure": 1,
+        "cacheHitRate": 0.4
+      }
+    ]
+  }
+}
