@@ -44,11 +44,11 @@
         "source_type": "official",
         "title": "Anthropic Claude Fable product page",
         "url": "https://www.anthropic.com/claude/fable",
-        "observed_at": "2026-09-12",
-        "notes": "Official Claude web assistant for writing, analysis, and coding."
+        "observed_at": "2026-10-19",
+        "notes": "Official Claude web assistant for writing, analysis, and coding. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -97,11 +97,11 @@
         "source_type": "official",
         "title": "ChatGPT",
         "url": "https://chatgpt.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official ChatGPT assistant with tools and multimodal chat."
+        "observed_at": "2026-10-19",
+        "notes": "Official ChatGPT assistant with tools and multimodal chat. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -152,11 +152,11 @@
         "source_type": "official",
         "title": "Gemini",
         "url": "https://gemini.google.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official Gemini app; multimodal assistant with Google search grounding."
+        "observed_at": "2026-10-19",
+        "notes": "Official Gemini app; multimodal assistant with Google search grounding. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -196,13 +196,13 @@
     "evidence": [
       {
         "source_type": "manual_eval",
-        "title": "Seed placeholder",
-        "observed_at": "2026-09-12",
-        "notes": "Official Perplexity; source-linked web answers.",
+        "title": "Perplexity",
+        "observed_at": "2026-10-19",
+        "notes": "Official Perplexity; source-linked web answers. Re-verified 2026-10-19; no mechanical field change.",
         "url": "https://www.perplexity.ai"
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -246,13 +246,13 @@
     "evidence": [
       {
         "source_type": "manual_eval",
-        "title": "Seed placeholder",
-        "observed_at": "2026-09-12",
-        "notes": "Official Cursor IDE for AI-assisted coding.",
+        "title": "Cursor",
+        "observed_at": "2026-10-19",
+        "notes": "Official Cursor IDE for AI-assisted coding. Re-verified 2026-10-19; no mechanical field change.",
         "url": "https://www.cursor.com"
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -295,13 +295,13 @@
     "evidence": [
       {
         "source_type": "manual_eval",
-        "title": "Seed placeholder",
-        "observed_at": "2026-09-12",
-        "notes": "Official n8n workflow automation; cloud or self-hosted.",
+        "title": "n8n",
+        "observed_at": "2026-10-19",
+        "notes": "Official n8n workflow automation; cloud or self-hosted. Re-verified 2026-10-19; no mechanical field change.",
         "url": "https://n8n.io"
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -312,7 +312,7 @@
     "description": "AI document editor with voice-directed editing workflows.",
     "status": "active",
     "homepage": "https://www.fable.la/",
-    "pricing_tier": "unknown",
+    "pricing_tier": "mixed",
     "technical_level": 0.3,
     "deployment": [
       "desktop"
@@ -346,11 +346,11 @@
         "source_type": "official",
         "title": "Fable - Edit Any Document With Your Voice",
         "url": "https://www.fable.la/",
-        "observed_at": "2026-09-12",
-        "notes": "Fable document editor; not Anthropic's Claude Fable model family."
+        "observed_at": "2026-10-19",
+        "notes": "Starter free (credits + 1 project); Pro $20/month. Not Anthropic's Claude Fable model family."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -358,14 +358,15 @@
     "name": "Ollama",
     "provider": "Ollama",
     "category": "local_open_source",
-    "description": "Local model runner for self-hosted open-weight models.",
+    "description": "Local model runner for self-hosted open-weight models, with optional paid cloud inference.",
     "status": "active",
     "homepage": "https://ollama.com",
-    "pricing_tier": "free",
+    "pricing_tier": "mixed",
     "technical_level": 0.65,
     "deployment": [
       "local",
-      "self_hosted"
+      "self_hosted",
+      "cloud"
     ],
     "modalities": [
       "text",
@@ -391,13 +392,13 @@
     "evidence": [
       {
         "source_type": "official",
-        "title": "Ollama product page",
-        "url": "https://ollama.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official Ollama runtime for open-weight models on a local machine."
+        "title": "Ollama's transparent pricing",
+        "url": "https://ollama.com/blog/transparent-pricing",
+        "observed_at": "2026-10-19",
+        "notes": "Local inference remains free/unlimited; cloud Pro $20 / Max $100 / Team $500 with monthly usage credits (announced 2026-08-31)."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -407,12 +408,13 @@
     "category": "coding_agent",
     "description": "Terminal and repo-native coding agent distinct from the Claude chat product.",
     "status": "active",
-    "homepage": "https://docs.anthropic.com/en/docs/claude-code",
+    "homepage": "https://claude.com/product/claude-code",
     "pricing_tier": "mixed",
     "technical_level": 0.82,
     "deployment": [
       "desktop",
-      "terminal"
+      "terminal",
+      "cloud"
     ],
     "modalities": [
       "text",
@@ -445,23 +447,23 @@
     "evidence": [
       {
         "source_type": "official",
-        "title": "Claude Code docs",
-        "url": "https://docs.anthropic.com/en/docs/claude-code",
-        "observed_at": "2026-09-12",
-        "notes": "Official Claude Code agent/CLI for repo work."
+        "title": "Claude Code by Anthropic",
+        "url": "https://claude.com/product/claude-code",
+        "observed_at": "2026-10-19",
+        "notes": "Official product page; terminal, IDE, desktop, Slack, web, and mobile surfaces."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
     "id": "notebooklm",
-    "name": "NotebookLM",
+    "name": "Gemini Notebook",
     "provider": "Google",
     "category": "knowledge",
-    "description": "Source-grounded notebook for research corpora and briefing.",
+    "description": "Source-grounded research notebook (formerly NotebookLM) for corpora and briefing.",
     "status": "active",
-    "homepage": "https://notebooklm.google",
+    "homepage": "https://notebook.google/",
     "pricing_tier": "mixed",
     "technical_level": 0.35,
     "deployment": [
@@ -494,13 +496,13 @@
     "evidence": [
       {
         "source_type": "official",
-        "title": "NotebookLM",
-        "url": "https://notebooklm.google",
-        "observed_at": "2026-09-12",
-        "notes": "Official Google NotebookLM; source-grounded notebooks."
+        "title": "NotebookLM is now Gemini Notebook",
+        "url": "https://blog.google/innovation-and-ai/products/gemini-notebook/notebooklm-gemini-notebook/",
+        "observed_at": "2026-10-19",
+        "notes": "Official rename 2026-07-16; same standalone product. Canonical app URL is notebook.google."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -541,11 +543,11 @@
         "source_type": "official",
         "title": "Midjourney",
         "url": "https://www.midjourney.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official Midjourney image generation product."
+        "observed_at": "2026-10-19",
+        "notes": "Official Midjourney image generation product. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -588,11 +590,11 @@
         "source_type": "official",
         "title": "Runway",
         "url": "https://runwayml.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official Runway video generation product."
+        "observed_at": "2026-10-19",
+        "notes": "Official Runway video generation product. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -635,11 +637,11 @@
         "source_type": "official",
         "title": "Gamma",
         "url": "https://gamma.app",
-        "observed_at": "2026-09-12",
-        "notes": "Official Gamma AI presentation product."
+        "observed_at": "2026-10-19",
+        "notes": "Official Gamma AI presentation product. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -686,11 +688,11 @@
         "source_type": "official",
         "title": "Figma",
         "url": "https://www.figma.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official Figma design product with AI features."
+        "observed_at": "2026-10-19",
+        "notes": "Official Figma design product with AI features. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -734,11 +736,11 @@
         "source_type": "official",
         "title": "Julius",
         "url": "https://julius.ai",
-        "observed_at": "2026-09-12",
-        "notes": "Official Julius data-analysis assistant."
+        "observed_at": "2026-10-19",
+        "notes": "Official Julius data-analysis assistant. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   },
   {
@@ -782,11 +784,11 @@
         "source_type": "official",
         "title": "Glean",
         "url": "https://www.glean.com",
-        "observed_at": "2026-09-12",
-        "notes": "Official Glean workplace search assistant."
+        "observed_at": "2026-10-19",
+        "notes": "Official Glean workplace search assistant. Re-verified 2026-10-19; no mechanical field change."
       }
     ],
-    "last_evaluated_at": "2026-09-12",
+    "last_evaluated_at": "2026-10-19",
     "registry_version": "0.3"
   }
 ]
