@@ -7,6 +7,7 @@ import json
 import secrets
 import sys
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any
 
@@ -16,12 +17,13 @@ sys.path.insert(0, str(ROOT / "packages/core/src"))
 from fastapi import Body, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from aifit import __version__
 from aifit.analytics import summary as analytics_summary
 from aifit.analytics import track
 from aifit.classifier import classify_text
+from aifit.decision import DecisionIntake, decide_parsed, match_tools
 from aifit.engine import normalize_free_text, score_session
 from aifit.exports import export_persona
 from aifit.fit import rank_models_by_workload, rank_products
@@ -61,6 +63,7 @@ async def limit_body_size(request: Request, call_next):
 
 PRODUCTS = load_products(ROOT / "data/registry/products.json")
 MODELS = load_models(ROOT / "data/registry/models.json")
+PRODUCT_RECORDS = [p.model_dump(mode="json") for p in PRODUCTS]
 
 SessionToken = Annotated[str | None, Header(alias="X-Session-Token", max_length=200)]
 
@@ -480,3 +483,33 @@ def feedback(payload: FeedbackRequest):
 @app.get("/v1/analytics/summary")
 def analytics():
     return {**analytics_summary(), "feedback_count": RESULT_STORE.count("feedback")}
+
+
+# Decision ------------------------------------------------------------------
+#
+# "Should I use AI for this at all?" Five outcomes from the shared rules in
+# packages/decision-core. Stateless: nothing in the request is stored. The
+# surface is forced to consumer and caller-supplied estimates are dropped, so a
+# request cannot claim to be a Teams assessment or inject its own cost figures.
+
+TECHNICAL_LEVEL = {"none": 0.15, "basic": 0.35, "intermediate": 0.6, "advanced": 0.85}
+
+
+@app.post("/v1/decision")
+def decision(payload: dict[str, Any] = Body(...)):
+    try:
+        intake = DecisionIntake.model_validate({**payload, "surface": "consumer", "externalEstimates": {}})
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=exc.errors(include_url=False, include_context=False, include_input=False),
+        ) from exc
+    result = decide_parsed(intake)
+    tools = match_tools(
+        result,
+        PRODUCT_RECORDS,
+        technical_level=TECHNICAL_LEVEL[intake.technicalAbility],
+        as_of=datetime.now(timezone.utc).date(),
+    )
+    track("decision_completed", metadata={"outcome": result["outcome"]})
+    return {"decision": result, "tools": tools}

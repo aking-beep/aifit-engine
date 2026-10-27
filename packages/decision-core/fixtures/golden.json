@@ -1,0 +1,1376 @@
+{
+  "consumer-birthday-reminders": {
+    "inputHash": "ac49dc78f287c688bf7236309760d811df38de9b5641bb2d7a358f79d0ce00b0",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "no_change",
+    "runnerUp": "conventional_software",
+    "confidence": "high",
+    "suitability": 35,
+    "suitabilityBand": "weak",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 100,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 80,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 45,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 25,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY"
+        ]
+      },
+      {
+        "outcome": "build_ai",
+        "score": 0,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY",
+          "HC_NO_BUILD_CAPACITY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_DETERMINISTIC_ONLY",
+      "HC_NO_BUILD_CAPACITY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 0
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 0.1,
+        "high": 0.1,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 0,
+        "high": 0,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0,
+        "high": 0,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 0.1
+  },
+  "consumer-receipt-tracking": {
+    "inputHash": "b12b81c91ed1b03425007a0ee16b8d280c2a9006c341a54b435b84b92974a7cd",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "conventional_software",
+    "runnerUp": "conventional_automation",
+    "confidence": "high",
+    "suitability": 39,
+    "suitabilityBand": "weak",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 90,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 60,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 15,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY"
+        ]
+      },
+      {
+        "outcome": "build_ai",
+        "score": 0,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY",
+          "HC_NO_BUILD_CAPACITY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_DETERMINISTIC_ONLY",
+      "HC_NO_BUILD_CAPACITY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 20
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 2.5,
+        "high": 2.5,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 1,
+        "high": 8,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0,
+        "high": 1,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "license",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 2.5
+  },
+  "consumer-email-to-sheet": {
+    "inputHash": "4a9bd5a5059f5469b1a3f21f9c31c0ca4ee04b452b82152f09eff97413240ae3",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "conventional_automation",
+    "runnerUp": "conventional_software",
+    "confidence": "medium",
+    "suitability": 37,
+    "suitabilityBand": "weak",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 67.5,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 77.5,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 15,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY"
+        ]
+      },
+      {
+        "outcome": "build_ai",
+        "score": 5,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY",
+          "HC_NO_BUILD_CAPACITY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_DETERMINISTIC_ONLY",
+      "HC_NO_BUILD_CAPACITY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 20
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 6,
+        "high": 6,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 2,
+        "high": 16,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0.5,
+        "high": 2,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 6
+  },
+  "consumer-cover-letters": {
+    "inputHash": "6ea4f67076b8f2bb6663f1794c9ad5ade421379924435bbee34723ef051e3c3d",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "buy_ai",
+    "runnerUp": "no_change",
+    "confidence": "high",
+    "suitability": 84,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 15,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 100,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 30,
+        "eligible": false,
+        "excludedBy": [
+          "HC_NO_BUILD_CAPACITY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_NO_BUILD_CAPACITY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 10
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [
+      "general_assistant",
+      "knowledge",
+      "writing"
+    ],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 6,
+        "high": 6,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 1,
+        "high": 4,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0.5,
+        "high": 2,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "subscription",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 6
+  },
+  "consumer-private-journal": {
+    "inputHash": "0887208b0fb178ca89da915d77be6bf9c2d1538b3495779e400916399200f29a",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "buy_ai",
+    "runnerUp": "build_ai",
+    "confidence": "high",
+    "suitability": 85,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 15,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 80,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 60,
+        "eligible": true,
+        "excludedBy": []
+      }
+    ],
+    "triggered": [
+      "HC_LOCAL_ONLY",
+      "HC_FREE_TIER_ONLY",
+      "HC_REGULATED_DATA"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 25
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [
+      "general_assistant",
+      "knowledge",
+      "local_open_source"
+    ],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 2,
+        "high": 2,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 1,
+        "high": 4,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0.5,
+        "high": 2,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "subscription",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 2
+  },
+  "consumer-dev-review-bot": {
+    "inputHash": "99fe709db7cf239a68169d4fd24a40d9c263c3c463cb7b424d9789a785dcd12e",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "build_ai",
+    "runnerUp": "buy_ai",
+    "confidence": "low",
+    "suitability": 89,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 0,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 40,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 75,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 80,
+        "eligible": true,
+        "excludedBy": []
+      }
+    ],
+    "triggered": [],
+    "risk": {
+      "level": "low",
+      "score": 0
+    },
+    "feasibility": "medium",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 100,
+        "high": 100,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 20,
+        "high": 80,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 2,
+        "high": 8,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "run_cost",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 100
+  },
+  "teams-support-triage": {
+    "inputHash": "d130889aa14bf6d69a38f17ac97c8a37c79fb51efc65a9e8a77cb41da4f26bbe",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "build_ai",
+    "runnerUp": "buy_ai",
+    "confidence": "medium",
+    "suitability": 87,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 0,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 40,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 65,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 80,
+        "eligible": true,
+        "excludedBy": []
+      }
+    ],
+    "triggered": [],
+    "risk": {
+      "level": "low",
+      "score": 20
+    },
+    "feasibility": "medium",
+    "missingInputs": [],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 400,
+        "high": 400,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "time_today_value",
+        "low": 24800,
+        "high": 24800,
+        "unit": "usd",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 160,
+        "high": 960,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 16,
+        "high": 80,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "setup_cost",
+        "low": 9920,
+        "high": 59520,
+        "unit": "usd",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "run_cost",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 400
+  },
+  "teams-invoice-lookup": {
+    "inputHash": "ac190ffeec239c9fecf3eef0675a4d0a3cb0760d4571323ca6ce9205f3f67892",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "conventional_software",
+    "runnerUp": "conventional_automation",
+    "confidence": "high",
+    "suitability": 38,
+    "suitabilityBand": "weak",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 0,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 90,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 60,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 0,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY"
+        ]
+      },
+      {
+        "outcome": "build_ai",
+        "score": 20,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_DETERMINISTIC_ONLY"
+    ],
+    "risk": {
+      "level": "medium",
+      "score": 35
+    },
+    "feasibility": "medium",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 100,
+        "high": 100,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 16,
+        "high": 120,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 2,
+        "high": 8,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "license",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 100
+  },
+  "teams-crm-sync": {
+    "inputHash": "d63d0f59e4ad63e4b616c4d29a36f9c42d43885b109594de2f4500489ccb0138",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "conventional_automation",
+    "runnerUp": "conventional_software",
+    "confidence": "high",
+    "suitability": 44,
+    "suitabilityBand": "weak",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 0,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 35,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 85,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 0,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY"
+        ]
+      },
+      {
+        "outcome": "build_ai",
+        "score": 35,
+        "eligible": false,
+        "excludedBy": [
+          "HC_DETERMINISTIC_ONLY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_DETERMINISTIC_ONLY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 10
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 166.7,
+        "high": 166.7,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 40,
+        "high": 200,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 4,
+        "high": 16,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 166.7
+  },
+  "teams-clinical-notes-no-engineers": {
+    "inputHash": "dadb74cb0398689a643dc665d90be4073ecf2badccb9b242bac0efba6617374d",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "buy_ai",
+    "runnerUp": "conventional_automation",
+    "confidence": "high",
+    "suitability": 81,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 0,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 30,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 100,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 40,
+        "eligible": false,
+        "excludedBy": [
+          "HC_NO_BUILD_CAPACITY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_NO_BUILD_CAPACITY",
+      "HC_REGULATED_DATA"
+    ],
+    "risk": {
+      "level": "high",
+      "score": 60
+    },
+    "feasibility": "medium",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [
+      "data_analysis",
+      "general_assistant",
+      "knowledge",
+      "research"
+    ],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 60,
+        "high": 60,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 8,
+        "high": 60,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 2,
+        "high": 10,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "subscription",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 60
+  },
+  "teams-ops-agent-credentials": {
+    "inputHash": "fb662893ae50d33fb5f10bf966705d89eb4f587cb14eb489452aaa0af9a06e32",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "build_ai",
+    "runnerUp": "conventional_automation",
+    "confidence": "low",
+    "suitability": 67,
+    "suitabilityBand": "moderate",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 0,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 51.7,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 38.3,
+        "eligible": false,
+        "excludedBy": [
+          "HC_CREDENTIALS_IN_DATA"
+        ]
+      },
+      {
+        "outcome": "build_ai",
+        "score": 75,
+        "eligible": true,
+        "excludedBy": []
+      }
+    ],
+    "triggered": [
+      "HC_CREDENTIALS_IN_DATA",
+      "HC_IRREVERSIBLE_AUTONOMY"
+    ],
+    "risk": {
+      "level": "high",
+      "score": 100
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [
+      "critical_full_autonomy"
+    ],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 200,
+        "high": 200,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 160,
+        "high": 960,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 16,
+        "high": 80,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "run_cost",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 200
+  },
+  "consumer-missing-inputs": {
+    "inputHash": "fd7beea5acf07f6f4df8cfec34cfab98ccea0bb41a691c84a9b934a6df4687ab",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "buy_ai",
+    "runnerUp": "no_change",
+    "confidence": "medium",
+    "suitability": 79,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 15,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 95,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 50,
+        "eligible": false,
+        "excludedBy": [
+          "HC_NO_BUILD_CAPACITY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_NO_BUILD_CAPACITY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 10
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "frequencyPerMonth",
+      "minutesPerOccurrence",
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [
+      "general_assistant",
+      "writing"
+    ],
+    "costLines": [
+      {
+        "id": "setup_effort",
+        "low": 1,
+        "high": 4,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0.5,
+        "high": 2,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "subscription",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": null
+  },
+  "consumer-contradictory": {
+    "inputHash": "7d4b6df4b513db71143bfc0a154da3f54307a989d06a19300de1f8fcd50a66d5",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "no_change",
+    "runnerUp": "buy_ai",
+    "confidence": "low",
+    "suitability": 56,
+    "suitabilityBand": "moderate",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 70,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 35,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 25,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 65,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 50,
+        "eligible": true,
+        "excludedBy": []
+      }
+    ],
+    "triggered": [
+      "HC_IRREVERSIBLE_AUTONOMY",
+      "HC_CRITICAL_EXACT"
+    ],
+    "risk": {
+      "level": "high",
+      "score": 90
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [
+      "zero_frequency",
+      "exact_generative",
+      "critical_full_autonomy",
+      "solo_with_engineers",
+      "irreversible_without_action"
+    ],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 0,
+        "high": 0,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 0,
+        "high": 0,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0,
+        "high": 0,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 0
+  },
+  "teams-hosted-refused-no-engineers": {
+    "inputHash": "c86f3e1451d77d4771dda7552f4457fb8a8606a91492c7f9355f89b96388e9da",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "no_change",
+    "runnerUp": "conventional_software",
+    "confidence": "low",
+    "suitability": 83,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 15,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 90,
+        "eligible": false,
+        "excludedBy": [
+          "HC_HOSTED_TOOLS_REFUSED"
+        ]
+      },
+      {
+        "outcome": "build_ai",
+        "score": 50,
+        "eligible": false,
+        "excludedBy": [
+          "HC_NO_BUILD_CAPACITY"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_HOSTED_TOOLS_REFUSED",
+      "HC_NO_BUILD_CAPACITY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 20
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 5,
+        "high": 5,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 0,
+        "high": 0,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 0,
+        "high": 0,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 5
+  },
+  "teams-zero-budget": {
+    "inputHash": "3b9bdf6b92af30b5f5e73e86ee19f2fed9fd982c2679dae26b40d568a2f5f4c2",
+    "rulesVersion": "decision-rules.v1",
+    "outcome": "buy_ai",
+    "runnerUp": "conventional_automation",
+    "confidence": "high",
+    "suitability": 93,
+    "suitabilityBand": "strong",
+    "outcomeScores": [
+      {
+        "outcome": "no_change",
+        "score": 0,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_software",
+        "score": 20,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "conventional_automation",
+        "score": 40,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "buy_ai",
+        "score": 75,
+        "eligible": true,
+        "excludedBy": []
+      },
+      {
+        "outcome": "build_ai",
+        "score": 95,
+        "eligible": false,
+        "excludedBy": [
+          "HC_ZERO_BUDGET"
+        ]
+      }
+    ],
+    "triggered": [
+      "HC_ZERO_BUDGET",
+      "HC_FREE_TIER_ONLY"
+    ],
+    "risk": {
+      "level": "low",
+      "score": 0
+    },
+    "feasibility": "high",
+    "missingInputs": [
+      "hourlyValueUsd"
+    ],
+    "contradictions": [],
+    "toolCategories": [
+      "general_assistant",
+      "knowledge",
+      "writing"
+    ],
+    "costLines": [
+      {
+        "id": "time_today",
+        "low": 200,
+        "high": 200,
+        "unit": "hours",
+        "period": "month",
+        "basis": "user_input"
+      },
+      {
+        "id": "setup_effort",
+        "low": 8,
+        "high": 60,
+        "unit": "hours",
+        "period": "one_time",
+        "basis": "heuristic"
+      },
+      {
+        "id": "upkeep_effort",
+        "low": 2,
+        "high": 10,
+        "unit": "hours",
+        "period": "month",
+        "basis": "heuristic"
+      },
+      {
+        "id": "subscription",
+        "low": null,
+        "high": null,
+        "unit": "usd",
+        "period": "month",
+        "basis": "heuristic"
+      }
+    ],
+    "hoursSavedPerMonth": 200
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@aifit/decision-core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The five-outcome decision engine (no change / conventional software / conventional automation / buy AI / build AI) shared by AI Fit Consumer and Teams. Rules live in rules/decision-rules.v1.json; Python mirrors this in aifit.decision.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "files": ["dist", "rules", "fixtures"],
+  "scripts": {
+    "build": "node scripts/generate.mjs && tsc -p tsconfig.json",
+    "typecheck": "node scripts/generate.mjs && tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test dist/engine.test.js dist/injection.test.js dist/tools.test.js dist/explain.test.js",
+    "golden": "npm run build && node dist/write-golden.js"
+  },
+  "dependencies": { "zod": "^3.23.8" },
+  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.9.0" }
+}

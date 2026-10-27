@@ -1,0 +1,504 @@
+[
+  {
+    "id": "consumer-birthday-reminders",
+    "title": "Remembering family birthdays (already handled by the phone calendar)",
+    "intake": {
+      "surface": "consumer",
+      "goal": "Remember family birthdays",
+      "workTypes": [
+        "lookup",
+        "record"
+      ],
+      "frequencyPerMonth": 2,
+      "minutesPerOccurrence": 3,
+      "currentApproach": "existing_software",
+      "currentWorksWell": true,
+      "correctness": "exact",
+      "errorImpact": "low"
+    },
+    "expect": {
+      "outcome": "no_change",
+      "triggered": [
+        "HC_DETERMINISTIC_ONLY",
+        "HC_NO_BUILD_CAPACITY"
+      ]
+    }
+  },
+  {
+    "id": "consumer-receipt-tracking",
+    "title": "Tracking household receipts and monthly totals",
+    "intake": {
+      "surface": "consumer",
+      "goal": "Keep track of receipts and see what we spend each month",
+      "workTypes": [
+        "record",
+        "calculate"
+      ],
+      "frequencyPerMonth": 30,
+      "minutesPerOccurrence": 5,
+      "currentApproach": "manual",
+      "correctness": "exact",
+      "errorImpact": "medium",
+      "constraints": {
+        "dataClasses": [
+          "financial"
+        ]
+      }
+    },
+    "expect": {
+      "outcome": "conventional_software",
+      "triggered": [
+        "HC_DETERMINISTIC_ONLY",
+        "HC_NO_BUILD_CAPACITY"
+      ]
+    }
+  },
+  {
+    "id": "consumer-email-to-sheet",
+    "title": "Copying order emails into a spreadsheet",
+    "intake": {
+      "surface": "consumer",
+      "role": "small_business_owner",
+      "goal": "Every order email should become a row in my sheet",
+      "workTypes": [
+        "transfer",
+        "record"
+      ],
+      "frequencyPerMonth": 120,
+      "minutesPerOccurrence": 3,
+      "currentApproach": "manual",
+      "correctness": "exact",
+      "errorImpact": "medium",
+      "constraints": {
+        "integrations": [
+          "Gmail",
+          "Google Sheets"
+        ],
+        "dataClasses": [
+          "pii"
+        ]
+      }
+    },
+    "expect": {
+      "outcome": "conventional_automation",
+      "triggered": [
+        "HC_DETERMINISTIC_ONLY",
+        "HC_NO_BUILD_CAPACITY"
+      ]
+    }
+  },
+  {
+    "id": "consumer-cover-letters",
+    "title": "Drafting tailored cover letters",
+    "intake": {
+      "surface": "consumer",
+      "role": "individual",
+      "goal": "Write cover letters for job applications",
+      "workTypes": [
+        "generate",
+        "summarize"
+      ],
+      "frequencyPerMonth": 8,
+      "minutesPerOccurrence": 45,
+      "correctness": "subjective",
+      "errorImpact": "medium",
+      "technicalAbility": "none"
+    },
+    "expect": {
+      "outcome": "buy_ai",
+      "triggered": [
+        "HC_NO_BUILD_CAPACITY"
+      ]
+    }
+  },
+  {
+    "id": "consumer-private-journal",
+    "title": "Summarising a private journal, nothing may leave the laptop, no budget",
+    "intake": {
+      "surface": "consumer",
+      "goal": "Weekly summary of my journal",
+      "workTypes": [
+        "summarize"
+      ],
+      "frequencyPerMonth": 4,
+      "minutesPerOccurrence": 30,
+      "correctness": "subjective",
+      "errorImpact": "low",
+      "technicalAbility": "intermediate",
+      "constraints": {
+        "localOnly": true,
+        "monthlyBudgetUsd": 0,
+        "dataClasses": [
+          "sensitive_pii"
+        ]
+      }
+    },
+    "expect": {
+      "outcome": "buy_ai",
+      "triggered": [
+        "HC_LOCAL_ONLY",
+        "HC_FREE_TIER_ONLY",
+        "HC_REGULATED_DATA"
+      ]
+    }
+  },
+  {
+    "id": "consumer-dev-review-bot",
+    "title": "A developer automating pull-request review summaries across tools",
+    "intake": {
+      "surface": "consumer",
+      "role": "engineer",
+      "goal": "Summarise and label pull requests, post to chat",
+      "workTypes": [
+        "classify",
+        "summarize",
+        "generate"
+      ],
+      "frequencyPerMonth": 1500,
+      "minutesPerOccurrence": 4,
+      "correctness": "tolerant",
+      "errorImpact": "low",
+      "technicalAbility": "advanced",
+      "org": {
+        "size": "solo",
+        "engineers": 1
+      },
+      "constraints": {
+        "integrations": [
+          "GitHub",
+          "Slack"
+        ]
+      }
+    },
+    "expect": {
+      "outcome": "build_ai",
+      "triggered": []
+    }
+  },
+  {
+    "id": "teams-support-triage",
+    "title": "Triage and summarise inbound support tickets",
+    "intake": {
+      "surface": "teams",
+      "role": "manager",
+      "goal": "Route tickets and draft a summary for the agent",
+      "workTypes": [
+        "classify",
+        "summarize"
+      ],
+      "frequencyPerMonth": 4000,
+      "minutesPerOccurrence": 6,
+      "correctness": "tolerant",
+      "errorImpact": "medium",
+      "technicalAbility": "intermediate",
+      "org": {
+        "size": "small",
+        "engineers": 2
+      },
+      "constraints": {
+        "dataClasses": [
+          "internal",
+          "pii"
+        ],
+        "integrations": [
+          "Zendesk"
+        ],
+        "monthlyBudgetUsd": 2000,
+        "timelineWeeks": 12
+      },
+      "hourlyValueUsd": 62
+    },
+    "expect": {
+      "outcome": "build_ai",
+      "triggered": []
+    }
+  },
+  {
+    "id": "teams-invoice-lookup",
+    "title": "Look up invoice status and compute late fees",
+    "intake": {
+      "surface": "teams",
+      "goal": "Answer 'has invoice X been paid and what is the late fee'",
+      "workTypes": [
+        "lookup",
+        "calculate"
+      ],
+      "frequencyPerMonth": 3000,
+      "minutesPerOccurrence": 2,
+      "correctness": "exact",
+      "errorImpact": "high",
+      "technicalAbility": "intermediate",
+      "org": {
+        "size": "small",
+        "engineers": 2
+      },
+      "constraints": {
+        "dataClasses": [
+          "financial"
+        ],
+        "monthlyBudgetUsd": 500,
+        "timelineWeeks": 8
+      }
+    },
+    "expect": {
+      "outcome": "conventional_software",
+      "triggered": [
+        "HC_DETERMINISTIC_ONLY"
+      ]
+    }
+  },
+  {
+    "id": "teams-crm-sync",
+    "title": "Keep two CRMs in sync and notify owners",
+    "intake": {
+      "surface": "teams",
+      "goal": "Sync deals between Salesforce and HubSpot",
+      "workTypes": [
+        "transfer",
+        "act"
+      ],
+      "frequencyPerMonth": 5000,
+      "minutesPerOccurrence": 2,
+      "correctness": "exact",
+      "errorImpact": "medium",
+      "technicalAbility": "intermediate",
+      "org": {
+        "size": "mid",
+        "engineers": 4
+      },
+      "constraints": {
+        "integrations": [
+          "Salesforce",
+          "HubSpot"
+        ],
+        "monthlyBudgetUsd": 1000,
+        "timelineWeeks": 6
+      }
+    },
+    "expect": {
+      "outcome": "conventional_automation",
+      "triggered": [
+        "HC_DETERMINISTIC_ONLY"
+      ]
+    }
+  },
+  {
+    "id": "teams-clinical-notes-no-engineers",
+    "title": "Summarise clinical intake notes at a small practice with no engineers",
+    "intake": {
+      "surface": "teams",
+      "goal": "Summarise intake notes for the doctor",
+      "workTypes": [
+        "extract",
+        "summarize",
+        "decide"
+      ],
+      "frequencyPerMonth": 300,
+      "minutesPerOccurrence": 12,
+      "correctness": "tolerant",
+      "errorImpact": "high",
+      "technicalAbility": "basic",
+      "org": {
+        "size": "small",
+        "engineers": 0
+      },
+      "constraints": {
+        "dataClasses": [
+          "phi"
+        ],
+        "regulated": [
+          "hipaa"
+        ],
+        "monthlyBudgetUsd": 300,
+        "timelineWeeks": 3
+      }
+    },
+    "expect": {
+      "outcome": "buy_ai",
+      "triggered": [
+        "HC_NO_BUILD_CAPACITY",
+        "HC_REGULATED_DATA"
+      ]
+    }
+  },
+  {
+    "id": "teams-ops-agent-credentials",
+    "title": "An operations agent that rotates keys and restarts services on its own",
+    "intake": {
+      "surface": "teams",
+      "goal": "Agent that reads alerts, decides and acts",
+      "workTypes": [
+        "act",
+        "decide",
+        "classify"
+      ],
+      "frequencyPerMonth": 800,
+      "minutesPerOccurrence": 15,
+      "correctness": "tolerant",
+      "errorImpact": "critical",
+      "technicalAbility": "advanced",
+      "org": {
+        "size": "mid",
+        "engineers": 5,
+        "hasMlExperience": true,
+        "hasSecurityReview": true
+      },
+      "constraints": {
+        "dataClasses": [
+          "credentials",
+          "internal"
+        ],
+        "integrations": [
+          "PagerDuty",
+          "AWS",
+          "Vault"
+        ],
+        "autonomy": "full",
+        "irreversibleActions": true,
+        "monthlyBudgetUsd": 5000,
+        "timelineWeeks": 16
+      }
+    },
+    "expect": {
+      "outcome": "build_ai",
+      "triggered": [
+        "HC_CREDENTIALS_IN_DATA",
+        "HC_IRREVERSIBLE_AUTONOMY"
+      ],
+      "contradictions": [
+        "critical_full_autonomy"
+      ]
+    }
+  },
+  {
+    "id": "consumer-missing-inputs",
+    "title": "Writing help with no frequency or time given",
+    "intake": {
+      "surface": "consumer",
+      "goal": "Help me write better emails",
+      "workTypes": [
+        "generate"
+      ]
+    },
+    "expect": {
+      "outcome": "buy_ai",
+      "triggered": [
+        "HC_NO_BUILD_CAPACITY"
+      ],
+      "missing": [
+        "frequencyPerMonth",
+        "minutesPerOccurrence",
+        "hourlyValueUsd"
+      ]
+    }
+  },
+  {
+    "id": "consumer-contradictory",
+    "title": "Contradictory answers: exact creative writing, zero frequency, critical with full autonomy",
+    "intake": {
+      "surface": "consumer",
+      "goal": "Write poems",
+      "workTypes": [
+        "generate"
+      ],
+      "frequencyPerMonth": 0,
+      "minutesPerOccurrence": 10,
+      "correctness": "exact",
+      "errorImpact": "critical",
+      "org": {
+        "size": "solo",
+        "engineers": 3
+      },
+      "constraints": {
+        "autonomy": "full",
+        "irreversibleActions": true
+      }
+    },
+    "expect": {
+      "outcome": "no_change",
+      "triggered": [
+        "HC_IRREVERSIBLE_AUTONOMY",
+        "HC_CRITICAL_EXACT"
+      ],
+      "contradictions": [
+        "zero_frequency",
+        "exact_generative",
+        "critical_full_autonomy",
+        "solo_with_engineers",
+        "irreversible_without_action"
+      ],
+      "confidence": "low"
+    }
+  },
+  {
+    "id": "teams-hosted-refused-no-engineers",
+    "title": "Language work, but no hosted tools allowed and nobody to build",
+    "intake": {
+      "surface": "teams",
+      "goal": "Summarise board papers",
+      "workTypes": [
+        "summarize"
+      ],
+      "frequencyPerMonth": 10,
+      "minutesPerOccurrence": 30,
+      "correctness": "subjective",
+      "errorImpact": "medium",
+      "technicalAbility": "basic",
+      "org": {
+        "size": "small",
+        "engineers": 0
+      },
+      "constraints": {
+        "offTheShelfAcceptable": false,
+        "dataClasses": [
+          "trade_secret"
+        ],
+        "monthlyBudgetUsd": 200,
+        "timelineWeeks": 8
+      }
+    },
+    "expect": {
+      "outcome": "no_change",
+      "triggered": [
+        "HC_HOSTED_TOOLS_REFUSED",
+        "HC_NO_BUILD_CAPACITY"
+      ]
+    }
+  },
+  {
+    "id": "teams-zero-budget",
+    "title": "Draft social posts with engineers but no monthly budget",
+    "intake": {
+      "surface": "teams",
+      "goal": "Draft social posts from blog articles",
+      "workTypes": [
+        "generate",
+        "summarize"
+      ],
+      "frequencyPerMonth": 1200,
+      "minutesPerOccurrence": 10,
+      "correctness": "subjective",
+      "errorImpact": "low",
+      "technicalAbility": "advanced",
+      "org": {
+        "size": "small",
+        "engineers": 3
+      },
+      "constraints": {
+        "monthlyBudgetUsd": 0,
+        "integrations": [
+          "WordPress",
+          "Buffer"
+        ],
+        "timelineWeeks": 10
+      }
+    },
+    "expect": {
+      "outcome": "buy_ai",
+      "triggered": [
+        "HC_ZERO_BUDGET",
+        "HC_FREE_TIER_ONLY"
+      ]
+    }
+  }
+]

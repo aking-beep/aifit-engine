@@ -1,0 +1,166 @@
+{
+  "rulesVersion": "decision-rules.v1",
+  "engineVersion": "1.0.0",
+  "notes": "Every weight and threshold the five-outcome decision engine uses. Read by @aifit/decision-core (TypeScript) and aifit.decision (Python); both run fixtures/ and must agree. These are rules of thumb written down so they can be argued with, not values fitted to outcome data.",
+
+  "workTypes": {
+    "deterministic": ["calculate", "lookup", "record"],
+    "flow": ["transfer", "act"],
+    "ai": ["classify", "extract", "summarize", "generate", "converse", "search", "decide"]
+  },
+
+  "sensitiveDataClasses": ["pii", "sensitive_pii", "phi", "pci", "financial", "credentials", "trade_secret", "minors"],
+  "highlyRegulatedDataClasses": ["sensitive_pii", "phi", "pci", "minors"],
+
+  "thresholds": {
+    "negligibleHoursPerMonth": 0.5,
+    "smallHoursPerMonth": 2,
+    "largeHoursPerMonth": 10,
+    "repetitiveFrequencyPerMonth": 20,
+    "buyVolumeCeilingPerMonth": 500,
+    "buildVolumeFloorPerMonth": 200,
+    "buildVolumeStrongPerMonth": 1000,
+    "shortTimelineWeeks": 4,
+    "manyIntegrations": 2,
+    "builderHoursPerWeek": 30,
+    "consumerHoursPerWeek": 5,
+    "confidenceHighMargin": 20,
+    "confidenceMediumMargin": 10
+  },
+
+  "suitability": {
+    "weights": {
+      "taskFit": 0.3,
+      "correctness": 0.2,
+      "errorImpact": 0.15,
+      "data": 0.1,
+      "volume": 0.15,
+      "value": 0.1
+    },
+    "scores": {
+      "correctness": { "exact": 15, "tolerant": 80, "subjective": 90 },
+      "errorImpact": { "low": 92, "medium": 75, "high": 45, "critical": 20 },
+      "dataPerSensitiveClass": 12,
+      "dataBase": 90,
+      "volume": [
+        { "atLeast": 1000, "score": 95 },
+        { "atLeast": 200, "score": 80 },
+        { "atLeast": 20, "score": 60 },
+        { "atLeast": 4, "score": 40 },
+        { "atLeast": 0, "score": 20 }
+      ],
+      "value": [
+        { "atLeast": 20, "score": 95 },
+        { "atLeast": 5, "score": 80 },
+        { "atLeast": 2, "score": 60 },
+        { "atLeast": 0, "score": 35 }
+      ],
+      "unknown": 50
+    },
+    "bands": [
+      { "atLeast": 70, "band": "strong" },
+      { "atLeast": 50, "band": "moderate" },
+      { "atLeast": 30, "band": "weak" },
+      { "atLeast": 0, "band": "poor" }
+    ]
+  },
+
+  "outcomes": {
+    "order": ["no_change", "conventional_software", "conventional_automation", "buy_ai", "build_ai"],
+    "no_change": {
+      "base": 20,
+      "negligibleHours": 50,
+      "smallHours": 25,
+      "currentWorksWell": 30,
+      "largeHoursPenalty": -20
+    },
+    "conventional_software": {
+      "base": 20,
+      "deterministicShare": 45,
+      "exactCorrectness": 15,
+      "manualToday": 10
+    },
+    "conventional_automation": {
+      "base": 15,
+      "flowShare": 35,
+      "deterministicShare": 20,
+      "repetitive": 15,
+      "exactCorrectness": 10,
+      "hasIntegrations": 10
+    },
+    "buy_ai": {
+      "base": 15,
+      "aiShare": 50,
+      "tolerantCorrectness": 10,
+      "exactCorrectnessPenalty": -15,
+      "lowTechnicalAbility": 10,
+      "noEngineers": 10,
+      "shortTimeline": 10,
+      "modestVolume": 5,
+      "manyIntegrationsPenalty": -10,
+      "sensitiveDataPenalty": -10
+    },
+    "build_ai": {
+      "base": 5,
+      "aiShare": 45,
+      "engineeringTeam": 15,
+      "mlExperience": 5,
+      "strongVolume": 15,
+      "someVolume": 5,
+      "manyIntegrations": 15,
+      "localOrOnPrem": 10,
+      "shortTimelinePenalty": -15,
+      "noTechnicalAbilityPenalty": -20,
+      "exactCorrectnessPenalty": -15
+    }
+  },
+
+  "effortHours": {
+    "consumer": {
+      "no_change": { "setup": [0, 0], "monthly": [0, 0] },
+      "conventional_software": { "setup": [1, 8], "monthly": [0, 1] },
+      "conventional_automation": { "setup": [2, 16], "monthly": [0.5, 2] },
+      "buy_ai": { "setup": [1, 4], "monthly": [0.5, 2] },
+      "build_ai": { "setup": [20, 80], "monthly": [2, 8] }
+    },
+    "teams": {
+      "no_change": { "setup": [0, 0], "monthly": [0, 0] },
+      "conventional_software": { "setup": [16, 120], "monthly": [2, 8] },
+      "conventional_automation": { "setup": [40, 200], "monthly": [4, 16] },
+      "buy_ai": { "setup": [8, 60], "monthly": [2, 10] },
+      "build_ai": { "setup": [160, 960], "monthly": [16, 80] }
+    }
+  },
+
+  "risk": {
+    "perSensitiveClass": 10,
+    "highlyRegulated": 15,
+    "regulation": 10,
+    "errorImpact": { "low": 0, "medium": 10, "high": 25, "critical": 40 },
+    "autonomy": { "suggest": 0, "approve": 5, "bounded": 15, "full": 30 },
+    "irreversibleActions": 20,
+    "levels": [
+      { "atLeast": 60, "level": "high" },
+      { "atLeast": 30, "level": "medium" },
+      { "atLeast": 0, "level": "low" }
+    ]
+  },
+
+  "toolCategories": {
+    "classify": ["general_assistant", "automation"],
+    "extract": ["general_assistant", "data_analysis"],
+    "summarize": ["general_assistant", "knowledge"],
+    "generate": ["general_assistant", "writing"],
+    "converse": ["general_assistant"],
+    "search": ["research", "knowledge"],
+    "decide": ["general_assistant", "research"],
+    "act": ["automation"],
+    "transfer": ["automation"],
+    "calculate": ["data_analysis"],
+    "lookup": [],
+    "record": []
+  },
+  "localCategories": ["local_open_source"],
+  "localDeployments": ["local", "self_hosted"],
+  "freePricingTiers": ["free", "mixed"]
+}
