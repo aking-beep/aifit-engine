@@ -7,7 +7,9 @@
     "packages/calibration-contract",
     "packages/decision-core",
     "packages/teams-core",
+    "packages/control-export-contract",
     "packages/platform",
+    "packages/deliverables",
     "packages/ui",
     "apps/teams"
   ],
@@ -15,8 +17,8 @@
     "node": ">=22.6"
   },
   "scripts": {
-    "build:packages": "npm run build --workspace @aifit/calibration-contract && npm run build --workspace @aifit/decision-core && npm run build --workspace @aifit/teams-core && npm run build --workspace @aifit/platform && npm run build --workspace @aifit/ui",
-    "test:teams": "npm run test --workspace @aifit/calibration-contract && npm run test --workspace @aifit/decision-core && npm run test --workspace @aifit/teams-core && npm run test --workspace @aifit/platform && npm run test --workspace @aifit/ui && npm run test --workspace @aifit/teams",
+    "build:packages": "npm run build --workspace @aifit/calibration-contract && npm run build --workspace @aifit/decision-core && npm run build --workspace @aifit/teams-core && npm run build --workspace @aifit/control-export-contract && npm run build --workspace @aifit/deliverables && npm run build --workspace @aifit/platform && npm run build --workspace @aifit/ui",
+    "test:teams": "npm run test --workspace @aifit/calibration-contract && npm run test --workspace @aifit/decision-core && npm run test --workspace @aifit/teams-core && npm run test --workspace @aifit/control-export-contract && npm run test --workspace @aifit/deliverables && npm run test --workspace @aifit/platform && npm run test --workspace @aifit/ui && npm run test --workspace @aifit/teams",
     "typecheck:teams": "npm run typecheck --workspace @aifit/teams",
     "build:teams": "npm run build --workspace @aifit/teams",
     "dev:teams": "npm run dev --workspace @aifit/teams"

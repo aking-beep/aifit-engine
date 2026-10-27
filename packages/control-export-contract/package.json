@@ -1,0 +1,21 @@
+{
+  "name": "@aifit/control-export-contract",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Proposed contract for exporting AI Fit Teams governance requirements, policy suggestions, agent inventory requirements and evaluation evidence to ARC Control. Recommendations only: nothing in an export is an enforced control.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./governance-export.schema.json": "./governance-export.schema.json"
+  },
+  "files": ["dist", "fixtures", "governance-export.schema.json", "CONTRACT.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json && node --test dist/contract.test.js"
+  },
+  "dependencies": { "zod": "^3.23.8" },
+  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.9.0" }
+}

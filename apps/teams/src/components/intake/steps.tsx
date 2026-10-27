@@ -322,6 +322,29 @@ export function TeamStep({ s, set }: StepProps) {
         label="We can respond to a production problem outside business hours"
         help="If not, autonomous patterns are off the table regardless of what the data says."
       />
+      <div className="border-t border-ink-800 pt-5">
+        <p className="text-sm font-medium text-ink-100">Budget and timeline</p>
+        <p className="mt-1 text-xs leading-relaxed text-ink-400">
+          Optional. These feed the build-versus-buy-versus-automate comparison; blank means the report says it does not know.
+        </p>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-3">
+        <Field label="Monthly budget" optional>
+          {(p) => <NumInput {...p} value={s.monthlyBudgetUsd} onChange={(v) => set('monthlyBudgetUsd', v)} max={10_000_000} suffix="$/mo" placeholder="unknown" />}
+        </Field>
+        <Field label="One-time budget" optional>
+          {(p) => <NumInput {...p} value={s.oneTimeBudgetUsd} onChange={(v) => set('oneTimeBudgetUsd', v)} max={100_000_000} suffix="$" placeholder="unknown" />}
+        </Field>
+        <Field label="Weeks until it must work" optional>
+          {(p) => <NumInput {...p} value={s.timelineWeeks} onChange={(v) => set('timelineWeeks', v)} max={520} suffix="wk" placeholder="unknown" />}
+        </Field>
+      </div>
+      <Toggle
+        on={s.offTheShelfAcceptable}
+        set={(v) => set('offTheShelfAcceptable', v)}
+        label="A third-party hosted tool is acceptable for this work"
+        help="Turn off if policy rules out sending this data to an outside SaaS product. That removes “buy” from the comparison."
+      />
     </Section>
   );
 }

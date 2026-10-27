@@ -127,6 +127,20 @@ export const Workload = z.object({
     humanErrorRate: z.number().min(0).max(1).optional(),
   }).default({}),
 
+  /**
+   * Planning constraints for the build-vs-buy-vs-automate decision
+   * (@aifit/decision-core). All optional: links made before this existed
+   * decode with an empty object, and a missing figure is reported as missing.
+   */
+  planning: z.object({
+    monthlyBudgetUsd: z.number().nonnegative().max(1e9).optional(),
+    oneTimeBudgetUsd: z.number().nonnegative().max(1e9).optional(),
+    timelineWeeks: z.number().nonnegative().max(520).optional(),
+    /** False when a third-party hosted tool is not acceptable for this work. */
+    offTheShelfAcceptable: z.boolean().optional(),
+    currentWorksWell: z.boolean().optional(),
+  }).default({}),
+
   /** Team that would own it. Small teams change the architecture answer. */
   team: z.object({
     engineers: z.number().nonnegative().default(0),
