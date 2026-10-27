@@ -42,6 +42,15 @@ describe('account deletion and export', () => {
     assert.deepEqual((await listMembers(store, bobCtx)).map((m) => m.email), ['b@x.io']);
   });
 
+  test('an active team plan blocks deleting the workspace it pays for', async () => {
+    const store = new MemoryStore();
+    const u = await signup(store, { email: 'p@x.io', password: PW, name: 'P' });
+    await store.set(`org:${u.personalOrgId}:entitlements`, { plan: 'team', subscription: { id: 'sub_1', customerId: 'cus_1', status: 'active', currentPeriodEnd: null }, purchases: [] });
+    await assert.rejects(deleteAccount(store, u.id), { code: 'conflict' });
+    await store.set(`org:${u.personalOrgId}:entitlements`, { plan: 'free', subscription: { id: 'sub_1', customerId: 'cus_1', status: 'canceled', currentPeriodEnd: null }, purchases: [] });
+    assert.deepEqual((await deleteAccount(store, u.id)).deletedWorkspaces, [u.personalOrgId]);
+  });
+
   test('export contains the account and its workspaces but never the password hash', async () => {
     const store = new MemoryStore();
     const u = await signup(store, { email: 'a@x.io', password: PW, name: 'A' });

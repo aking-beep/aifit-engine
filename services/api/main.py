@@ -24,7 +24,7 @@ from aifit.analytics import summary as analytics_summary
 from aifit.analytics import track
 from aifit.bundle import BundleValidationError, build_bundle, redact_secrets, validate_file
 from aifit.classifier import classify_text
-from aifit.decision import DecisionIntake, decide_parsed, match_tools
+from aifit.decision import DecisionIntake, decide_parsed, match_tools, rules as decision_rules
 from aifit.engine import normalize_free_text, score_session
 from aifit.exports import export_persona
 from aifit.fit import rank_models_by_workload, rank_products
@@ -543,6 +543,12 @@ def analytics():
 # request cannot claim to be a Teams assessment or inject its own cost figures.
 
 TECHNICAL_LEVEL = {"none": 0.15, "basic": 0.35, "intermediate": 0.6, "advanced": 0.85}
+
+
+@app.get("/v1/decision/rules")
+def decision_rules_published():
+    """Every weight and threshold the task check uses, exactly as the engine reads them."""
+    return decision_rules()
 
 
 @app.post("/v1/decision")

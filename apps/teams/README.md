@@ -57,6 +57,30 @@ contract, the assessment uses the ARK rubric and every provenance-bearing figure
 `heuristic`. The report still renders in full. That is the primary path, not a degraded one, and
 `packages/teams-core/src/calibration/contract.test.ts` checks it.
 
+## Workspaces, deliverables and billing
+
+The anonymous report is unchanged: nothing is stored and it is free. Signing up adds an org workspace:
+
+- **Accounts** — email + password (scrypt), opaque session tokens stored only as SHA-256, `HttpOnly;
+  SameSite=Lax; Secure` cookies, Origin checks on every mutating route, store-backed rate limits.
+- **Roles** — owner, admin, member, viewer (`packages/platform/src/orgs.ts`, one table). Invites are
+  one-time, email-bound links; the token travels in the URL fragment.
+- **Saved assessments** — the Workload plus a snapshot of verdict, decision outcome and engine
+  versions; reassessing adds a version on the same root. Another org's id reads as 404.
+- **Deliverables** — technical blueprint (Markdown / JSON, `@aifit/deliverables`) and the governance
+  export for ARC Control (`@aifit/control-export-contract`, recommendations only). PDF: print the report.
+- **Billing** — `BILLING_MODE=off` by default. In `test` mode the blueprint (per assessment) and the
+  export (team plan) are gated server-side; Checkout is Stripe-hosted; only a signature-verified,
+  idempotently applied webhook grants anything. `live` needs an `sk_live_` key and `BILLING_ALLOW_LIVE=1`.
+- **Account** — JSON export of everything stored and self-serve deletion; a sole owner of a shared
+  workspace, or a workspace with an active plan, must resolve that first.
+
+Without `UPSTASH_REDIS_REST_URL`/`TOKEN` on Vercel, workspace pages say they are off and why. Locally a
+file store under `.data/` is used. See `.env.example` for every variable.
+
+Browser tests: `npm run test:e2e --workspace @aifit/teams` (after `npm run build:teams`). They start two
+production servers (billing off, and Stripe test mode with fake keys and locally signed webhooks).
+
 ## The wire to ARK Control
 
 This build talks to Control over exactly one HTTP call:
@@ -114,9 +138,13 @@ Teams does not use it.
 
 ## Routes
 
-- `/` intro, `/assess` intake, `/report` result, `/methodology`.
+- `/` intro, `/assess` intake, `/report` result, `/methodology`, `/privacy`.
+- `/signup`, `/signin`, `/workspace`, `/workspace/assessments/[id]`, `/invite`, `/billing`, `/account`.
+- `/api/auth/*`, `/api/workspace`, `/api/workspace/members`, `/api/invites/accept`, `/api/assessments`
+  (+ `/[id]`, `/[id]/reassess`, `/[id]/blueprint`, `/[id]/control-export`), `/api/blueprint` (anonymous,
+  billing off only), `/api/billing/{checkout,webhook,status}`, `/api/account`.
 - `POST /api/assess` scores one `Workload` or up to 20. `GET /api/assess` describes it.
 - `POST /api/measure` is disabled in this build (see above).
 
 Intake is encoded into the report link and the assessment is recomputed on every view. Nothing the
-user enters is stored on the server.
+user enters is stored on the server unless a signed-in user saves it to a workspace.

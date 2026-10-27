@@ -51,6 +51,11 @@ export async function deleteAccount(store: KvStore, userId: string): Promise<{ d
   for (const org of orgs) {
     const members = await store.smembers(OK.members(org.id));
     if (members.length <= 1) {
+      // Deleting a workspace with a live subscription would leave Stripe billing nobody.
+      const ent = await readEntitlements(store, org.id);
+      if (ent.subscription && ['active', 'trialing', 'past_due', 'unpaid'].includes(ent.subscription.status)) {
+        throw new PlatformError('conflict', `"${org.name}" has an active team plan. Cancel it in Stripe first, then delete your account.`);
+      }
       plan.push({ orgId: org.id, action: 'delete' });
       continue;
     }

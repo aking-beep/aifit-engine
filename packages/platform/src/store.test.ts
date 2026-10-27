@@ -68,6 +68,15 @@ for (const [name, make] of stores) {
   });
 }
 
+test('incr keeps an existing expiry, as Redis does', async () => {
+  let now = 0;
+  const s = new MemoryStore(() => now);
+  await s.set('n', 1, { ttlSeconds: 10 });
+  assert.equal(await s.incr('n'), 2);
+  now = 10_001;
+  assert.equal(await s.get('n'), null);
+});
+
 test('memory store expires keys', async () => {
   let now = 0;
   const s = new MemoryStore(() => now);

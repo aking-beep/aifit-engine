@@ -169,7 +169,7 @@ stays in the browser; activation counters are anonymous and allow-listed. Paymen
 ## 8. Known blockers (need the owner)
 
 - **Durable store for Teams on Vercel**: attach Upstash Redis (or Vercel KV) to `ark-ai-fit-teams` and
-  set `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`, plus `AUTH_SECRET`. Without these the
+  set `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`. (No signing secret is needed: sessions are random tokens stored hashed.) Without these the
   preview runs the anonymous flows only.
 - **Stripe test mode**: `STRIPE_SECRET_KEY` (`sk_test_…`), `STRIPE_WEBHOOK_SECRET`, price ids. Without
   them checkout is code-complete and unit-tested but unverified against Stripe.

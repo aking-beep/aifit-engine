@@ -44,10 +44,12 @@ export class MemoryStore implements KvStore {
     this.lists.delete(key);
   }
 
+  /** Like Redis INCR: keeps the key's existing expiry. */
   async incr(key: string): Promise<number> {
-    const current = (await this.get<number>(key)) ?? 0;
-    await this.set(key, current + 1);
-    return current + 1;
+    const e = this.live(checkKey(key));
+    const next = (e ? (JSON.parse(e.value) as number) : 0) + 1;
+    this.data.set(key, { value: JSON.stringify(next), expiresAt: e?.expiresAt ?? null });
+    return next;
   }
 
   async sadd(key: string, member: string): Promise<void> {

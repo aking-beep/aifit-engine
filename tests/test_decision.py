@@ -163,3 +163,13 @@ def test_decision_endpoint_rejects_bad_input_without_echoing_it():
     res = TestClient(app).post("/v1/decision", json={"workTypes": [], "goal": "secret-token-123"})
     assert res.status_code == 422
     assert "secret-token-123" not in res.text
+
+
+def test_rules_are_published():
+    from fastapi.testclient import TestClient
+
+    from services.api.main import app
+
+    body = TestClient(app).get("/v1/decision/rules").json()
+    assert body["rulesVersion"] == "decision-rules.v1"
+    assert set(body["outcomes"]["order"]) == set(OUTCOMES)

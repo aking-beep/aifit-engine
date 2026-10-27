@@ -55,6 +55,31 @@ jobs:
       # No ARK_CONTROL_URL: the build must not need Control.
       - run: npm run build:teams
 
+  teams-e2e:
+    # Browser tests for AI Fit Teams against two production servers: billing
+    # off, and Stripe test mode with fake keys (webhooks are signed locally;
+    # nothing reaches Stripe). Each run uses throwaway file stores.
+    runs-on: ubuntu-latest
+    needs: [teams]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run build:teams
+      - run: npx playwright install --with-deps chromium
+        working-directory: apps/teams
+      - run: npx playwright test
+        working-directory: apps/teams
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: teams-playwright-report
+          path: apps/teams/test-results
+
   e2e:
     runs-on: ubuntu-latest
     needs: [python, web]

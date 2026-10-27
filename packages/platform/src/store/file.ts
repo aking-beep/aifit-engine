@@ -81,8 +81,9 @@ export class FileStore implements KvStore {
   async incr(key: string): Promise<number> {
     checkKey(key);
     return this.run((s) => {
-      const n = (s.data[key] ? (JSON.parse(s.data[key]!.value) as number) : 0) + 1;
-      s.data[key] = { value: JSON.stringify(n), expiresAt: null };
+      const prev = s.data[key];
+      const n = (prev ? (JSON.parse(prev.value) as number) : 0) + 1;
+      s.data[key] = { value: JSON.stringify(n), expiresAt: prev?.expiresAt ?? null };
       return { result: n, dirty: true };
     });
   }
