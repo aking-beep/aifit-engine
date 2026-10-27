@@ -273,7 +273,8 @@ export function blueprintMarkdown(b: Blueprint): string {
   L.push(`| Run cost per unit | ${est(b.costs.perUnit)} |`, `| Run cost per month | ${est(b.costs.perMonth)} |`, `| Build cost | ${est(b.costs.buildCost)} |`);
   L.push(`| Payback | ${b.costs.paybackMonths ? est(b.costs.paybackMonths, (n) => `${n.toFixed(1)} months`) : 'unknowable from the inputs given'} |`);
   for (const l of b.costs.effort) {
-    const range = l.low === null || l.high === null ? 'not estimated' : l.low === l.high ? `${l.low} ${l.unit}` : `${l.low}–${l.high} ${l.unit}`;
+    const f = (n: number) => (l.unit === 'usd' ? money(n) : `${n.toLocaleString('en-US')} h`);
+    const range = l.low === null || l.high === null ? 'not estimated' : l.low === l.high ? f(l.low) : `${f(l.low)}–${f(l.high)}`;
     L.push(`| ${cell(l.label)} (${l.period === 'month' ? 'per month' : 'one time'}) | ${range} — *${l.basis}*: ${cell(l.source)} |`);
   }
 
