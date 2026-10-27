@@ -46,7 +46,7 @@ export function Nav({ controlUrl, account = null }: { controlUrl: string; accoun
         <li>
           {/* A separate product: an ordinary link out, never marked current. */}
           <a href={controlUrl} className={ITEM + ' border-transparent text-ink-300 hover:text-ink-100'}>
-            ARK Control
+            ARC Control
           </a>
         </li>
       </ul>

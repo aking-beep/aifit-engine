@@ -63,9 +63,9 @@ export function MeasureSample({
 
   return (
     <div className="rounded-lg border border-ink-800 bg-ink-850 p-4">
-      <p className="text-sm font-medium text-ink-100">Once it runs, ARK Control measures it</p>
+      <p className="text-sm font-medium text-ink-100">Once it runs, ARC Control measures it</p>
       <p className="mt-1 text-xs leading-relaxed text-ink-400">
-        This report estimates. ARK Control replaces the estimates with what your running system actually
+        This report estimates. ARC Control replaces the estimates with what your running system actually
         does. To give it a first trace now, send one synthetic sample: it carries the workload id and task
         shapes, never your description. One sample does not calibrate anything; thirty traces for this
         pattern do.
@@ -87,7 +87,7 @@ export function MeasureSample({
         </button>
         {controlUrl && (
           <a href={controlUrl} className="text-xs text-ink-300 underline underline-offset-2 hover:text-ink-100">
-            Open ARK Control
+            Open ARC Control
           </a>
         )}
       </div>
@@ -96,7 +96,7 @@ export function MeasureSample({
           <div className="mt-3 text-xs leading-relaxed" data-testid="measure-outcome">
             <p className="text-ink-300">
               Sample answered by <span className="font-mono">{state.modelId}</span> in {state.latencyMs} ms.{' '}
-              {state.telemetry ? state.telemetry.line : 'ARK Control accepted the trace.'}
+              {state.telemetry ? state.telemetry.line : 'ARC Control accepted the trace.'}
             </p>
             {state.telemetry && <Recovery text={state.telemetry.recovery} />}
           </div>

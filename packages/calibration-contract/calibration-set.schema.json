@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/aking-beep/aifit-engine/packages/calibration-contract/calibration-set.schema.json",
   "title": "CalibrationSet",
-  "description": "Body of a 200 from ARK Control GET /api/v1/calibration. Contract version 1.0.0, copied from aking-beep/ark@f4f52ce packages/core/src/calibration/priors.ts. A client treats any other status, or a body that does not match, as no calibration.",
+  "description": "Body of a 200 from ARC Control GET /api/v1/calibration. Contract version 1.0.0, copied from aking-beep/ark@f4f52ce packages/core/src/calibration/priors.ts. A client treats any other status, or a body that does not match, as no calibration.",
   "type": "object",
   "required": ["basis", "generatedAt", "windowDays", "patterns"],
   "properties": {

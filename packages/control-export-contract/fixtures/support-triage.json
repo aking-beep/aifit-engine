@@ -11,7 +11,7 @@
       "rootId": "asm_example1",
       "version": 1
     },
-    "inputHash": "e8844935a867b424ef61ca9e09dc32f22536cca3747a72931d09475338db4c45",
+    "inputHash": "1e5a52591a9acef466fa05f2fdaaac982771e41b406f9a022e770de53a7d67c1",
     "engines": {
       "blueprint": "1.0.0",
       "decision": "1.0.0",
@@ -97,7 +97,7 @@
       "severity": "recommended",
       "source": "security-rubric",
       "verification": {
-        "method": "This is the ARK Control ingest contract; coverage is measurable as a percentage of known traffic.",
+        "method": "This is the ARC Control ingest contract; coverage is measurable as a percentage of known traffic.",
         "owner": "customer"
       }
     },
@@ -336,7 +336,7 @@
       {
         "name": "Cost per successful outcome",
         "threshold": "Within 20% of the modelled figure",
-        "measuredHow": "ARK Control, attributed to this workload, retries and failed attempts included.",
+        "measuredHow": "ARC Control, attributed to this workload, retries and failed attempts included.",
         "blocksLaunch": false
       },
       {

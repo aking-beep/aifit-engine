@@ -20,7 +20,7 @@ export default function Methodology() {
           disagree with, this page should let you find the exact assumption you disagree with and say so.
         </p>
         <p className="mt-4 text-sm leading-relaxed text-ink-400">
-          This product is the estimator. ARK Control is the measurement. They are the only two surfaces that
+          This product is the estimator. ARC Control is the measurement. They are the only two surfaces that
           talk. The map — Assess → Measure → Control, four grains on one trace, how a figure is promoted
           from heuristic to measured — is <code className="font-mono text-ink-200">docs/08-how-ark-works.md</code> in the ARK repository.
           Connect production at Control <code className="font-mono text-ink-200">/start</code>.
@@ -88,7 +88,7 @@ export default function Methodology() {
 
       <Panel
         title="Assumed call shapes"
-        subtitle="Per architecture pattern. These are the figures ARK Control replaces with measurement."
+        subtitle="Per architecture pattern. These are the figures ARC Control replaces with measurement."
       >
         <CardTable
           columns={[

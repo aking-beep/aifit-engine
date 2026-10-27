@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * The calibration contract between AI Fit Teams and ARK Control, frozen.
+ * The calibration contract between AI Fit Teams and ARC Control, frozen.
  *
  * Teams reads `GET ${ARK_CONTROL_URL}/api/v1/calibration?days=30` and Control
  * answers with a `CalibrationSet`. Until this extraction both sides parsed the

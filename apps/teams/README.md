@@ -44,7 +44,7 @@ Copy `.env.example`. Every variable is optional.
 
 | Variable | Read by | Effect |
 |---|---|---|
-| `ARK_CONTROL_URL` | report page, `POST /api/assess`, header nav | Control origin for the calibration read. Unset: no request is made and the report is uncalibrated. Also the header's "ARK Control" link, which falls back to `http://localhost:3002` when unset. |
+| `ARK_CONTROL_URL` | report page, `POST /api/assess`, header nav | Control origin for the calibration read. Unset: no request is made and the report is uncalibrated. Also the header's "ARC Control" link, which falls back to `http://localhost:3002` when unset. |
 | `ARK_CONTROL_TOKEN` | calibration client | Sent as `Authorization: Bearer …`. Control derives the org from it. Without it, Control answers 401. |
 | `ARK_TRUSTED_PROXY_HOPS` | `POST /api/measure` rate limit | Which `X-Forwarded-For` entry to trust. No visible effect in this build (see measure mode). |
 | `ARK_MEASURE_ENABLED` | `/api/measure`, report page | Needs to be `1` **and** the build must carry ARK Runtime. This build does not, so measuring stays off. |
@@ -81,7 +81,7 @@ file store under `.data/` is used. See `.env.example` for every variable.
 Browser tests: `npm run test:e2e --workspace @aifit/teams` (after `npm run build:teams`). They start two
 production servers (billing off, and Stripe test mode with fake keys and locally signed webhooks).
 
-## The wire to ARK Control
+## The wire to ARC Control
 
 This build talks to Control over exactly one HTTP call:
 

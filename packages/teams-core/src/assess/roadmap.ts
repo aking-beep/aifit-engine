@@ -66,7 +66,7 @@ export function roadmap(w: Workload, pattern: Pattern, verdict: Verdict): Phase[
       exitCriteria: [
         'Accuracy holds on live traffic within 5 points of the offline result',
         'Cost per successful outcome within 20% of the model',
-        'ARK Control instrumented and attributing every call to this workload',
+        'ARC Control instrumented and attributing every call to this workload',
         'Failure modes catalogued from actual production inputs',
       ],
       killCriteria: 'A drop of more than 10 points from offline to live means the golden set was not representative. Rebuild it before writing more code.',

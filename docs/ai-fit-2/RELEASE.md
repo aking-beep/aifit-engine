@@ -137,7 +137,7 @@ Teams (`ark-ai-fit-teams`), all optional; see `apps/teams/.env.example`:
 | `BILLING_MODE`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_BLUEPRINT`, `STRIPE_PRICE_TEAM_MONTHLY`, `APP_URL` | Billing (off when unset) |
 | `BILLING_ALLOW_LIVE=1` | Live charges (never set by default) |
 | `CONTROL_EXPORT_URL`, `CONTROL_EXPORT_TOKEN` | Optional HTTP delivery of the governance export |
-| `ARK_CONTROL_URL`, `ARK_CONTROL_TOKEN` | Existing calibration read (already set on the project) |
+| `ARK_CONTROL_URL`, `ARK_CONTROL_TOKEN` | Existing calibration read from ARC Control (already set on the project; names kept for compatibility) |
 
 ## Migration and rollback
 

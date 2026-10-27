@@ -107,12 +107,12 @@ export function describeTelemetry(
   if (telemetry?.ok) return null;
   if (!telemetry?.attempted) {
     return {
-      line: 'This app is not connected to ARK Control, so the trace went nowhere.',
+      line: 'This app is not connected to ARC Control, so the trace went nowhere.',
       recovery: 'Set ARK_CONTROL_URL and ARK_CONTROL_TOKEN on this app, then send again.',
     };
   }
   return {
-    line: 'ARK Control did not accept the trace.',
+    line: 'ARC Control did not accept the trace.',
     recovery: 'Check that ARK_CONTROL_TOKEN matches an active org token in Control and that Control is reachable from this app.',
   };
 }

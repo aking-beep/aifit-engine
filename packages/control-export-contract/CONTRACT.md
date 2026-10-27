@@ -1,9 +1,9 @@
 # GovernanceExport v1 — AI Fit Teams → ARC Control (proposed)
 
 **Status: proposed.** AI Fit does not assume ARC Control implements any endpoint for this
-contract. Releases of AI Fit never depend on it. (The existing calibration client in
-`packages/teams-core` refers to the sibling product as "ARK Control"; this document assumes
-the same product.)
+contract. Releases of AI Fit never depend on it. (The existing calibration read uses the
+`ARK_CONTROL_URL` / `ARK_CONTROL_TOKEN` environment variables; those names predate the ARC Control
+name and are kept for compatibility.)
 
 ## What it is
 

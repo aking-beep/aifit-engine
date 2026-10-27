@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Frozen copy of ARK Control's GET /api/v1/calibration response contract (CalibrationSet), with fixtures.",
+  "description": "Frozen copy of ARC Control's GET /api/v1/calibration response contract (CalibrationSet), with fixtures.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

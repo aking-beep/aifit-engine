@@ -6,7 +6,7 @@ import { Pattern } from './architecture.js';
  *
  * Output is deliberately a control list with owners and a verification hook,
  * because a risk score nobody can act on is decoration. Every control names
- * how ARK Control would later verify it is actually in place.
+ * how ARC Control would later verify it is actually in place.
  */
 
 export type RiskLevel = 'low' | 'moderate' | 'high' | 'severe';
@@ -135,7 +135,7 @@ export function assessSecurity(w: Workload, pattern: Pattern): SecurityAssessmen
     id: 'SEC-07',
     requirement: 'Log every model call with workload, user, model, tokens, cost, latency, outcome and any action taken.',
     why: 'Without attribution you cannot answer "who spent this, on what, and what did it do" — the question that arrives first in any incident or audit.',
-    verifiedBy: 'This is the ARK Control ingest contract; coverage is measurable as a percentage of known traffic.',
+    verifiedBy: 'This is the ARC Control ingest contract; coverage is measurable as a percentage of known traffic.',
     blocking: false,
   });
   controls.push({

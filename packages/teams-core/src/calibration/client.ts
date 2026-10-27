@@ -7,7 +7,7 @@ import {
 } from '@aifit/calibration-contract';
 
 /**
- * How AI Fit Teams reaches ARK Control.
+ * How AI Fit Teams reaches ARC Control.
  *
  * Deliberately a network call rather than a shared database import. The two
  * products must be separable — a customer can buy the assessment without

@@ -173,5 +173,6 @@ stays in the browser; activation counters are anonymous and allow-listed. Paymen
   preview runs the anonymous flows only.
 - **Stripe test mode**: `STRIPE_SECRET_KEY` (`sk_test_…`), `STRIPE_WEBHOOK_SECRET`, price ids. Without
   them checkout is code-complete and unit-tested but unverified against Stripe.
-- **Naming**: the existing code calls the sibling product "ARK Control"; this mission calls it "ARC
-  Control". Assumed to be the same product; new contract names are neutral (`control-export`).
+- **Naming** (resolved 2026-10-27): the sibling product is ARC Control. Earlier code said "ARK
+  Control"; user-facing text now says ARC Control. The `ARK_CONTROL_URL` / `ARK_CONTROL_TOKEN`
+  environment variables keep their names so existing deployments do not break.

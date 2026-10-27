@@ -58,7 +58,7 @@ describe('architecture selection', () => {
 
   test('every pattern includes the Control telemetry hook', () => {
     for (const w of [SUPPORT_TRIAGE, CONTENT_DRAFTING]) {
-      assert.ok(assess(w).architecture.components.some((c) => /ARK Control/.test(c)));
+      assert.ok(assess(w).architecture.components.some((c) => /ARC Control/.test(c)));
     }
   });
 });

@@ -140,7 +140,7 @@ export function recommendModel(w: Workload): ModelRecommendation {
 }
 
 /**
- * Substitution analysis — the ARK Control money shot.
+ * Substitution analysis — the ARC Control money shot.
  *
  * Given what a workload is ACTUALLY running on, say whether something cheaper
  * would do, and what the swap is worth per month. Requires an observed call
@@ -195,7 +195,7 @@ export function findSubstitutions(
           observedSampleSize ? 'measured' : 'heuristic',
           observedSampleSize
             ? `observed call shape over ${observedSampleSize} calls`
-            : 'assumed call shape — connect ARK Control to replace this with measurement',
+            : 'assumed call shape — connect ARC Control to replace this with measurement',
           { sampleSize: observedSampleSize },
         ),
       };

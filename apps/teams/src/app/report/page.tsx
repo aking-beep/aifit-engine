@@ -171,23 +171,23 @@ export default async function Report({
         <Callout tone="warn" title="This report is uncalibrated">
           <p>
             Treat the run cost as an order of magnitude, not a budget line: turns per outcome and failure
-            rate are rubric priors until ARK Control has measured this pattern.
+            rate are rubric priors until ARC Control has measured this pattern.
           </p>
           <details className="mt-3 text-xs leading-relaxed text-ink-400">
             <summary className="cursor-pointer text-ink-300 hover:text-ink-100">
-              For the operator: connect ARK Control
+              For the operator: connect ARC Control
             </summary>
             <p className="mt-2">
               {controlConfigured && !calibration ? (
                 <>
-                  <span className="font-mono text-ink-200">ARK_CONTROL_URL</span> is set, but ARK Control did not
+                  <span className="font-mono text-ink-200">ARK_CONTROL_URL</span> is set, but ARC Control did not
                   answer the calibration request, so the rubric prior stands. Check that Control is reachable
                   from this app and that <span className="font-mono text-ink-200">ARK_CONTROL_TOKEN</span> is an
                   active org token.
                 </>
               ) : controlConfigured ? (
                 <>
-                  ARK Control is connected, but it has fewer than 30 observed outcomes for the{' '}
+                  ARC Control is connected, but it has fewer than 30 observed outcomes for the{' '}
                   <span className="font-mono text-ink-200">{a.architecture.pattern}</span> pattern in the last
                   30 days, so the rubric prior stands.
                 </>
@@ -471,7 +471,7 @@ export default async function Report({
               { label: 'Control', mono: true },
               { label: 'Requirement', align: 'left', className: 'pr-4' },
               { label: 'Why', align: 'left', className: 'pr-4' },
-              { label: notAi ? 'How it is verified' : 'How ARK Control verifies it at runtime', align: 'left' },
+              { label: notAi ? 'How it is verified' : 'How ARC Control verifies it at runtime', align: 'left' },
             ]}
             rows={a.security.controls.map((c) => ({
               key: c.id,
