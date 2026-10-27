@@ -46,8 +46,10 @@ function sessionStore(): KeyValueStore | null {
 }
 
 export function Intake({
-  initial, initialStep, badLink,
+  initial, initialStep, badLink, reassess = null,
 }: {
+  /** A saved assessment id this intake will become a new version of (checked server-side on save). */
+  reassess?: string | null;
   /** Prefill decoded from `?w=` on the server. */
   initial: IntakeState | null;
   /** `?step=` (0-based), already parsed. */
@@ -73,7 +75,8 @@ export function Intake({
       // The link wins. Drop it from the address bar so that a refresh from here
       // restores these edits from storage instead of re-reading the old link.
       save(store, { step: initialStep ?? 0, state: initial });
-      window.history.replaceState(null, '', '/assess');
+      // Keep only the reassess target, so a refresh still saves as a new version.
+      window.history.replaceState(null, '', reassess ? `/assess?reassess=${encodeURIComponent(reassess)}` : '/assess');
     } else {
       const saved = loadSaved(store);
       if (saved) {
@@ -130,7 +133,7 @@ export function Intake({
     const workload = workloadFromState(state);
     if (!workload) return;
     clearSaved(sessionStore());
-    router.push(`/report?w=${encodeWorkloadClient(workload)}`);
+    router.push(`/report?w=${encodeWorkloadClient(workload)}${reassess ? `&reassess=${encodeURIComponent(reassess)}` : ''}`);
   }
 
   function reportNow() {
@@ -173,7 +176,7 @@ export function Intake({
                   ? 'text-ink-300 hover:text-ink-100'
                   : i <= reachable
                     ? 'text-ink-400 hover:text-ink-200'
-                    : 'text-ink-400 opacity-70');
+                    : 'text-ink-400');
             return (
               <li key={label}>
                 {current || i > reachable ? (

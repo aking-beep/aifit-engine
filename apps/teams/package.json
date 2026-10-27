@@ -10,9 +10,14 @@
     "build": "npm run build:packages --prefix ../.. && next build",
     "start": "next start -p 3001",
     "typecheck": "npm run build:packages --prefix ../.. && tsc -p tsconfig.json --noEmit",
-    "test": "npm run build:packages --prefix ../.. && node --experimental-strip-types --test src/lib/measure.test.ts src/lib/intake-verdict.test.ts src/lib/intake-state.test.ts"
+    "test": "npm run build:packages --prefix ../.. && node --experimental-strip-types --test src/lib/measure.test.ts src/lib/intake-verdict.test.ts src/lib/intake-state.test.ts",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@aifit/control-export-contract": "*",
+    "@aifit/decision-core": "*",
+    "@aifit/deliverables": "*",
+    "@aifit/platform": "*",
     "@aifit/teams-core": "*",
     "@aifit/ui": "*",
     "next": "15.5.28",
@@ -21,6 +26,8 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "1.63.0",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Nav } from '@/components/nav';
+import { currentViewer, workspacesEnabled } from '@/server/platform';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -9,7 +10,8 @@ export const metadata: Metadata = {
     'A defensible assessment of one workload: whether to use AI at all, what to build, what it costs to run, what has to be true before it ships.',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const viewer = workspacesEnabled() ? await currentViewer().catch(() => null) : null;
   return (
     <html lang="en">
       <body>
@@ -26,15 +28,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {/* Dropped at phone width, where it would collide with the nav. */}
               <span className="hidden text-2xs text-ink-400 sm:inline">a separate product</span>
             </Link>
-            <Nav controlUrl={process.env.ARK_CONTROL_URL ?? 'http://localhost:3002'} />
+            <Nav controlUrl={process.env.ARK_CONTROL_URL ?? 'http://localhost:3002'} account={workspacesEnabled() ? (viewer ? 'workspace' : 'signin') : null} />
           </div>
         </header>
         <main id="main" tabIndex={-1} className="mx-auto max-w-5xl px-4 py-10 outline-none sm:px-6">
           {children}
         </main>
         <footer className="mx-auto max-w-5xl px-4 pb-12 text-2xs leading-relaxed text-ink-400 sm:px-6">
-          Nothing you enter is stored. The intake is encoded into the report link and the assessment is
-          recalculated each time it is opened. Every figure carries a tag saying what it rests on.
+          Without an account nothing you enter is stored: the intake is encoded into the report link and the
+          assessment is recalculated each time it is opened. Saving to a workspace stores it for your team; see{' '}
+          <Link href="/privacy" className="underline underline-offset-2">Privacy</Link>. Every figure carries a tag saying what it rests on.
         </footer>
       </body>
     </html>

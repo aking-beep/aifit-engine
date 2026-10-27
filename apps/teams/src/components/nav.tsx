@@ -16,12 +16,15 @@ const ITEMS = [
 
 const ITEM = 'inline-flex min-h-10 items-center border-b-2 px-2 text-xs transition';
 
-export function Nav({ controlUrl }: { controlUrl: string }) {
+export function Nav({ controlUrl, account = null }: { controlUrl: string; account?: 'workspace' | 'signin' | null }) {
   const pathname = usePathname() ?? '/';
+  const items = account === 'workspace'
+    ? [...ITEMS, { href: '/workspace', label: 'Workspace' } as const]
+    : account === 'signin' ? [...ITEMS, { href: '/signin', label: 'Sign in' } as const] : ITEMS;
   return (
     <nav aria-label="Main" className="-mx-2">
       <ul className="flex flex-wrap items-center gap-x-2">
-        {ITEMS.map((item) => {
+        {items.map((item) => {
           const current = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
             <li key={item.href}>

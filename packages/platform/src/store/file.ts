@@ -35,6 +35,7 @@ export class FileStore implements KvStore {
   }
 
   private write(s: Snapshot) {
+    mkdirSync(dirname(this.path), { recursive: true });
     const tmp = `${this.path}.${process.pid}.tmp`;
     writeFileSync(tmp, JSON.stringify(s));
     renameSync(tmp, this.path);

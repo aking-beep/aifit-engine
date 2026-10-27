@@ -17,6 +17,10 @@ import { MeasureSample } from '@/components/measure-sample';
 import { measureEnabled } from '@/lib/measure';
 import { ReportFooter, ReportPrintStyles, intakeHref } from '@/components/report-footer';
 import { VerdictOnlyReport } from '@/components/report-verdict-only';
+import { DecisionSection } from '@/components/report-decision';
+import { ReportWorkspaceActions } from '@/components/report-workspace';
+import { decisionFor } from '@/server/assessments';
+import { billing, currentViewer, workspacesEnabled } from '@/server/platform';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,9 +59,9 @@ const ROADMAP_SOURCE = 'ARK roadmap rubric — phase durations are rules of thum
 export default async function Report({
   searchParams,
 }: {
-  searchParams: Promise<{ w?: string; scope?: string }>;
+  searchParams: Promise<{ w?: string; scope?: string; reassess?: string }>;
 }) {
-  const { w: encoded, scope } = await searchParams;
+  const { w: encoded, scope, reassess } = await searchParams;
   const workload = encoded ? decodeWorkload(encoded) : null;
 
   if (!workload || !encoded) {
@@ -104,6 +108,9 @@ export default async function Report({
   // it is not. Either way the basis tag on every figure says which happened.
   const calibration = await fetchCalibration({ days: 30 });
   const a = assess(workload, { depth: 'business', calibration });
+  const decision = decisionFor(a);
+  const viewer = await currentViewer().catch(() => null);
+  const reassessId = typeof reassess === 'string' && /^asm_[A-Za-z0-9]{1,32}$/.test(reassess) ? reassess : null;
   const controlConfigured = Boolean(process.env.ARK_CONTROL_URL?.trim() && process.env.ARK_CONTROL_TOKEN?.trim());
 
   const notAi = a.suitability.verdict === 'not-ai';
@@ -149,6 +156,16 @@ export default async function Report({
           </ul>
         </Callout>
       )}
+
+      <DecisionSection d={decision} verdict={a.suitability.verdict} />
+
+      <ReportWorkspaceActions
+        encoded={encoded}
+        workspaces={workspacesEnabled()}
+        signedIn={Boolean(viewer)}
+        reassessId={viewer ? reassessId : null}
+        anonymousBlueprint={!billing().enabled}
+      />
 
       {!notAi && !a.trust.calibrated && (
         <Callout tone="warn" title="This report is uncalibrated">
