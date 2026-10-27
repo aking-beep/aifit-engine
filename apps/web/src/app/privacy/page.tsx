@@ -26,6 +26,18 @@ export default function PrivacyPage() {
             site turns on the optional LLM classifier (<code>AIFIT_LLM_CLASSIFIER</code>). It is off by default.
           </p>
           <p>Feedback stores a 1–5 rating and an optional comment. Do not include identifying details.</p>
+          <p>
+            The task check (“Should I use AI?”) is not stored on our server. Its result, and your history list, are kept
+            only in this browser; you can delete them from the History page.
+          </p>
+          <p>
+            To see whether Fit is useful, the site counts anonymous events such as “quiz completed” or “setup
+            downloaded”. Each count is only the event name — no session ID, IP address, or anything you typed.
+          </p>
+          <p>
+            Downloaded setup files are checked for anything that looks like a password or API key before you get them,
+            and any match is replaced with [REDACTED].
+          </p>
         </CardContent>
       </Card>
       <Card>

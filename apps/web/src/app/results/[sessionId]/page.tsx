@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, trackActivation } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { loadResult, loadSession, saveResult } from "@/lib/session-store";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,6 +15,10 @@ export default function ResultsPage() {
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (result) trackActivation("results_viewed");
+  }, [result]);
 
   useEffect(() => {
     let cancelled = false;

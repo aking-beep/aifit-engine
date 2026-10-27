@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field, ValidationError
 from aifit import __version__
 from aifit.analytics import summary as analytics_summary
 from aifit.analytics import track
+from aifit.bundle import BundleValidationError, build_bundle, redact_secrets, validate_file
 from aifit.classifier import classify_text
 from aifit.decision import DecisionIntake, decide_parsed, match_tools
 from aifit.engine import normalize_free_text, score_session
@@ -449,8 +450,6 @@ def classify(payload: ClassifyRequest):
 
 @app.post("/v1/export/{target}")
 def export(target: str, payload: ExportRequest):
-    from aifit.exports import export_pack_zip
-
     allowed = {"generic", "claude", "agents", "cursor", "json", "chatgpt", "gemini", "profile", "routing", "pack"}
     if target not in allowed:
         raise HTTPException(status_code=400, detail=f"Unknown export target: {target}")
@@ -462,12 +461,24 @@ def export(target: str, payload: ExportRequest):
         raise HTTPException(status_code=400, detail="persona must be an object.")
     try:
         if target == "pack":
-            filename, blob = export_pack_zip(result)
-            return {"filename": filename, "content": base64.b64encode(blob).decode("ascii"), "encoding": "base64"}
+            filename, blob, manifest = build_bundle(result)
+            track("bundle_built", metadata={"files": len(manifest["files"]), "redacted": manifest["secretsRedacted"]})
+            return {
+                "filename": filename,
+                "content": base64.b64encode(blob).decode("ascii"),
+                "encoding": "base64",
+                "manifest": manifest,
+            }
         filename, body = export_persona(persona_payload, target, result)
+        body, redacted = redact_secrets(body)
+        failed = [c["detail"] for c in validate_file(filename, body) if not c["passed"]]
+        if failed:
+            raise BundleValidationError([{"path": filename, "detail": d} for d in failed])
+    except BundleValidationError as exc:
+        raise HTTPException(status_code=422, detail={"error": "Export failed validation.", "failures": exc.failures}) from exc
     except (AttributeError, KeyError, TypeError, ValueError) as exc:
         raise HTTPException(status_code=400, detail="That result is missing fields this export needs.") from exc
-    return {"filename": filename, "content": body, "encoding": "text"}
+    return {"filename": filename, "content": body, "encoding": "text", "secretsRedacted": redacted}
 
 
 @app.post("/v1/feedback")
@@ -480,9 +491,48 @@ def feedback(payload: FeedbackRequest):
     return {"ok": True, "id": row["id"]}
 
 
+# Activation ------------------------------------------------------------------
+#
+# Anonymous, allow-listed counters so activation can be measured across
+# serverless instances (when Redis/KV is configured). No session id, IP or
+# free text is stored: only that an event of a known name happened.
+
+ACTIVATION_EVENTS = (
+    "quiz_started",
+    "quiz_completed",
+    "results_viewed",
+    "persona_copied",
+    "persona_opened",
+    "export_downloaded",
+    "bundle_downloaded",
+    "check_started",
+    "check_completed",
+    "history_viewed",
+    "share_created",
+)
+
+
+class ActivationBody(BaseModel):
+    event: str = Field(max_length=40)
+
+
+@app.post("/v1/activation")
+def activation(payload: ActivationBody):
+    if payload.event not in ACTIVATION_EVENTS:
+        raise HTTPException(status_code=400, detail="Unknown activation event.")
+    RESULT_STORE.incr(f"activation_{payload.event}")
+    track(payload.event)
+    return {"ok": True}
+
+
 @app.get("/v1/analytics/summary")
 def analytics():
-    return {**analytics_summary(), "feedback_count": RESULT_STORE.count("feedback")}
+    return {
+        **analytics_summary(),
+        "feedback_count": RESULT_STORE.count("feedback"),
+        "activation": {name: RESULT_STORE.count(f"activation_{name}") for name in ACTIVATION_EVENTS},
+        "activation_durable": RESULT_STORE.durable,
+    }
 
 
 # Decision ------------------------------------------------------------------

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, trackActivation } from "@/lib/api";
 import type { ScoreResult } from "@/lib/types";
 import { clearSession, loadSession, saveResult } from "@/lib/session-store";
 import { encodeSharePayload, trimForShare } from "@/lib/share-snapshot";
@@ -150,6 +150,7 @@ export function ResultsView({
         : new Blob([artifact.content], { type: "text/plain" });
       saveFile(blob, artifact.filename.split("/").pop() || artifact.filename);
       setExportNote(`Downloaded ${artifact.filename}`);
+      trackActivation(target === "pack" ? "bundle_downloaded" : "export_downloaded");
     } catch (err) {
       if (current.instructions) {
         const outcome = await copyText(current.instructions);
@@ -190,6 +191,7 @@ export function ResultsView({
       return;
     }
     setShareUrl(url);
+    trackActivation("share_created");
     const outcome = await shareOrCopy(url, workstyle?.label ?? personaLabel);
     if (outcome === "fallback") setFallback({ text: url, label: "share link" });
   }
@@ -202,6 +204,7 @@ export function ResultsView({
       return;
     }
     setCopied(kind);
+    if (kind === "instructions") trackActivation("persona_copied");
     window.setTimeout(() => setCopied(null), 2000);
   }
 
@@ -226,6 +229,7 @@ export function ResultsView({
     if (outcome === "fallback") setFallback({ text: message, label: "primed message" });
     else flashPrimedCopied();
     const url = personaDeepLink(target, message);
+    trackActivation("persona_opened");
     if (url) window.open(url, "_blank", "noreferrer");
   }
 
@@ -466,7 +470,7 @@ export function ResultsView({
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Progress value={(dimension.display ?? dimension.score * 100)} />
+                  <Progress aria-label={dimension.label} value={(dimension.display ?? dimension.score * 100)} />
                 </CardContent>
               </Card>
             ))}
@@ -708,7 +712,7 @@ export function ResultsView({
                       {metric.observations} observations across {metric.scenario_ids.join(", ") || "no scenarios"}.
                       {detailed ? ` Confidence ${pct(metric.confidence)}.` : ""}
                     </p>
-                    <Progress className="my-2" value={metric.score * 100} />
+                    <Progress className="my-2" aria-label={friendlyMetric(metric.name)} value={metric.score * 100} />
                     <ul className="mt-2 list-disc space-y-1 pl-5">
                       {metric.evidence.length ? metric.evidence.map((item, index) => <li key={`${index}-${item}`}>{item}</li>) : <li>No quoted evidence for this metric.</li>}
                     </ul>

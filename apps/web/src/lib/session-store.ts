@@ -1,5 +1,6 @@
 import type { InteractionEvent, QuizNote, ScoreResult } from "./types";
 import { normalizeResult } from "./share-snapshot";
+import { recordHistory } from "./history";
 
 const SESSION_PREFIX = "aifit:session:";
 const RESULT_PREFIX = "aifit:result:";
@@ -73,6 +74,12 @@ export function loadSession(sessionId: string): StoredSession | null {
 
 export function saveResult(sessionId: string, result: ScoreResult) {
   writeJson(RESULT_PREFIX + sessionId, result);
+  recordHistory({
+    kind: "quiz",
+    id: sessionId,
+    label: result.workstyle?.label || result.persona?.label || "AI style quiz",
+    detail: "Quiz result",
+  });
 }
 
 export function loadResult(sessionId: string): ScoreResult | null {

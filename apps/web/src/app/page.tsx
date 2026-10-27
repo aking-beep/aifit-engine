@@ -88,7 +88,10 @@ export default function HomePage() {
             <Link href="/assessment" className={cn(buttonVariants({ size: "lg" }), "min-h-11")}>
               Find my fit
             </Link>
-            <Button size="lg" variant="outline" onClick={runDemo} disabled={demoLoading}>
+            <Link href="/check" className={cn(buttonVariants({ size: "lg", variant: "outline" }), "min-h-11")}>
+              Should I use AI for a task?
+            </Link>
+            <Button size="lg" variant="ghost" onClick={runDemo} disabled={demoLoading}>
               {demoLoading ? "Loading example…" : "See an example"}
             </Button>
           </div>

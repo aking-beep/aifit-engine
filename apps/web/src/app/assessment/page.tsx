@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, trackActivation } from "@/lib/api";
 import type { InteractionEvent, QuizNote, Scenario } from "@/lib/types";
 import { saveResult, saveSession } from "@/lib/session-store";
 import { Button } from "@/components/ui/button";
@@ -138,6 +138,7 @@ export default function AssessmentPage() {
   async function finish(id: string) {
     const scored = await api.scoreFull({ session_id: id, events: eventsRef.current, notes: notesRef.current });
     saveResult(id, scored);
+    trackActivation("quiz_completed");
     router.push(`/results/${id}`);
   }
 
@@ -257,7 +258,10 @@ export default function AssessmentPage() {
           </a>{" "}
           anytime.
         </p>
-        <Button className="min-h-11 w-full sm:w-auto" onClick={() => setStarted(true)} disabled={!sessionId || loading}>
+        <Button className="min-h-11 w-full sm:w-auto" onClick={() => {
+            setStarted(true);
+            trackActivation("quiz_started");
+          }} disabled={!sessionId || loading}>
           {loading ? "Getting ready…" : "Let's go"}
         </Button>
       </div>

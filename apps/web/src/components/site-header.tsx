@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 
 const links = [
   { href: "/assessment", label: "Try it" },
+  { href: "/check", label: "Should I use AI?" },
+  { href: "/history", label: "History" },
   { href: "/methodology", label: "How it works" },
   { href: "/privacy", label: "Privacy" },
 ];
