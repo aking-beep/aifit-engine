@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import secrets
 import sys
 import uuid
@@ -20,6 +21,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ValidationError
 
 from aifit import __version__
+from aifit import agents as ai_agents
 from aifit.analytics import summary as analytics_summary
 from aifit.analytics import track
 from aifit.bundle import BundleValidationError, build_bundle, redact_secrets, validate_file
@@ -569,3 +571,84 @@ def decision(payload: dict[str, Any] = Body(...)):
     )
     track("decision_completed", metadata={"outcome": result["outcome"]})
     return {"decision": result, "tools": tools}
+
+
+# Suggest-only agents ----------------------------------------------------------
+#
+# Off unless AIFIT_AGENTS=1 and ANTHROPIC_API_KEY are set. They only suggest
+# or explain: intake suggestions are returned for the person to apply, and the
+# explanation is recomputed from the intake here, so a client cannot hand the
+# explainer a decision the rules did not make. Nothing is stored; logs carry
+# an input hash, never the text.
+
+AGENT_CONFIG = ai_agents.agent_config(os.environ)
+AGENT_LIMITER = ai_agents.Limiter(daily_cap=AGENT_CONFIG.daily_cap)
+_AGENT_CLIENT: ai_agents.ModelClient | None = None
+
+
+def _agent_client() -> ai_agents.ModelClient | None:
+    global _AGENT_CLIENT
+    if not AGENT_CONFIG.enabled:
+        return None
+    if _AGENT_CLIENT is None:
+        _AGENT_CLIENT = ai_agents.AnthropicModelClient()
+    return _AGENT_CLIENT
+
+
+def _agent_gate(request: Request) -> None:
+    key = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() or (
+        request.client.host if request.client else "unknown")
+    reason = AGENT_LIMITER.take(hashlib.sha256(key.encode()).hexdigest())
+    if reason:
+        raise HTTPException(status_code=429, detail=reason)
+
+
+class IntakeAgentBody(BaseModel):
+    text: str = Field(min_length=10, max_length=4000)
+
+
+@app.get("/v1/agents")
+def agents_status():
+    return {
+        "enabled": AGENT_CONFIG.enabled,
+        "reason": AGENT_CONFIG.reason,
+        "agents": [
+            {"name": a.name, "version": a.version} for a in (ai_agents.INTAKE_AGENT, ai_agents.EXPLAINER_AGENT)
+        ],
+    }
+
+
+@app.post("/v1/agents/intake")
+def agents_intake(payload: IntakeAgentBody, request: Request):
+    if not AGENT_CONFIG.enabled:
+        return {"status": "disabled", "reason": AGENT_CONFIG.reason, "suggestions": [], "questions": []}
+    _agent_gate(request)
+    run = ai_agents.run_agent(ai_agents.INTAKE_AGENT, {"text": payload.text, "surface": "consumer"}, _agent_client(),
+                              AGENT_CONFIG.model, ai_agents.log_trace)
+    result = run.result or {"suggestions": [], "questions": [], "dropped": []}
+    return {"status": run.status, "model": AGENT_CONFIG.model, "suggestions": result["suggestions"],
+            "questions": result["questions"], "droppedCount": len(result["dropped"]),
+            "problems": [] if run.status == "ok" else run.problems}
+
+
+@app.post("/v1/agents/explain")
+def agents_explain(request: Request, payload: dict[str, Any] = Body(...)):
+    try:
+        intake = DecisionIntake.model_validate({**payload, "surface": "consumer", "externalEstimates": {}})
+    except ValidationError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail=exc.errors(include_url=False, include_context=False, include_input=False),
+        ) from exc
+    result = decide_parsed(intake)
+    client = _agent_client()
+    if client is not None:
+        _agent_gate(request)
+    explanation, run = ai_agents.explain_decision(result, client, AGENT_CONFIG.model, ai_agents.log_trace)
+    return {
+        "status": run.status if run else "disabled",
+        "reason": None if run else AGENT_CONFIG.reason,
+        "outcome": result["outcome"],
+        "inputHash": result["engine"]["inputHash"],
+        "explanation": explanation,
+    }

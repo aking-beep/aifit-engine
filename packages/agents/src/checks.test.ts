@@ -6,7 +6,8 @@ import { checkProduct, type RegistryVerifierOutput } from './registry-verifier.j
 import { loadJson } from './fixtures.js';
 import { excerptAround, htmlToText, normalizeText, numbersIn, quoteAppears } from './text.js';
 
-// The same fixtures run in tests/test_agents.py against the Python mirror.
+// fixtures/intake-checks.json also runs in tests/test_agents.py against the Python
+// mirror. Price and registry checks run only here: those agents are TypeScript-only.
 
 describe('intake checks (shared fixtures)', () => {
   for (const c of loadJson<{ id: string; text: string; output: IntakeAgentOutput; expected: unknown }[]>('fixtures/intake-checks.json')) {

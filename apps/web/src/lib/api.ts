@@ -9,6 +9,21 @@ export type ScoreInput = {
   notes?: QuizNote[];
 };
 
+export type AgentsStatus = { enabled: boolean; reason: string };
+export type AgentStatus = "ok" | "disabled" | "invalid_input" | "refused" | "rejected" | "error" | "timeout";
+export type IntakeSuggestion = {
+  field: "workTypes" | "frequencyPerMonth" | "minutesPerOccurrence" | "correctness" | "errorImpact" | "dataClasses" | "localOnly" | "integrations";
+  value: string | number | boolean | string[];
+  evidence: string;
+  confidence: "low" | "medium" | "high";
+};
+export type IntakeSuggestions = { status: AgentStatus; suggestions: IntakeSuggestion[]; questions: string[]; reason?: string };
+export type ExplainResponse = {
+  status: AgentStatus;
+  outcome: string;
+  explanation: { source: "model" | "rules"; summary: string; keyPoints: string[]; rejected?: string };
+};
+
 type ShareCreated = { share_id: string; path: string; durable?: boolean };
 
 async function request<T>(path: string, init?: RequestInit & { token?: string | null }): Promise<T> {
@@ -89,6 +104,11 @@ export const api = {
   freshness: () => request<{ needs_review: unknown[]; products: unknown[]; models: unknown[] }>("/v1/registry/freshness"),
   decision: (intake: Record<string, unknown>) =>
     request<DecisionResponse>("/v1/decision", { method: "POST", body: JSON.stringify(intake) }),
+  agentsStatus: () => request<AgentsStatus>("/v1/agents"),
+  suggestAnswers: (text: string) =>
+    request<IntakeSuggestions>("/v1/agents/intake", { method: "POST", body: JSON.stringify({ text }) }),
+  explainDecision: (intake: Record<string, unknown>) =>
+    request<ExplainResponse>("/v1/agents/explain", { method: "POST", body: JSON.stringify(intake) }),
   feedback: (body: { session_id?: string; rating: number; comment: string; useful?: boolean }) =>
     request<{ ok: boolean }>("/v1/feedback", { method: "POST", body: JSON.stringify(body) }),
 };

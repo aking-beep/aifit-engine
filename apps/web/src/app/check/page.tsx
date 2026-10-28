@@ -7,6 +7,7 @@ import type { DecisionResponse } from "@/lib/decision-types";
 import { OUTCOME_LABEL } from "@/lib/decision-types";
 import { noopSubscribe, recordHistory, saveCheck, savedCheckFromUrl } from "@/lib/history";
 import { DecisionView } from "@/components/decision-view";
+import { ExplainInPlainLanguage, SuggestAnswers, useAgentsEnabled } from "@/components/agent-assist";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -76,11 +77,13 @@ function RadioGroup({ name, legend, options, defaultValue }: { name: string; leg
 }
 
 export default function CheckPage() {
-  const [fresh, setFresh] = useState<{ response: DecisionResponse; goal: string } | null>(null);
+  const [fresh, setFresh] = useState<{ response: DecisionResponse; goal: string; intake?: Record<string, unknown> } | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const resultRef = useRef<HTMLDivElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const agentsOn = useAgentsEnabled();
   // A check opened from history (?id=…) is read from this browser's storage.
   const saved = useSyncExternalStore(noopSubscribe, savedCheckFromUrl, () => null);
   const shown = fresh ?? (dismissed ? null : saved);
@@ -144,7 +147,7 @@ export default function CheckPage() {
         detail: OUTCOME_LABEL[response.decision.outcome],
       });
       window.history.replaceState(null, "", `/check?id=${id}`);
-      setFresh({ response, goal: goalText });
+      setFresh({ response, goal: goalText, intake });
       trackActivation("check_completed");
     } catch {
       setError("We could not check that right now. Your answers are still here — try again in a moment.");
@@ -167,6 +170,7 @@ export default function CheckPage() {
       {result ? (
         <div ref={resultRef} tabIndex={-1} className="space-y-6 outline-none">
           <DecisionView data={result} goal={goal} />
+          {agentsOn && fresh?.intake ? <ExplainInPlainLanguage intake={{ ...fresh.intake, goal: "" }} /> : null}
           <div className="flex flex-wrap gap-3">
             <Button
               variant="outline"
@@ -187,7 +191,7 @@ export default function CheckPage() {
           </div>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-6" aria-describedby="check-privacy" noValidate>
+        <form ref={formRef} onSubmit={onSubmit} className="space-y-6" aria-describedby="check-privacy" noValidate>
           <p id="check-privacy" className="text-sm text-muted-foreground">
             Nothing you type here is stored on our server. The result is kept in this browser so you can come back to it.
           </p>
@@ -211,6 +215,7 @@ export default function CheckPage() {
                 <p id="goal-hint" className="text-xs text-muted-foreground">
                   Shown back to you. It is not used to score — your choices below are.
                 </p>
+                {agentsOn ? <SuggestAnswers formRef={formRef} /> : null}
               </div>
               <fieldset className="space-y-2">
                 <legend className="font-medium">What kind of work is it? Pick all that apply.</legend>

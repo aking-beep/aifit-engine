@@ -31,6 +31,12 @@ export default function PrivacyPage() {
             only in this browser; you can delete them from the History page.
           </p>
           <p>
+            If the operator of this site turns on AI assistance (<code>AIFIT_AGENTS</code>, off by default), two buttons
+            appear on the task check. “Suggest answers” sends the description you typed to Anthropic&apos;s API;
+            “Explain this result” sends the structured result, never your description. Neither is stored by Fit, and our
+            logs record only a fingerprint (hash) of the request. Suggestions fill the form only when you click Apply.
+          </p>
+          <p>
             To see whether Fit is useful, the site counts anonymous events such as “quiz completed” or “setup
             downloaded”. Each count is only the event name — no session ID, IP address, or anything you typed.
           </p>
