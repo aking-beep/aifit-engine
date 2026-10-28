@@ -6,7 +6,9 @@
  * explicitly promotional and dated. `staleEntries()` exists so the UI can nag
  * rather than quietly serving old numbers as fact.
  *
- * Run `npm run refresh:models` (scripts/refresh-models.ts) to re-verify.
+ * Re-verified weekly by the price-verifier agent (packages/agents,
+ * .github/workflows/verify-catalog.yml), which reports changes for a person to
+ * apply here; it never edits this file.
  */
 
 export type Provider = 'anthropic' | 'openai' | 'google' | 'local' | 'bedrock';

@@ -131,6 +131,10 @@ A two-minute task check that compares five options — leave it alone, ordinary 
 
 See `docs/ai-fit-2/` for the audit, plan and release report.
 
+## Agents (optional, off)
+
+`packages/agents` (TypeScript) and `aifit.agents` (Python) add suggest-only model agents. They suggest intake answers, explain a decision in plain language, and check catalog prices and registry products every week. Each reply has to pass a schema and a deterministic check written in code before anyone sees it, and nothing is applied without the person. They run only when `AIFIT_AGENTS=1` and `ANTHROPIC_API_KEY` are set. See `docs/ai-fit-2/AGENTS.md`.
+
 ## Pack docs
 
 1. `docs/PRODUCT_SPEC.md`

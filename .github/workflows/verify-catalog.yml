@@ -1,0 +1,88 @@
+name: Catalog and registry check
+
+# Weekly background check of model list prices (Teams catalog) and registry
+# products, using the suggest-only verifier agents in packages/agents. It
+# writes a report and, when something changed, opens or updates one issue.
+# It never commits, never edits the catalog, and never runs on pull requests.
+# Needs the ANTHROPIC_API_KEY repository secret; without it the job skips.
+
+on:
+  schedule:
+    - cron: "17 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: verify-catalog
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check for the API key
+        id: key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::notice title=Catalog check skipped::Set the ANTHROPIC_API_KEY repository secret to run the weekly price and registry check."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.present == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.key.outputs.present == 'true'
+        with:
+          node-version: "22"
+          cache: npm
+      - if: steps.key.outputs.present == 'true'
+        run: npm ci
+      - if: steps.key.outputs.present == 'true'
+        run: |
+          npm run build --workspace @aifit/calibration-contract
+          npm run build --workspace @aifit/decision-core
+          npm run build --workspace @aifit/teams-core
+          npm run build --workspace @aifit/agents
+      - name: Run the verifier agents
+        id: run
+        if: steps.key.outputs.present == 'true'
+        env:
+          AIFIT_AGENTS: "1"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          node packages/agents/dist/verify-catalog-cli.js --out verify-report | tee verify-report.log
+          echo "changes=$(grep -oP '^changes=\K\d+' verify-report.log)" >> "$GITHUB_OUTPUT"
+          cat verify-report/report.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: steps.key.outputs.present == 'true'
+        with:
+          name: catalog-check-${{ github.run_id }}
+          path: verify-report/
+          retention-days: 90
+      - name: Open or update the review issue
+        if: steps.key.outputs.present == 'true' && steps.run.outputs.changes != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create catalog-check --color FBCA04 --description "Automated price/registry check found a change" --force
+          {
+            echo "The weekly catalog and registry check found ${{ steps.run.outputs.changes }} change(s). Nothing was changed in the repository; review the report and update \`packages/teams-core/src/models/catalog.ts\` or \`data/registry/products.json\` by hand if the quotes hold up."
+            echo
+            echo "Run: $RUN_URL"
+            echo
+            cat verify-report/report.md
+          } > issue-body.md
+          existing=$(gh issue list --label catalog-check --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file issue-body.md
+          else
+            gh issue create --title "Catalog check: prices or products changed" --label catalog-check --body-file issue-body.md
+          fi

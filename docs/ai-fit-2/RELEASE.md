@@ -1,6 +1,6 @@
 # AI Fit 2.0 — release report
 
-Branch `ccr-b8fdb0c7-3d2dax` (mirrored to `feature/ai-fit-2-commercial-platform`), 2026-10-27.
+Branch `ccr-b8fdb0c7-3d2dax` (mirrored to `feature/ai-fit-2-commercial-platform`), 2026-10-27; agents added 2026-10-28.
 Every result below was produced in this session; nothing is projected.
 
 ## Release recommendation
@@ -73,18 +73,32 @@ Every result below was produced in this session; nothing is projected.
   test deployments. Handles completed, async succeeded/failed, expired, subscription updated/deleted,
   invoice payment failed. Return page polls for webhook-confirmed status.
 
+### Agents (optional, off by default)
+- `@aifit/agents` and `aifit.agents`: suggest-only agents behind one harness. Every reply passes a schema
+  and a deterministic check written in code. Free text goes in as data, and traces carry only an input
+  hash. See `docs/ai-fit-2/AGENTS.md`.
+- Intake interpreter: Consumer `/check` and Teams intake step 1. Suggestions show their evidence
+  quote and are applied only by clicking.
+- Decision explainer: Consumer result and Teams report. It is labelled AI-written, the decision is
+  recomputed on the server, and the reply is discarded if it names another outcome.
+- Price and registry verifiers: a weekly GitHub Action writes a report and opens an issue; it never
+  edits the catalog or the registry.
+- **Never run against a real model.** All agent evidence below comes from a scripted client or a
+  local API stub. The live evals (`npm run eval -w @aifit/agents`, 28 cases) and the weekly check need
+  an API key and have not been run.
+
 ## Test evidence
 
 | Suite | Before | After | Result |
 |---|---:|---:|---|
-| Python (`pytest`) | 35 | 112 | all pass |
+| Python (`pytest`) | 35 | 138 | all pass |
 | Python lint (`ruff`) | — | — | clean |
 | Registry seed + eval cases | 3 cases | 3 cases | pass |
-| TypeScript unit (8 packages + Teams app) | 141 | 312 | all pass |
+| TypeScript unit (9 packages + Teams app) | 141 | 354 | all pass |
 | Teams typecheck / build | — | — | pass |
 | Consumer lint / `tsc` / build | — | — | pass |
-| Consumer browser (Playwright) | 12 | 30 | all pass |
-| Teams browser (Playwright) | 0 | 22 | all pass |
+| Consumer browser (Playwright) | 12 | 32 | all pass |
+| Teams browser (Playwright) | 0 | 26 | all pass |
 
 Coverage of the mission's list:
 
@@ -100,11 +114,12 @@ Coverage of the mission's list:
 | Authentication / authorization | `auth.test.ts`, `orgs.test.ts`, `workspace.spec.ts` |
 | Cross-organisation isolation | `isolation.test.ts`, `workspace.spec.ts` (404 across orgs) |
 | Payment + webhook idempotency | `billing.test.ts`, `billing.spec.ts` (forged, stale, replayed, live-mode) |
-| Browser workflows | 52 Playwright tests across both apps |
+| Browser workflows | 58 Playwright tests across both apps |
 | Accessibility | axe WCAG 2.1 A/AA on 12 Consumer views (light + dark) and 11 Teams views |
 | Deployment builds | Local builds, CI jobs, and Vercel previews (below) |
 | ≥10 workloads / regression fixtures | 15 decision fixtures + `golden.json`, 3 Teams fixtures |
-| Prompt injection | `injection.test.ts`, `test_decision.py`, `explain.test.ts` |
+| Prompt injection | `injection.test.ts`, `test_decision.py`, `explain.test.ts`; agents: `harness.test.ts`, `test_agents.py`, intake/price/registry fixtures and eval cases |
+| Agents (offline) | harness statuses, evidence checks (shared TS/Python fixtures), human gate and server recomputation in e2e via a local API stub (`apps/teams/e2e/agents.spec.ts`) |
 
 Accessibility: axe found real, pre-existing failures that are now fixed — Consumer primary colour at
 4.4:1 and destructive at 3.9:1, unnamed progress bars; Teams intake step list dimmed below 4.5:1.
@@ -138,6 +153,10 @@ Teams (`ark-ai-fit-teams`), all optional; see `apps/teams/.env.example`:
 | `BILLING_ALLOW_LIVE=1` | Live charges (never set by default) |
 | `CONTROL_EXPORT_URL`, `CONTROL_EXPORT_TOKEN` | Optional HTTP delivery of the governance export |
 | `ARK_CONTROL_URL`, `ARK_CONTROL_TOKEN` | Existing calibration read from ARC Control (already set on the project; names kept for compatibility) |
+
+Agents, both projects (all optional, off when unset): `AIFIT_AGENTS=1` and `ANTHROPIC_API_KEY` turn them
+on; `AIFIT_AGENT_MODEL` (default `claude-opus-5-5`); `AIFIT_AGENT_DAILY_CAP` (default 500 per instance).
+The weekly check uses the `ANTHROPIC_API_KEY` repository secret.
 
 ## Migration and rollback
 
@@ -173,7 +192,9 @@ proration, tax, invoices/receipts in-app, dunning emails.
 - Teams model catalog prices are dated 2026-09-14 and need re-verification by 2026-10-29.
 - Decision weights are rules of thumb, not fitted to outcomes; nothing is validated against results.
 - Consumer history and task checks live only in the browser (by design: Fit has no accounts).
-- The optional model explainer exists but is not wired into either UI.
+- Agents have only been exercised against a scripted client and a local stub; their real quality is unmeasured until the live evals run.
+- The weekly price check reads static HTML; a pricing page rendered by script reports "unverified".
+- Agent limits are per instance on serverless (and per process on Teams without Upstash): a cost backstop, not an exact quota.
 - Activation counters on the Consumer preview are not durable (no Upstash on that project).
 
 ## Outstanding security risks
@@ -187,6 +208,8 @@ proration, tax, invoices/receipts in-app, dunning emails.
 | Login lockout by email (10/15 min) | Low | Can be used to slow a known user's sign-in |
 | Consumer API CORS `*` | Low | Pre-existing; session calls need a token |
 | Secret patterns are heuristic | Low | Redaction/refusal catches common key shapes, not all secrets |
+| Typed instructions can be quoted back as intake suggestions | Low | The evidence check stops invented facts, not the person's own words; suggestions are applied only by the person, and hard constraints never read agent output |
+| Agent text reaches a third party | Low | Only when the operator enables agents and the person clicks; disclosed on both privacy pages |
 
 No live keys, tokens or secrets are committed; the e2e Stripe values are obviously fake and are refused
 by Stripe.
