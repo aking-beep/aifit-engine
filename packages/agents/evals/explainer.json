@@ -1,0 +1,91 @@
+{
+  "agent": "decision-explainer",
+  "grading": "Deterministic. A case passes when the model's explanation survives decision-core's checks (source is 'model'), so it names no other outcome.",
+  "cases": [
+    {
+      "id": "buy-ai-writing",
+      "input": {
+        "workTypes": [
+          "generate"
+        ],
+        "technicalAbility": "none",
+        "frequencyPerMonth": 20,
+        "minutesPerOccurrence": 30,
+        "correctness": "subjective"
+      }
+    },
+    {
+      "id": "no-change-rare",
+      "input": {
+        "workTypes": [
+          "lookup"
+        ],
+        "frequencyPerMonth": 1,
+        "minutesPerOccurrence": 2
+      }
+    },
+    {
+      "id": "software-exact-calc",
+      "input": {
+        "workTypes": [
+          "calculate"
+        ],
+        "correctness": "exact",
+        "errorImpact": "high",
+        "frequencyPerMonth": 200
+      }
+    },
+    {
+      "id": "automation-transfer",
+      "input": {
+        "workTypes": [
+          "transfer",
+          "record"
+        ],
+        "frequencyPerMonth": 300,
+        "minutesPerOccurrence": 5,
+        "correctness": "exact",
+        "constraints": {
+          "integrations": [
+            "Gmail",
+            "Google Sheets"
+          ]
+        }
+      }
+    },
+    {
+      "id": "regulated-local",
+      "input": {
+        "workTypes": [
+          "summarize"
+        ],
+        "frequencyPerMonth": 30,
+        "minutesPerOccurrence": 20,
+        "constraints": {
+          "dataClasses": [
+            "phi"
+          ],
+          "localOnly": true
+        }
+      }
+    },
+    {
+      "id": "build-ai-team",
+      "input": {
+        "workTypes": [
+          "classify",
+          "extract"
+        ],
+        "technicalAbility": "advanced",
+        "frequencyPerMonth": 5000,
+        "minutesPerOccurrence": 3,
+        "role": "engineer",
+        "org": {
+          "size": "mid",
+          "engineers": 12,
+          "hasMlExperience": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  { "id": "active-with-quote", "pageText": "Meet Claude, an AI assistant by Anthropic.", "output": { "status": "active", "currentName": null, "quotes": ["Meet Claude"], "notes": "" },
+    "expected": { "status": "active", "currentName": null, "quoteCount": 1, "problems": 0 } },
+  { "id": "status-without-quote-becomes-unclear", "pageText": "Welcome to our homepage.", "output": { "status": "discontinued", "currentName": null, "quotes": ["This product has been retired"], "notes": "" },
+    "expected": { "status": "unclear", "currentName": null, "quoteCount": 0, "problems": 1 } },
+  { "id": "renamed-name-must-appear", "pageText": "Bard is now Gemini. Try Gemini today.", "output": { "status": "renamed", "currentName": "Gemini", "quotes": ["Bard is now Gemini"], "notes": "" },
+    "expected": { "status": "renamed", "currentName": "Gemini", "quoteCount": 1, "problems": 0 } },
+  { "id": "renamed-to-invented-name", "pageText": "Bard is now Gemini.", "output": { "status": "renamed", "currentName": "Gemini Ultra Max", "quotes": ["Bard is now Gemini"], "notes": "" },
+    "expected": { "status": "unclear", "currentName": null, "quoteCount": 1, "problems": 1 } }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "quoted-prices-kept",
+    "pageText": "Claude Sonnet 5 Input $2 / MTok Output $10 / MTok Prompt caching read $0.20 / MTok",
+    "output": { "found": true, "inputPer1M": 2, "outputPer1M": 10, "cachedInputPer1M": 0.2, "quotes": [
+      { "field": "inputPer1M", "text": "Input $2 / MTok" }, { "field": "outputPer1M", "text": "Output $10 / MTok" }, { "field": "cachedInputPer1M", "text": "read $0.20 / MTok" }
+    ], "notes": "" },
+    "expected": { "found": true, "inputPer1M": 2, "outputPer1M": 10, "cachedInputPer1M": 0.2, "problems": [] }
+  },
+  {
+    "id": "unquoted-price-discarded",
+    "pageText": "Claude Sonnet 5 Input $2 / MTok Output $10 / MTok",
+    "output": { "found": true, "inputPer1M": 3, "outputPer1M": 10, "cachedInputPer1M": 0.3, "quotes": [
+      { "field": "inputPer1M", "text": "Input $3 / MTok" }, { "field": "outputPer1M", "text": "Output $10 / MTok" }
+    ], "notes": "" },
+    "expected": { "found": false, "inputPer1M": null, "outputPer1M": 10, "cachedInputPer1M": null, "problems": ["inputPer1M: no quote from the page shows 3", "cachedInputPer1M: no quote from the page shows 0.3"] }
+  },
+  {
+    "id": "quote-present-but-wrong-number",
+    "pageText": "Input $2 / MTok Output $10 / MTok",
+    "output": { "found": true, "inputPer1M": 2.5, "outputPer1M": 10, "cachedInputPer1M": null, "quotes": [
+      { "field": "inputPer1M", "text": "Input $2 / MTok" }, { "field": "outputPer1M", "text": "Output $10 / MTok" }
+    ], "notes": "" },
+    "expected": { "found": false, "inputPer1M": null, "outputPer1M": 10, "cachedInputPer1M": null, "problems": ["inputPer1M: no quote from the page shows 2.5"] }
+  },
+  {
+    "id": "thousands-separators",
+    "pageText": "Enterprise batch: $1,250.00 per million output tokens; input $250 per million",
+    "output": { "found": true, "inputPer1M": 250, "outputPer1M": 1250, "cachedInputPer1M": null, "quotes": [
+      { "field": "outputPer1M", "text": "$1,250.00 per million output tokens" }, { "field": "inputPer1M", "text": "input $250 per million" }
+    ], "notes": "" },
+    "expected": { "found": true, "inputPer1M": 250, "outputPer1M": 1250, "cachedInputPer1M": null, "problems": [] }
+  }
+]
