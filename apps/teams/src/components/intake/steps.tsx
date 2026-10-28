@@ -6,6 +6,7 @@ import { DATA_CLASS_GROUPS, REGIME_GROUPS, SHAPE_GROUPS } from './options';
 import {
   ActionEditor, Area, ChipGroups, Choices, Field, NumInput, Section, TextInput, Toggle,
 } from './primitives';
+import { SuggestAnswers, useAgentsEnabled } from '../agent-assist';
 
 /**
  * The eight sections. Every field here exists because it changes an output:
@@ -21,6 +22,7 @@ interface StepProps { s: IntakeState; set: Setter }
 const toggleIn = <T,>(xs: readonly T[], x: T): T[] => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x]);
 
 export function JobStep({ s, set }: StepProps) {
+  const agentsOn = useAgentsEnabled();
   return (
     <Section
       title="What is the job?"
@@ -40,6 +42,14 @@ export function JobStep({ s, set }: StepProps) {
           />
         )}
       </Field>
+      {agentsOn ? (
+        <SuggestAnswers
+          s={s}
+          apply={(patch) => {
+            for (const [k, v] of Object.entries(patch)) set(k as keyof IntakeState, v as IntakeState[keyof IntakeState]);
+          }}
+        />
+      ) : null}
       <Choices
         label="Who the output is for"
         value={s.actor}

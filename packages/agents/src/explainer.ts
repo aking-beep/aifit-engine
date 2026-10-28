@@ -36,7 +36,9 @@ export async function explainDecision(d: DecisionResult, ctx: RunContext): Promi
         if (run.status !== 'ok') throw new Error(run.status);
         return run.result;
       }
-    : null);
+    : null,
+    // The agent enforces its own timeout; this outer bound only has to exceed it.
+    explainerAgent.timeoutMs + 5_000);
   return { explanation, run };
 }
 

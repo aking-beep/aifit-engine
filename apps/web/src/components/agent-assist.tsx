@@ -153,7 +153,7 @@ export function SuggestAnswers({ formRef }: { formRef: RefObject<HTMLFormElement
                       variant={applied.has(s.field) ? "outline" : "default"}
                       className="min-h-11"
                       disabled={applied.has(s.field)}
-                      aria-label={`Apply ${FIELD_LABEL[s.field]}: ${display(s.value)}`}
+                      aria-label={`${applied.has(s.field) ? "Applied" : "Apply"} ${FIELD_LABEL[s.field]}: ${display(s.value)}`}
                       onClick={() => {
                         if (formRef.current && applyToForm(formRef.current, s)) setApplied((a) => new Set(a).add(s.field));
                       }}

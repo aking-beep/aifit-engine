@@ -10,10 +10,11 @@
     "build": "npm run build:packages --prefix ../.. && next build",
     "start": "next start -p 3001",
     "typecheck": "npm run build:packages --prefix ../.. && tsc -p tsconfig.json --noEmit",
-    "test": "npm run build:packages --prefix ../.. && node --experimental-strip-types --test src/lib/measure.test.ts src/lib/intake-verdict.test.ts src/lib/intake-state.test.ts",
+    "test": "npm run build:packages --prefix ../.. && node --experimental-strip-types --test src/lib/measure.test.ts src/lib/intake-verdict.test.ts src/lib/intake-state.test.ts src/lib/intake-suggestions.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@aifit/agents": "*",
     "@aifit/control-export-contract": "*",
     "@aifit/decision-core": "*",
     "@aifit/deliverables": "*",

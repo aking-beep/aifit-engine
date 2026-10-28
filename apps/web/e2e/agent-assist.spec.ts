@@ -48,6 +48,7 @@ test("suggestions apply only on click and the rules still decide", async ({ page
   await page.getByRole("button", { name: "Apply Minutes each time: 45" }).click();
   await expect(page.getByRole("checkbox", { name: "Writing or drafting" })).toBeChecked();
   await expect(page.getByRole("spinbutton", { name: "Minutes each time" })).toHaveValue("45");
+  await expect(page.getByRole("button", { name: "Applied Minutes each time: 45" })).toBeDisabled();
 
   await page.getByLabel("Times a month").fill("8");
   await page.getByLabel("I avoid tech setup").check();

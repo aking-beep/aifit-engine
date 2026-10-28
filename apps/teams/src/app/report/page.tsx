@@ -18,6 +18,8 @@ import { measureEnabled } from '@/lib/measure';
 import { ReportFooter, ReportPrintStyles, intakeHref } from '@/components/report-footer';
 import { VerdictOnlyReport } from '@/components/report-verdict-only';
 import { DecisionSection } from '@/components/report-decision';
+import { ExplainDecision } from '@/components/agent-assist';
+import { agents } from '@/server/agents';
 import { ReportWorkspaceActions } from '@/components/report-workspace';
 import { decisionFor } from '@/server/assessments';
 import { billing, currentViewer, workspacesEnabled } from '@/server/platform';
@@ -158,6 +160,7 @@ export default async function Report({
       )}
 
       <DecisionSection d={decision} verdict={a.suitability.verdict} />
+      {agents().enabled ? <ExplainDecision encoded={encoded} /> : null}
 
       <ReportWorkspaceActions
         encoded={encoded}
