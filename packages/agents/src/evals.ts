@@ -19,6 +19,8 @@ export interface RegistryCase { id: string; input: Record<string, unknown>; expe
 
 export const EVAL_FILES = {
   intake: 'evals/intake.json',
+  /** Synthetic customer personas: realistic, messy descriptions across industries. Same grader. */
+  intakePersonas: 'evals/intake-personas.json',
   explainer: 'evals/explainer.json',
   price: 'evals/price-verifier.json',
   registry: 'evals/registry-verifier.json',
@@ -69,7 +71,7 @@ export interface EvalOutcome { agent: string; id: string; status: RunStatus | 'r
 
 export async function runEvals(contexts: Record<'intake' | 'explainer' | 'price' | 'registry', RunContext>): Promise<EvalOutcome[]> {
   const out: EvalOutcome[] = [];
-  for (const c of loadCases<IntakeCase>(EVAL_FILES.intake)) {
+  for (const c of [...loadCases<IntakeCase>(EVAL_FILES.intake), ...loadCases<IntakeCase>(EVAL_FILES.intakePersonas)]) {
     const run = await runAgent(intakeAgent, { text: c.text }, contexts.intake);
     const fails = run.status === 'ok' ? gradeIntake(c, run.result) : [run.status];
     out.push({ agent: intakeAgent.name, id: c.id, status: run.status, pass: fails.length === 0, fails });

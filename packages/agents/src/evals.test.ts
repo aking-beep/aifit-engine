@@ -20,6 +20,23 @@ describe('eval files', () => {
     assert.ok(cases.filter((c) => c.id.startsWith('injection')).length >= 2);
     for (const c of cases) assert.ok(IntakeAgentInput.safeParse({ text: c.text }).success, c.id);
   });
+  test('synthetic personas: at least twenty, across industries, with injection attempts, and every expectation is a known field', () => {
+    const cases = loadCases<IntakeCase & { persona?: string }>(EVAL_FILES.intakePersonas);
+    assert.ok(cases.length >= 20);
+    assert.ok(cases.filter((c) => c.id.includes('injection')).length >= 2);
+    const fields = new Set(['workTypes', 'frequencyPerMonth', 'minutesPerOccurrence', 'correctness', 'errorImpact', 'dataClasses', 'localOnly', 'integrations']);
+    const ids = new Set<string>();
+    for (const c of cases) {
+      assert.ok(!ids.has(c.id), `duplicate id ${c.id}`);
+      ids.add(c.id);
+      assert.ok(c.persona, `${c.id} names its persona`);
+      assert.ok(IntakeAgentInput.safeParse({ text: c.text }).success, c.id);
+      for (const f of [...Object.keys(c.expect), ...c.forbid]) assert.ok(fields.has(f), `${c.id}: unknown field ${f}`);
+      for (const [f, v] of Object.entries(c.expect)) {
+        if (Array.isArray(v) && typeof v[0] === 'number') assert.ok(v.length === 2 && (v[0] as number) <= (v[1] as number), `${c.id}: bad range for ${f}`);
+      }
+    }
+  });
   test('explainer, price and registry inputs validate', () => {
     for (const c of loadCases<ExplainerCase>(EVAL_FILES.explainer)) assert.ok(DecisionIntake.safeParse(c.input).success, c.id);
     for (const c of loadCases<PriceCase>(EVAL_FILES.price)) assert.ok(PriceVerifierInput.safeParse(c.input).success, c.id);
