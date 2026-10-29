@@ -1,7 +1,7 @@
 'use client'
 // GENERATED from packages/design by scripts/sync-design.mjs. Do not edit here.
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useSyncExternalStore } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import type { Theme } from './types'
 
@@ -14,18 +14,32 @@ export const THEME_STORAGE_KEY = 'aifit-theme'
 export const THEME_BOOT_SCRIPT = `(function(){try{var t=localStorage.getItem('${THEME_STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}document.documentElement.classList.toggle('dark',t==='dark');document.documentElement.dataset.theme=t}catch(e){document.documentElement.classList.add('dark')}})();`
 
 const ThemeCtx = createContext<{ theme: Theme; setTheme: (t: Theme) => void }>({ theme: 'dark', setTheme: () => {} })
+const listeners = new Set<() => void>()
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+function notify() {
+  listeners.forEach((listener) => listener())
+}
 
 function currentTheme(): Theme {
   if (typeof document === 'undefined') return 'dark'
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 }
 
+function serverTheme(): Theme {
+  return 'dark'
+}
+
 /** The class lives on <html> so portals inherit it. The boot script sets it before hydration. */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark')
-  useEffect(() => setThemeState(currentTheme()), [])
+  const theme = useSyncExternalStore(subscribe, currentTheme, serverTheme)
   const setTheme = useCallback((t: Theme) => {
-    setThemeState(t)
     document.documentElement.classList.toggle('dark', t === 'dark')
     document.documentElement.dataset.theme = t
     try {
@@ -33,6 +47,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* storage unavailable: the choice lasts for this page only */
     }
+    notify()
   }, [])
   return <ThemeCtx.Provider value={{ theme, setTheme }}>{children}</ThemeCtx.Provider>
 }
