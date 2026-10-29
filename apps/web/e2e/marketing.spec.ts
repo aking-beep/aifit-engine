@@ -61,7 +61,13 @@ test("SEO surfaces, legal pages and the reset page", async ({ page, request }) =
   }
   await page.goto("/signin");
   await page.getByRole("link", { name: "Forgot password?" }).click();
-  await page.getByLabel("Email").fill("someone@example.com");
-  await page.getByRole("button", { name: "Send reset link" }).click();
+  await page.waitForURL(/\/reset$/);
+  // A fill that lands before hydration never reaches React state, leaving the button disabled.
+  const send = page.getByRole("button", { name: "Send reset link" });
+  await expect(async () => {
+    await page.getByLabel("Email").fill("someone@example.com");
+    await expect(send).toBeEnabled({ timeout: 1000 });
+  }).toPass();
+  await send.click();
   await expect(page.getByText(/not set up on this deployment/)).toBeVisible();
 });

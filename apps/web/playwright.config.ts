@@ -1,7 +1,13 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 
 const web = "http://127.0.0.1:43123";
 export const LEADS_TOKEN = "e2e-consumer-leads-token-0123456789";
+// A fresh API store per run, so rate limits and saved data never carry over between local runs.
+// Set once in the main process; workers inherit it through the environment.
+process.env.AIFIT_E2E_STORE ??= mkdtempSync(join(tmpdir(), "aifit-e2e-"));
 
 export default defineConfig({
   testDir: "./e2e",
@@ -25,7 +31,7 @@ export default defineConfig({
       cwd: "../..",
       url: "http://127.0.0.1:8472/health",
       reuseExistingServer: true,
-      env: { LEADS_EXPORT_TOKEN: LEADS_TOKEN },
+      env: { LEADS_EXPORT_TOKEN: LEADS_TOKEN, AIFIT_STORE: process.env.AIFIT_E2E_STORE },
     },
     {
       command: "npm run start",
