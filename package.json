@@ -27,9 +27,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "zod": "^4.6.7"
   },
   "overrides": {
+    "zod": "^4.6.7",
     "next": {
       "postcss": "^8.5.31"
     }

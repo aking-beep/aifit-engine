@@ -14,6 +14,6 @@
     "test": "npm run build && node --test dist/engine.test.js dist/injection.test.js dist/tools.test.js dist/explain.test.js",
     "golden": "npm run build && node dist/write-golden.js"
   },
-  "dependencies": { "zod": "^3.23.8" },
+  "dependencies": { "zod": "^4.6.7" },
   "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.9.0" }
 }

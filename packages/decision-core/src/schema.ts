@@ -54,7 +54,7 @@ export const DecisionIntake = z.object({
     engineers: z.number().int().nonnegative().max(100_000).default(0),
     hasMlExperience: z.boolean().default(false),
     hasSecurityReview: z.boolean().default(false),
-  }).default({}),
+  }).prefault({}),
   constraints: z.object({
     dataClasses: z.array(DataClass).max(10).default(['internal']).transform((xs) => Array.from(new Set(xs)).sort()),
     regulated: z.array(Regulation).max(8).default([]).transform((xs) => Array.from(new Set(xs)).sort()),
@@ -68,7 +68,7 @@ export const DecisionIntake = z.object({
     autonomy: z.enum(['suggest', 'approve', 'bounded', 'full']).default('suggest'),
     irreversibleActions: z.boolean().default(false),
     offTheShelfAcceptable: z.boolean().default(true),
-  }).default({}),
+  }).prefault({}),
   /** What an hour of the person's time is worth. Converts hours to dollars only when supplied. */
   hourlyValueUsd: money,
   /**
@@ -83,7 +83,7 @@ export const DecisionIntake = z.object({
       basis: z.enum(['heuristic', 'benchmark', 'calibrated', 'measured']),
       source: z.string().max(300),
     }).nullable().default(null),
-  }).default({}),
+  }).prefault({}),
 });
 export type DecisionIntake = z.infer<typeof DecisionIntake>;
 export type DecisionIntakeInput = z.input<typeof DecisionIntake>;

@@ -26,8 +26,8 @@ export const LeadSchema = z.object({
     app: z.enum(['ai-fit', 'ai-fit-teams']),
     page: z.string().trim().max(120).regex(/^[\w\-/]*$/),
     attribution: z.object({
-      utm: z.record(z.enum(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']), token).default({}),
-      clickIds: z.record(z.enum(['gclid', 'fbclid', 'li_fat_id', 'msclkid']), token).default({}),
+      utm: z.partialRecord(z.enum(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']), token).default({}),
+      clickIds: z.partialRecord(z.enum(['gclid', 'fbclid', 'li_fat_id', 'msclkid']), token).default({}),
       landingPath: z.string().max(200).default('/'),
       referrerHost: z.string().max(200).nullable().default(null),
       firstSeenAt: z.string().max(40),
