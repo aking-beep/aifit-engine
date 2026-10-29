@@ -1,7 +1,7 @@
 'use client'
 // GENERATED from packages/design by scripts/sync-design.mjs. Do not edit here.
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Check, Info, X, AlertTriangle } from 'lucide-react'
@@ -10,10 +10,11 @@ import { cn } from './lib'
 const EASE = [0.23, 1, 0.32, 1] as const
 
 /** Portals need document.body, which exists only after mount (SSR-safe). */
+function subscribeNever() {
+  return () => {}
+}
 function useMounted() {
-  const [m, setM] = useState(false)
-  useEffect(() => setM(true), [])
-  return m
+  return useSyncExternalStore(subscribeNever, () => true, () => false)
 }
 
 function useEscape(open: boolean, onClose: () => void) {

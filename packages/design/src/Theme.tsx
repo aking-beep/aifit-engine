@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import React, { createContext, useCallback, useContext, useSyncExternalStore } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import type { Theme } from './types'
 
@@ -19,12 +19,20 @@ function currentTheme(): Theme {
   return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 }
 
+function subscribeTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] })
+  return () => observer.disconnect()
+}
+
+function serverTheme(): Theme {
+  return 'dark'
+}
+
 /** The class lives on <html> so portals inherit it. The boot script sets it before hydration. */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark')
-  useEffect(() => setThemeState(currentTheme()), [])
+  const theme = useSyncExternalStore(subscribeTheme, currentTheme, serverTheme)
   const setTheme = useCallback((t: Theme) => {
-    setThemeState(t)
     document.documentElement.classList.toggle('dark', t === 'dark')
     document.documentElement.dataset.theme = t
     try {
