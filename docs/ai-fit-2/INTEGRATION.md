@@ -108,18 +108,18 @@ The anonymous report (`/report?w=`) keeps working and renders the same sections 
 | Export screen | Next route | Data source | Status |
 |---|---|---|---|
 | Landing | `/` | Plan config, real copy | Real |
-| Onboarding | `/onboarding` | Name, roles, current tools: account profile, or this browser | New backend |
+| Onboarding | `/onboarding` | Name and role, saved to the account (role pre-fills the task check). The export's "current tools" step is not carried over: no engine reads it | New backend |
 | Assessment | `/assessment` | Existing scenario quiz | Real (restyled) |
-| Dashboard | `/app` | Latest result, saved tools, task checks, setup checklist | Real |
-| Profile | `/app/profile` | Persona from the scored session | Real |
-| Tools | `/app/tools` | `/v1/fit` registry ranking; capped at 3 on Free when billing is on | Real |
+| Dashboard | `/app` | Latest saved quiz, top tools, saved task checks, saved items; stage from what the account has done | Real |
+| Profile | `/app/profile` | The saved, server-scored result in the existing results view | Real |
+| Tools | `/app/tools` | Ranked products from the saved result; trimmed to 3 by the server on Free when billing is on | Real |
 | Compare | `/app/compare` | Registry fields with evidence and last-checked dates. Prices only as recorded tiers | Real |
 | Workflows | `/app/workflows` | Task checks (five-outcome decisions) as goal → verdict → steps | Real |
 | Configure | `/app/configure` | Validated setup bundle (zip), preview of its files | Real |
-| Saved | `/app/saved` | Saved tools (account; browser when signed out) | New backend |
+| Saved | `/app/saved` | Saved tools (account) | New backend |
 | History | `/app/history` | Quiz results and task checks (account and browser) | Real |
 | Upgrade | `/app/upgrade` | Stripe Checkout (Pro, test mode) | New backend |
-| Subscription | `/app/subscription` | Entitlement status, payment history | New backend |
+| Subscription | `/app/subscription` | Subscription state, payment history, checkout return polling, Stripe billing portal | New backend |
 | Settings | `/app/settings` | Account profile, export, delete, theme | New backend |
 
 ## 6. Claims in the exports that are not carried over
@@ -142,5 +142,5 @@ or "Not recorded" / "Not tested".
 | Item | Why |
 |---|---|
 | SSO enforcement toggle | No SSO exists. The control is hidden, not faked |
-| Billing portal | Stripe Customer Portal is not configured; card changes happen in Stripe |
+| Teams billing portal | Not wired on Teams; card changes happen in Stripe. Consumer opens the Stripe portal (needs the portal configured in Stripe) |
 | Running evaluations | AI Fit plans evaluations; it does not execute them against a customer's system |
