@@ -1,36 +1,29 @@
 {
-  "name": "aifit-engine-ts",
+  "name": "ai-fit-teams",
   "private": true,
   "type": "module",
-  "description": "npm workspace for AI Fit Teams (apps/teams) and its TypeScript packages. The Python engine and apps/web are not part of it.",
-  "workspaces": [
-    "packages/calibration-contract",
-    "packages/decision-core",
-    "packages/teams-core",
-    "packages/control-export-contract",
-    "packages/platform",
-    "packages/deliverables",
-    "packages/agents",
-    "packages/ui",
-    "apps/teams"
-  ],
-  "engines": {
-    "node": ">=22.6"
-  },
   "scripts": {
-    "build:packages": "npm run build --workspace @aifit/calibration-contract && npm run build --workspace @aifit/decision-core && npm run build --workspace @aifit/teams-core && npm run build --workspace @aifit/control-export-contract && npm run build --workspace @aifit/deliverables && npm run build --workspace @aifit/platform && npm run build --workspace @aifit/agents && npm run build --workspace @aifit/ui",
-    "test:teams": "npm run test --workspace @aifit/calibration-contract && npm run test --workspace @aifit/decision-core && npm run test --workspace @aifit/teams-core && npm run test --workspace @aifit/control-export-contract && npm run test --workspace @aifit/deliverables && npm run test --workspace @aifit/platform && npm run test --workspace @aifit/agents && npm run test --workspace @aifit/ui && npm run test --workspace @aifit/teams",
-    "typecheck:teams": "npm run typecheck --workspace @aifit/teams",
-    "build:teams": "npm run build --workspace @aifit/teams",
-    "dev:teams": "npm run dev --workspace @aifit/teams"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-icons": "1.3.2",
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "date-fns": "4.1.0",
+    "framer-motion": "11.18.2",
+    "lucide-react": "0.577.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.30.2",
+    "tailwind-merge": "2.6.1"
   },
   "devDependencies": {
-    "@types/node": "^22.9.0",
-    "typescript": "^5.6.0"
-  },
-  "overrides": {
-    "next": {
-      "postcss": "^8.5.31"
-    }
+    "@tailwindcss/vite": "4.3.1",
+    "@vitejs/plugin-react": "6.1.1",
+    "tailwindcss": "4.3.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.2"
   }
 }
