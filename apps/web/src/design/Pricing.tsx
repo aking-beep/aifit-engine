@@ -18,7 +18,7 @@ export function PricingCard({ plan, current, onSelect }: { plan: PlanConfig; cur
     <article className={cn('flex h-full flex-col rounded-lg border bg-surface p-6', plan.highlighted ? 'border-fg' : 'border-line')}>
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-title-md text-fg">{plan.name}</h3>
-        {current ? <span className="text-label-sm text-fg-muted">Current plan</span> : plan.highlighted ? <span className="text-label-sm text-fg-2">Most chosen</span> : null}
+        {current ? <span className="text-label-sm text-fg-muted">Current plan</span> : plan.highlighted ? <span className="text-label-sm text-fg-2">Recommended</span> : null}
       </div>
       <p className="mt-1 text-body-sm text-fg-muted">{plan.tagline}</p>
       <p className="mt-5 flex items-baseline gap-1.5">

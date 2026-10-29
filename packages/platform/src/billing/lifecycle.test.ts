@@ -32,7 +32,7 @@ async function setup() {
 }
 
 const paid = (orgId: string, product: string, rootId: string | undefined, session: string, intent = `pi_${session}`) => ({
-  id: session, payment_status: 'paid', amount_total: product === 'assessment' ? 29900 : 99900, currency: 'usd', payment_intent: intent,
+  id: session, payment_status: 'paid', amount_total: product === 'assessment' ? 14900 : 39900, currency: 'usd', payment_intent: intent,
   metadata: { orgId, product, ...(rootId ? { assessmentRootId: rootId } : {}) },
 });
 
@@ -85,7 +85,7 @@ describe('assessment and blueprint purchases', () => {
     const partial = await handleStripeEvent(store, ev('e2', 'charge.refunded', { id: 'ch_1', payment_intent: 'pi_r', refunded: false, amount_refunded: 1000, currency: 'usd', metadata: { orgId, product: 'blueprint' } }), { expectLivemode: false });
     assert.match(partial.detail, /Partial/);
     assert.equal((await checkEntitlement(store, ctx, cfg, 'blueprint', rec.rootId)).allowed, true);
-    await handleStripeEvent(store, ev('e3', 'charge.refunded', { id: 'ch_1', payment_intent: 'pi_r', refunded: true, amount_refunded: 99900, currency: 'usd', metadata: { orgId, product: 'blueprint' } }), { expectLivemode: false });
+    await handleStripeEvent(store, ev('e3', 'charge.refunded', { id: 'ch_1', payment_intent: 'pi_r', refunded: true, amount_refunded: 39900, currency: 'usd', metadata: { orgId, product: 'blueprint' } }), { expectLivemode: false });
     assert.equal((await checkEntitlement(store, ctx, cfg, 'blueprint', rec.rootId)).allowed, false);
     assert.equal((await sectionAccess(store, ctx, cfg, rec.rootId)).level, 'free');
     const history = await paymentHistory(store, ctx);
@@ -106,7 +106,7 @@ describe('workspace subscription lifecycle', () => {
 
   test('active, then cancel at period end keeps access until the end, then deletion stops it', async () => {
     const { store, orgId, ctx, rec } = await setup();
-    await handleStripeEvent(store, ev('s1', 'checkout.session.completed', { id: 'cs_t', payment_status: 'paid', subscription: 'sub_1', customer: 'cus_1', amount_total: 29900, currency: 'usd', metadata: { orgId, product: 'team' } }), { expectLivemode: false });
+    await handleStripeEvent(store, ev('s1', 'checkout.session.completed', { id: 'cs_t', payment_status: 'paid', subscription: 'sub_1', customer: 'cus_1', amount_total: 19900, currency: 'usd', metadata: { orgId, product: 'team' } }), { expectLivemode: false });
     await handleStripeEvent(store, ev('s2', 'customer.subscription.updated', sub(orgId)), { expectLivemode: false });
     const during = new Date((T0 + 86400) * 1000);
     assert.equal(subscriptionState(await readEntitlements(store, orgId), during), 'active');
@@ -143,10 +143,10 @@ describe('workspace subscription lifecycle', () => {
   test('failed invoice pauses, paid invoice restores and extends the period', async () => {
     const { store, orgId, ctx } = await setup();
     await handleStripeEvent(store, ev('s1', 'customer.subscription.updated', sub(orgId)), { expectLivemode: false });
-    await handleStripeEvent(store, ev('i1', 'invoice.payment_failed', { id: 'in_1', amount_due: 29900, currency: 'usd', subscription_details: { metadata: { orgId } } }), { expectLivemode: false });
+    await handleStripeEvent(store, ev('i1', 'invoice.payment_failed', { id: 'in_1', amount_due: 19900, currency: 'usd', subscription_details: { metadata: { orgId } } }), { expectLivemode: false });
     assert.equal(subscriptionState(await readEntitlements(store, orgId), new Date(T0 * 1000)), 'past_due');
     const nextEnd = T0 + 60 * 86400;
-    await handleStripeEvent(store, ev('i2', 'invoice.paid', { id: 'in_2', amount_paid: 29900, currency: 'usd', period_end: nextEnd, subscription_details: { metadata: { orgId } } }), { expectLivemode: false });
+    await handleStripeEvent(store, ev('i2', 'invoice.paid', { id: 'in_2', amount_paid: 19900, currency: 'usd', period_end: nextEnd, subscription_details: { metadata: { orgId } } }), { expectLivemode: false });
     const ent = await readEntitlements(store, orgId);
     assert.equal(subscriptionState(ent, new Date((T0 + 45 * 86400) * 1000)), 'active');
     assert.equal(ent.subscription!.currentPeriodEnd, new Date(nextEnd * 1000).toISOString());

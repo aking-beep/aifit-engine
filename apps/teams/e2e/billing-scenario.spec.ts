@@ -21,7 +21,7 @@ test('scenario 5 — paid assessment: test payment, entitlement granted, bluepri
   await expect(page.getByRole('button', { name: 'Buy blueprint for this workload' })).toBeVisible();
 
   const body = JSON.stringify({ id: `evt_scn5_${Date.now()}`, type: 'checkout.session.completed', created: now(), livemode: false, data: { object: {
-    id: `cs_scn5_${Date.now()}`, payment_status: 'paid', payment_intent: `pi_scn5_${Date.now()}`, amount_total: 99900, currency: 'usd', metadata: meta,
+    id: `cs_scn5_${Date.now()}`, payment_status: 'paid', payment_intent: `pi_scn5_${Date.now()}`, amount_total: 39900, currency: 'usd', metadata: meta,
   } } });
   const t = now();
   const sig = `t=${t},v1=${createHmac('sha256', SECRET).update(`${t}.${body}`).digest('hex')}`;
@@ -36,5 +36,5 @@ test('scenario 5 — paid assessment: test payment, entitlement granted, bluepri
   await page.getByRole('button', { name: 'Blueprint (Markdown)' }).click();
   expect((await download).suggestedFilename()).toMatch(/\.md$/);
   await page.goto('/workspace/billing');
-  await expect(page.getByRole('table', { name: 'Payment history' }).getByText('$999.00')).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Payment history' }).getByText('$399.00')).toBeVisible();
 });

@@ -71,7 +71,7 @@ fixed by skipping, quarantining or loosening a test.
 | 2 | Developer: coding tools recommended, valid config files | `apps/web/e2e/scenarios.spec.ts`. Cursor and Claude Code are in the stack; the cursor, agents and claude files and the ZIP pass server validation | PASS |
 | 3 | Business workload with no AI need: conventional automation | `apps/web/e2e/scenarios.spec.ts`. Rules-based automation or ordinary software; no tool comparison is shown | PASS |
 | 4 | Enterprise AI workload: architecture, technology, cost, governance, evaluation plan, roadmap | `apps/teams/e2e/scenarios.spec.ts` plus every section in `screens.spec.ts`; blueprint MD has each section | PASS |
-| 5 | Paid assessment: test payment, entitlement granted, blueprint downloaded | `apps/teams/e2e/billing-scenario.spec.ts`. Locked (402) before payment; a signed test-mode webhook grants it; the browser downloads the blueprint; payment history shows $999.00 | PASS (simulated Stripe) |
+| 5 | Paid assessment: test payment, entitlement granted, blueprint downloaded | `apps/teams/e2e/billing-scenario.spec.ts`. Locked (402) before payment; a signed test-mode webhook grants it; the browser downloads the blueprint; payment history shows $399.00 | PASS (simulated Stripe) |
 | 6 | Two organisations, no cross-access | `apps/teams/e2e/scenarios.spec.ts`, `workspace.spec.ts`; Consumer equivalent in `account.spec.ts` | PASS |
 
 ## Deployments (Vercel previews, not production)

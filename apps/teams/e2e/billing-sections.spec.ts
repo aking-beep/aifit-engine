@@ -59,16 +59,16 @@ test('free sections are open; paid sections are locked and send no content', asy
 test('assessment purchase, then blueprint purchase, then a full refund takes the blueprint away', async ({ page }) => {
   const a = await saved(page, 'buy');
   const meta = (product: string) => ({ orgId: a.orgId, product, assessmentRootId: a.rootId });
-  await webhook(page.request, 'checkout.session.completed', { id: `cs_as_${n}`, payment_status: 'paid', payment_intent: 'pi_as', amount_total: 29900, currency: 'usd', metadata: meta('assessment') });
+  await webhook(page.request, 'checkout.session.completed', { id: `cs_as_${n}`, payment_status: 'paid', payment_intent: 'pi_as', amount_total: 14900, currency: 'usd', metadata: meta('assessment') });
   await open(page, `${a.base}/cost`, /Cost model/);
   await open(page, `${a.base}/risks`, /Risk register/);
   await locked(page, `${a.base}/architecture`);
 
-  await webhook(page.request, 'checkout.session.completed', { id: `cs_bp_${n}`, payment_status: 'paid', payment_intent: 'pi_bp', amount_total: 99900, currency: 'usd', metadata: meta('blueprint') });
+  await webhook(page.request, 'checkout.session.completed', { id: `cs_bp_${n}`, payment_status: 'paid', payment_intent: 'pi_bp', amount_total: 39900, currency: 'usd', metadata: meta('blueprint') });
   await open(page, `${a.base}/architecture`, /^Architecture$/);
   expect((await pageApi(page, `/api/assessments/${a.id}/blueprint`)).status).toBe(200);
 
-  await webhook(page.request, 'charge.refunded', { id: 'ch_bp', payment_intent: 'pi_bp', refunded: true, amount_refunded: 99900, currency: 'usd', metadata: meta('blueprint') });
+  await webhook(page.request, 'charge.refunded', { id: 'ch_bp', payment_intent: 'pi_bp', refunded: true, amount_refunded: 39900, currency: 'usd', metadata: meta('blueprint') });
   expect((await pageApi(page, `/api/assessments/${a.id}/blueprint`)).status).toBe(402);
   await locked(page, `${a.base}/architecture`);
   await open(page, `${a.base}/cost`, /Cost model/); // the assessment purchase still stands
@@ -76,13 +76,13 @@ test('assessment purchase, then blueprint purchase, then a full refund takes the
   await page.goto('/workspace/billing');
   const history = page.getByRole('table', { name: 'Payment history' });
   await expect(history.getByText('refunded')).toBeVisible();
-  await expect(history.getByText('$999.00').first()).toBeVisible();
-  await expect(history.getByText('$299.00')).toBeVisible();
+  await expect(history.getByText('$399.00').first()).toBeVisible();
+  await expect(history.getByText('$149.00')).toBeVisible();
 });
 
 test('workspace subscription unlocks everything; cancellation ends it at the period end', async ({ page }) => {
   const a = await saved(page, 'sub');
-  await webhook(page.request, 'checkout.session.completed', { id: `cs_team_${n}`, payment_status: 'paid', subscription: 'sub_e2e', customer: 'cus_e2e', amount_total: 29900, currency: 'usd', metadata: { orgId: a.orgId, product: 'team' } });
+  await webhook(page.request, 'checkout.session.completed', { id: `cs_team_${n}`, payment_status: 'paid', subscription: 'sub_e2e', customer: 'cus_e2e', amount_total: 19900, currency: 'usd', metadata: { orgId: a.orgId, product: 'team' } });
   const end = now() + 30 * 86400;
   await webhook(page.request, 'customer.subscription.updated', { id: 'sub_e2e', customer: 'cus_e2e', status: 'active', current_period_end: end, metadata: { orgId: a.orgId, product: 'team' } });
   await open(page, `${a.base}/roadmap`, /^Roadmap$/);
