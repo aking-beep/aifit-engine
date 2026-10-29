@@ -10,3 +10,4 @@ export * from './billing/config.js';
 export * from './billing/stripe.js';
 export * from './billing/webhook.js';
 export * from './rate-limit.js';
+export * from './workspace-data.js';

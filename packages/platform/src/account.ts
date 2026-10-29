@@ -33,7 +33,7 @@ async function deleteOrgData(store: KvStore, orgId: string) {
     await store.del(OK.member(orgId, uid));
     await store.srem(K.userOrgs(uid), orgId);
   }
-  for (const key of [OK.invites(orgId), OK.members(orgId), OK.audit(orgId), EK.entitlements(orgId), OK.org(orgId)]) await store.del(key);
+  for (const key of [OK.invites(orgId), OK.members(orgId), OK.audit(orgId), EK.entitlements(orgId), `org:${orgId}:profile`, OK.org(orgId)]) await store.del(key);
 }
 
 /**

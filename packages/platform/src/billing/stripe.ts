@@ -1,14 +1,14 @@
 import { PlatformError } from '../errors.js';
 import type { BillingConfig } from './config.js';
 
-export type Product = 'blueprint' | 'team';
+export type Product = 'assessment' | 'blueprint' | 'team';
 
 export interface CheckoutRequest {
   product: Product;
   orgId: string;
   userId: string;
   email: string;
-  /** Required for a blueprint purchase: the assessment (root) it unlocks. */
+  /** Required for an assessment or blueprint purchase: the assessment (root) it unlocks. */
   assessmentRootId?: string;
   /** Stable per attempt so a double-click does not create two sessions. */
   idempotencyKey: string;
@@ -25,9 +25,9 @@ function form(params: Record<string, string>): string {
  */
 export async function createCheckoutSession(cfg: BillingConfig, req: CheckoutRequest, fetchImpl: typeof fetch = fetch): Promise<{ id: string; url: string }> {
   if (!cfg.enabled || !cfg.secretKey) throw new PlatformError('unavailable', cfg.reason);
-  const price = req.product === 'blueprint' ? cfg.prices.blueprint : cfg.prices.teamMonthly;
+  const price = req.product === 'team' ? cfg.prices.teamMonthly : cfg.prices[req.product];
   if (!price) throw new PlatformError('unavailable', `No price is configured for ${req.product}.`);
-  if (req.product === 'blueprint' && !req.assessmentRootId) throw new PlatformError('invalid', 'A blueprint purchase must name an assessment.');
+  if (req.product !== 'team' && !req.assessmentRootId) throw new PlatformError('invalid', `An ${req.product} purchase must name an assessment.`);
 
   const params: Record<string, string> = {
     mode: req.product === 'team' ? 'subscription' : 'payment',
@@ -41,6 +41,12 @@ export async function createCheckoutSession(cfg: BillingConfig, req: CheckoutReq
     'metadata[userId]': req.userId,
     'metadata[product]': req.product,
   };
+  // The PaymentIntent carries the same metadata, so a refund event can be traced back to its purchase.
+  if (req.product !== 'team') {
+    params['payment_intent_data[metadata][orgId]'] = req.orgId;
+    params['payment_intent_data[metadata][product]'] = req.product;
+    if (req.assessmentRootId) params['payment_intent_data[metadata][assessmentRootId]'] = req.assessmentRootId;
+  }
   if (req.assessmentRootId) params['metadata[assessmentRootId]'] = req.assessmentRootId;
   if (req.product === 'team') {
     params['subscription_data[metadata][orgId]'] = req.orgId;

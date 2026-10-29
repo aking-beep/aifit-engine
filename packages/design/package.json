@@ -1,0 +1,10 @@
+{
+  "name": "@aifit/design",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Fit 2.0 design system (from the Magic Patterns export), vendored into apps/web and apps/teams by scripts/sync-design.mjs.",
+  "scripts": {
+    "sync": "node ../../scripts/sync-design.mjs",
+    "check": "node ../../scripts/sync-design.mjs --check"
+  }
+}

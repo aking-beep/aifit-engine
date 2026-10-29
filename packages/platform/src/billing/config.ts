@@ -16,14 +16,14 @@ export interface BillingConfig {
   reason: string;
   secretKey?: string;
   webhookSecret?: string;
-  prices: { blueprint?: string; teamMonthly?: string };
+  prices: { assessment?: string; blueprint?: string; teamMonthly?: string };
   appUrl: string;
 }
 
 export function billingConfig(env: Record<string, string | undefined>): BillingConfig {
   const requested = (env.BILLING_MODE ?? 'off').trim().toLowerCase();
   const appUrl = (env.APP_URL || (env.VERCEL_URL ? `https://${env.VERCEL_URL}` : 'http://localhost:3001')).replace(/\/+$/, '');
-  const prices = { blueprint: env.STRIPE_PRICE_BLUEPRINT || undefined, teamMonthly: env.STRIPE_PRICE_TEAM_MONTHLY || undefined };
+  const prices = { assessment: env.STRIPE_PRICE_ASSESSMENT || undefined, blueprint: env.STRIPE_PRICE_BLUEPRINT || undefined, teamMonthly: env.STRIPE_PRICE_TEAM_MONTHLY || undefined };
   const off = (reason: string): BillingConfig => ({ mode: 'off', enabled: false, reason, prices, appUrl });
 
   if (requested === 'off' || requested === '') return off('Billing is off (BILLING_MODE is not set). Every feature is available without payment.');
@@ -33,7 +33,7 @@ export function billingConfig(env: Record<string, string | undefined>): BillingC
   const webhookSecret = env.STRIPE_WEBHOOK_SECRET?.trim();
   if (!key) return off('BILLING_MODE is set but STRIPE_SECRET_KEY is missing; billing stays off.');
   if (!webhookSecret?.startsWith('whsec_')) return off('STRIPE_WEBHOOK_SECRET is missing or malformed; without it payments cannot be fulfilled, so billing stays off.');
-  if (!prices.blueprint && !prices.teamMonthly) return off('No Stripe price ids are configured (STRIPE_PRICE_BLUEPRINT, STRIPE_PRICE_TEAM_MONTHLY); billing stays off.');
+  if (!prices.assessment && !prices.blueprint && !prices.teamMonthly) return off('No Stripe price ids are configured (STRIPE_PRICE_ASSESSMENT, STRIPE_PRICE_BLUEPRINT, STRIPE_PRICE_TEAM_MONTHLY); billing stays off.');
 
   if (requested === 'test') {
     if (!key.startsWith('sk_test_') && !key.startsWith('rk_test_')) return off('BILLING_MODE=test requires a Stripe test key (sk_test_…). A live key was refused.');

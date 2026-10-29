@@ -129,13 +129,17 @@ export async function deleteAssessment(store: KvStore, ctx: AuthContext, id: str
     await store.srem(AK.index(ctx.orgId), v.id);
   }
   await store.del(AK.versions(ctx.orgId, rec.rootId));
+  await store.del(`org:${ctx.orgId}:risks:${rec.rootId}`); // risk register edits (workspace-data.ts)
   await audit(store, ctx.orgId, ctx.userId, 'assessment.deleted', { rootId: rec.rootId });
 }
 
 export async function deleteAllOrgAssessments(store: KvStore, orgId: string): Promise<void> {
   for (const id of await store.smembers(AK.index(orgId))) {
     const rec = await store.get<AssessmentRecord>(AK.record(orgId, id));
-    if (rec) await store.del(AK.versions(orgId, rec.rootId));
+    if (rec) {
+      await store.del(AK.versions(orgId, rec.rootId));
+      await store.del(`org:${orgId}:risks:${rec.rootId}`);
+    }
     await store.del(AK.record(orgId, id));
   }
   await store.del(AK.index(orgId));

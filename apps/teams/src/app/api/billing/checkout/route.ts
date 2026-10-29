@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const cfg = billing();
     if (!cfg.enabled) throw new PlatformError('unavailable', cfg.reason);
     const body = await readBody(req, 1024);
-    const product = body.product === 'team' ? 'team' : body.product === 'blueprint' ? 'blueprint' : null;
+    const product = body.product === 'team' || body.product === 'blueprint' || body.product === 'assessment' ? body.product : null;
     if (!product) throw new PlatformError('invalid', 'Choose a product.');
     let assessmentRootId: string | undefined;
     if (product === 'team') authorize(v.ctx, 'billing:manage');
