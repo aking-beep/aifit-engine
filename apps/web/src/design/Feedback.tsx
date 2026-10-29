@@ -84,7 +84,6 @@ export function EngineProgress({ steps, done = false, onDone, stepMs = 550 }: { 
   const [i, setI] = useState(0)
   useEffect(() => {
     if (done) {
-      setI(steps.length)
       onDone?.()
       return
     }
@@ -92,12 +91,13 @@ export function EngineProgress({ steps, done = false, onDone, stepMs = 550 }: { 
     const t = setTimeout(() => setI((n) => n + 1), stepMs)
     return () => clearTimeout(t)
   }, [i, done, steps.length, stepMs, onDone])
+  const shown = done ? steps.length : i
   return (
     <ol aria-live="polite" className="flex flex-col gap-2.5">
       {steps.map((s, n) => (
-        <li key={s} className={cn('flex items-center gap-3 text-body-md', n < i ? 'text-fg-2' : n === i ? 'text-fg' : 'text-fg-muted')}>
+        <li key={s} className={cn('flex items-center gap-3 text-body-md', n < shown ? 'text-fg-2' : n === shown ? 'text-fg' : 'text-fg-muted')}>
           <span className="flex h-5 w-5 items-center justify-center">
-            {n < i ? <Check size={15} className="text-accent" /> : n === i ? <Loader2 size={15} className="animate-spin text-fg" /> : <span className="h-1.5 w-1.5 rounded-full bg-line-strong" />}
+            {n < shown ? <Check size={15} className="text-accent" /> : n === shown ? <Loader2 size={15} className="animate-spin text-fg" /> : <span className="h-1.5 w-1.5 rounded-full bg-line-strong" />}
           </span>
           {s}
         </li>

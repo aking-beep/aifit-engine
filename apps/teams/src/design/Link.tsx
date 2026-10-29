@@ -1,7 +1,7 @@
 'use client'
 // GENERATED from packages/design by scripts/sync-design.mjs. Do not edit here.
 
-import React, { createContext, useContext } from 'react'
+import React, { createContext, createElement, useContext } from 'react'
 
 /**
  * The app injects its router's link (next/link) once, at the root. Design
@@ -18,6 +18,6 @@ export function LinkProvider({ component, children }: { component: LinkLike; chi
 }
 
 export function DLink(props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
-  const L = useContext(LinkCtx)
-  return <L {...props} />
+  const Component = useContext(LinkCtx)
+  return createElement(Component, props)
 }
