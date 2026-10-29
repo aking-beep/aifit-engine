@@ -31,6 +31,10 @@ except ImportError:  # pragma: no cover - Windows
     fcntl = None  # type: ignore[assignment]
 
 DEFAULT_TTL_SECONDS = 60 * 60 * 24 * 30  # 30 days
+# Account records (kinds starting "acct_") are kept until the person deletes
+# them, not for 30 days. Ten years is "no expiry" for Redis EX.
+ACCOUNT_KIND_PREFIX = "acct_"
+ACCOUNT_TTL_SECONDS = 60 * 60 * 24 * 365 * 10
 PURGE_EVERY_N_WRITES = 200
 _KEY_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
@@ -68,14 +72,44 @@ class ResultStore:
 
     # Documents -----------------------------------------------------------
 
+    def _ttl(self, kind: str, ttl: int | None) -> int:
+        if ttl:
+            return ttl
+        return ACCOUNT_TTL_SECONDS if kind.startswith(ACCOUNT_KIND_PREFIX) else self.ttl
+
     def put(self, kind: str, key: str, payload: dict[str, Any], ttl: int | None = None) -> bool:
         self._check(kind, key)
-        ttl = ttl or self.ttl
+        ttl = self._ttl(kind, ttl)
         if self.backend == "redis":
             body = self._redis_cmd("SET", self._key(kind, key), json.dumps(payload), "EX", str(ttl))
             return body is not None
         self._maybe_purge()
         return self._fs_write(self._path(kind, key, "json"), json.dumps(payload))
+
+    def put_new(self, kind: str, key: str, payload: dict[str, Any], ttl: int | None = None) -> bool:
+        """Write only if the key does not exist yet. False when it already does."""
+        self._check(kind, key)
+        ttl = self._ttl(kind, ttl)
+        if self.backend == "redis":
+            body = self._redis_cmd("SET", self._key(kind, key), json.dumps(payload), "NX", "EX", str(ttl))
+            return bool(body and body.get("result") == "OK")
+        path = self._path(kind, key, "json")
+        if path.exists() and not self._expired(path):
+            return False
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            fd = os.open(path.with_suffix(".lock"), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except FileExistsError:
+            return False
+        except OSError:
+            return False
+        try:
+            if path.exists() and not self._expired(path):
+                return False
+            return self._fs_write(path, json.dumps(payload))
+        finally:
+            os.close(fd)
+            path.with_suffix(".lock").unlink(missing_ok=True)
 
     def get(self, kind: str, key: str) -> dict[str, Any] | None:
         self._check(kind, key)
@@ -105,7 +139,7 @@ class ResultStore:
         self._check(kind, key)
         if not items:
             return True
-        ttl = ttl or self.ttl
+        ttl = self._ttl(kind, ttl)
         if self.backend == "redis":
             name = self._key(kind, key)
             pushed = self._redis_cmd("RPUSH", name, *(json.dumps(item) for item in items))
@@ -167,6 +201,8 @@ class ResultStore:
         return self.root / kind / f"{key}.{suffix}"
 
     def _expired(self, path: Path) -> bool:
+        if path.parent.name.startswith(ACCOUNT_KIND_PREFIX):
+            return False
         try:
             return time.time() - path.stat().st_mtime > self.ttl
         except OSError:

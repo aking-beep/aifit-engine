@@ -652,3 +652,390 @@ def agents_explain(request: Request, payload: dict[str, Any] = Body(...)):
         "inputHash": result["engine"]["inputHash"],
         "explanation": explanation,
     }
+
+
+# Consumer accounts and Pro billing -----------------------------------------
+#
+# Accounts are on only when the store is durable (Redis, or a local
+# filesystem); on a serverless deployment without Redis a sign-up would
+# vanish, so the endpoints answer 503 with the reason instead. Set
+# AIFIT_ACCOUNTS=0 to switch them off anywhere.
+#
+# Sessions are an HttpOnly, SameSite=Lax cookie. Every state-changing account
+# call also needs the X-AIFit-Request header and, when the browser sends one,
+# an Origin matching this host, so another site cannot drive the account.
+#
+# Saved assessments are scored here from stored answers or a validated intake,
+# never taken from the client, so a saved profile is what the engine said.
+
+from fastapi import Response  # noqa: E402
+
+from aifit import accounts as acct  # noqa: E402
+from aifit import billing as bill  # noqa: E402
+
+SESSION_COOKIE = "aifit_session"
+BILLING = bill.billing_config(dict(os.environ))
+
+
+def _accounts_reason() -> str | None:
+    if os.environ.get("AIFIT_ACCOUNTS") == "0":
+        return "Accounts are switched off on this deployment (AIFIT_ACCOUNTS=0)."
+    if not RESULT_STORE.durable:
+        return (
+            "Accounts need a durable store. Connect Upstash Redis "
+            "(UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN) to turn them on."
+        )
+    return None
+
+
+_ERROR_STATUS = {
+    "invalid": 400, "unauthorized": 401, "limit": 402, "not_found": 404, "conflict": 409, "locked": 429, "unavailable": 503,
+}
+
+
+def _fail(exc: acct.AccountError) -> HTTPException:
+    return HTTPException(status_code=_ERROR_STATUS.get(exc.code, 400), detail={"code": exc.code, "message": exc.message})
+
+
+def _invalid(exc: ValidationError) -> HTTPException:
+    return HTTPException(status_code=422, detail=exc.errors(include_url=False, include_context=False, include_input=False))
+
+
+def _limits(user: dict[str, Any]) -> dict[str, int | None]:
+    return bill.limits_for(BILLING, bill.read_entitlements(RESULT_STORE, user["id"]))
+
+
+def _require_accounts() -> None:
+    reason = _accounts_reason()
+    if reason:
+        raise HTTPException(status_code=503, detail={"code": "unavailable", "message": reason})
+
+
+def _same_origin(request: Request) -> None:
+    if request.headers.get("x-aifit-request") != "1":
+        raise HTTPException(status_code=403, detail={"code": "forbidden", "message": "Missing X-AIFit-Request header."})
+    origin = request.headers.get("origin")
+    if origin:
+        host = request.headers.get("x-forwarded-host") or request.headers.get("host") or ""
+        if origin.split("://", 1)[-1].rstrip("/") != host:
+            raise HTTPException(status_code=403, detail={"code": "forbidden", "message": "Cross-site request refused."})
+
+
+def _token(request: Request) -> str | None:
+    return request.cookies.get(SESSION_COOKIE)
+
+
+def _viewer(request: Request) -> dict[str, Any]:
+    _require_accounts()
+    try:
+        return acct.require_user(RESULT_STORE, _token(request))
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+
+
+def _set_session(response: Response, request: Request, token: str) -> None:
+    secure = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    response.set_cookie(
+        SESSION_COOKIE, token, max_age=acct.SESSION_DAYS * 86400, httponly=True, samesite="lax", secure=secure, path="/"
+    )
+
+
+def _me(user: dict[str, Any]) -> dict[str, Any]:
+    ent = bill.read_entitlements(RESULT_STORE, user["id"])
+    return {"user": acct.public_user(user), "account": bill.account_summary(BILLING, ent)}
+
+
+@app.get("/v1/account/status")
+def account_status(request: Request):
+    reason = _accounts_reason()
+    user = None if reason else acct.current_user(RESULT_STORE, _token(request))
+    return {
+        "accounts": {"enabled": reason is None, "reason": reason or "Accounts are on."},
+        "billing": BILLING.public(),
+        "free_limits": bill.FREE_LIMITS,
+        "signed_in": user is not None,
+    }
+
+
+@app.post("/v1/account/signup")
+def account_signup(request: Request, response: Response, payload: dict[str, Any] = Body(...)):
+    _require_accounts()
+    _same_origin(request)
+    try:
+        data = acct.SignUp.model_validate(payload)
+        user, token = acct.sign_up(RESULT_STORE, data)
+    except ValidationError as exc:
+        raise _invalid(exc) from exc
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+    _set_session(response, request, token)
+    track("account_created")
+    return _me(user)
+
+
+@app.post("/v1/account/login")
+def account_login(request: Request, response: Response, payload: dict[str, Any] = Body(...)):
+    _require_accounts()
+    _same_origin(request)
+    try:
+        data = acct.Credentials.model_validate(payload)
+        user, token = acct.sign_in(RESULT_STORE, data)
+    except ValidationError as exc:
+        raise _invalid(exc) from exc
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+    _set_session(response, request, token)
+    return _me(user)
+
+
+@app.post("/v1/account/logout")
+def account_logout(request: Request, response: Response):
+    _same_origin(request)
+    if not _accounts_reason():
+        acct.sign_out(RESULT_STORE, _token(request))
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return {"signed_out": True}
+
+
+@app.get("/v1/account/me")
+def account_me(request: Request):
+    return _me(_viewer(request))
+
+
+class NameBody(BaseModel):
+    name: str = Field(max_length=80)
+
+
+class PasswordBody(BaseModel):
+    current: str = Field(min_length=1, max_length=acct.MAX_PASSWORD)
+    new: str = Field(min_length=acct.MIN_PASSWORD, max_length=acct.MAX_PASSWORD)
+
+
+@app.patch("/v1/account/me")
+def account_rename(request: Request, payload: NameBody):
+    user = _viewer(request)
+    _same_origin(request)
+    return _me(acct.update_name(RESULT_STORE, user, payload.name))
+
+
+@app.post("/v1/account/password")
+def account_password(request: Request, payload: PasswordBody):
+    user = _viewer(request)
+    _same_origin(request)
+    try:
+        acct.change_password(RESULT_STORE, user, payload.current, payload.new)
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+    return {"changed": True}
+
+
+class SaveAssessmentBody(BaseModel):
+    """Either a quiz session (scored here from its stored answers) or a task check intake (decided here)."""
+
+    kind: str = Field(pattern="^(quiz|check)$")
+    session_id: uuid.UUID | None = None
+    session_token: str | None = Field(default=None, max_length=200)
+    intake: dict[str, Any] | None = None
+    label: str = Field(default="", max_length=160)
+
+
+def _trim(result: dict[str, Any], cap: int | None) -> dict[str, Any]:
+    """Free plan: the first `cap` tools. The rest are counted, not sent."""
+    if cap is None or not isinstance(result.get("products"), list):
+        return {**result, "locked_products": 0}
+    products = result["products"]
+    return {**result, "products": products[:cap], "locked_products": max(0, len(products) - cap)}
+
+
+def _view_entry(entry: dict[str, Any], limits: dict[str, int | None]) -> dict[str, Any]:
+    if entry.get("source") != "quiz":
+        return entry
+    return {**entry, "result": _trim(entry["result"], limits["recommendations"])}
+
+
+@app.post("/v1/account/assessments")
+def account_save_assessment(request: Request, payload: SaveAssessmentBody):
+    user = _viewer(request)
+    _same_origin(request)
+    if payload.kind == "quiz":
+        if not payload.session_id:
+            raise HTTPException(status_code=400, detail="session_id is required for a quiz.")
+        key, record = _require_session(payload.session_id, payload.session_token)
+        result = _score_and_store(_load_session(key, record))
+        label = payload.label or str((result.get("persona") or {}).get("name") or "AI profile")
+    else:
+        try:
+            raw = {**(payload.intake or {}), "surface": "consumer", "externalEstimates": {}}
+            intake = DecisionIntake.model_validate(raw)
+        except ValidationError as exc:
+            raise _invalid(exc) from exc
+        decided = decide_parsed(intake)
+        level = TECHNICAL_LEVEL[intake.technicalAbility]
+        tools = match_tools(decided, PRODUCT_RECORDS, technical_level=level, as_of=datetime.now(timezone.utc).date())
+        result = {"decision": decided, "tools": tools, "intake": intake.model_dump(mode="json")}
+        label = payload.label or "Task check"
+    entry = acct.save_assessment(RESULT_STORE, user, result, payload.kind, label)
+    track("account_assessment_saved", metadata={"kind": payload.kind})
+    limits = _limits(user)
+    return _view_entry(entry, limits)
+
+
+@app.get("/v1/account/profile")
+def account_profile(request: Request):
+    """The latest saved quiz result, trimmed to the plan's recommendation limit."""
+    user = _viewer(request)
+    limits = _limits(user)
+    entry = next((e for e in acct.history(RESULT_STORE, user["id"]) if e.get("source") == "quiz"), None)
+    return {"entry": _view_entry(entry, limits) if entry else None, "limits": limits}
+
+
+def _when(iso: str) -> float:
+    return datetime.fromisoformat(iso.replace("Z", "+00:00")).timestamp()
+
+
+@app.get("/v1/account/history")
+def account_history(request: Request):
+    user = _viewer(request)
+    limits = _limits(user)
+    rows = acct.history(RESULT_STORE, user["id"])
+    hidden = 0
+    if limits["history_days"] is not None:
+        cutoff = datetime.now(timezone.utc).timestamp() - limits["history_days"] * 86400
+        kept = [r for r in rows if _when(r["saved_at"]) >= cutoff]
+        hidden, rows = len(rows) - len(kept), kept
+    return {"items": [_view_entry(r, limits) for r in rows], "hidden_older": hidden, "limits": limits}
+
+
+@app.delete("/v1/account/history/{entry_id}")
+def account_history_delete(request: Request, entry_id: str):
+    user = _viewer(request)
+    _same_origin(request)
+    if not acct.delete_history_entry(RESULT_STORE, user["id"], entry_id[:64]):
+        raise HTTPException(status_code=404, detail="Unknown entry.")
+    return {"deleted": True}
+
+
+@app.get("/v1/account/saved")
+def account_saved(request: Request):
+    user = _viewer(request)
+    limits = _limits(user)
+    return {"items": acct.saved(RESULT_STORE, user["id"]), "limit": limits["saved_items"]}
+
+
+@app.post("/v1/account/saved")
+def account_saved_add(request: Request, payload: dict[str, Any] = Body(...)):
+    user = _viewer(request)
+    _same_origin(request)
+    try:
+        item = acct.SavedItemInput.model_validate(payload)
+        limits = _limits(user)
+        return acct.add_saved(RESULT_STORE, user["id"], item, limits["saved_items"])
+    except ValidationError as exc:
+        raise _invalid(exc) from exc
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+
+
+@app.delete("/v1/account/saved/{item_id}")
+def account_saved_remove(request: Request, item_id: str):
+    user = _viewer(request)
+    _same_origin(request)
+    if not acct.remove_saved(RESULT_STORE, user["id"], item_id[:64]):
+        raise HTTPException(status_code=404, detail="Unknown item.")
+    return {"deleted": True}
+
+
+@app.get("/v1/account/compare")
+def account_compare(request: Request, ids: str):
+    """Registry records side by side. Free plan: two at a time while billing is on."""
+    user = _viewer(request)
+    limits = _limits(user)
+    wanted = [i for i in dict.fromkeys(ids.split(",")) if i][:12]
+    cap = limits["compare_tools"]
+    if cap is not None and len(wanted) > cap:
+        message = f"The Free plan compares {cap} tools at a time. Upgrade to Pro to compare more."
+        raise _fail(acct.AccountError("limit", message))
+    by_id = {p["id"]: p for p in PRODUCT_RECORDS}
+    return {"items": [by_id[i] for i in wanted if i in by_id], "unknown": [i for i in wanted if i not in by_id]}
+
+
+@app.post("/v1/account/package")
+def account_package(request: Request):
+    """The full setup package for the account's current profile. Counts against the Free plan's monthly allowance."""
+    user = _viewer(request)
+    _same_origin(request)
+    entry = next((e for e in acct.history(RESULT_STORE, user["id"]) if e.get("source") == "quiz"), None)
+    if not entry:
+        raise _fail(acct.AccountError("not_found", "Take the assessment and save it to your account first."))
+    try:
+        filename, blob, manifest = build_bundle(entry["result"])
+    except BundleValidationError as exc:
+        raise HTTPException(status_code=422, detail={"error": "Export failed validation.", "failures": exc.failures}) from exc
+    try:
+        bill.consume_package(RESULT_STORE, BILLING, user["id"])
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+    track("bundle_built", metadata={"files": len(manifest["files"]), "redacted": manifest["secretsRedacted"]})
+    return {"filename": filename, "content": base64.b64encode(blob).decode("ascii"), "encoding": "base64", "manifest": manifest}
+
+
+@app.get("/v1/account/export")
+def account_export(request: Request):
+    return acct.export_account(RESULT_STORE, _viewer(request))
+
+
+@app.delete("/v1/account")
+def account_delete(request: Request, response: Response):
+    user = _viewer(request)
+    _same_origin(request)
+    acct.delete_account(RESULT_STORE, user, _token(request))
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    track("account_deleted")
+    return {"deleted": True}
+
+
+@app.get("/v1/account/billing")
+def account_billing(request: Request):
+    user = _viewer(request)
+    ent = bill.read_entitlements(RESULT_STORE, user["id"])
+    return {**bill.account_summary(BILLING, ent), "payments": list(reversed(ent.get("payments", [])))}
+
+
+@app.post("/v1/account/billing/checkout")
+def account_checkout(request: Request):
+    user = _viewer(request)
+    _same_origin(request)
+    ent = bill.read_entitlements(RESULT_STORE, user["id"])
+    if BILLING.enabled and bill.subscription_state(ent) in ("active", "canceling"):
+        raise HTTPException(status_code=409, detail={"code": "conflict", "message": "You already have Pro."})
+    # One checkout per account per minute, so a double click does not open two sessions.
+    key = f"pro-{user['id']}-{int(datetime.now(timezone.utc).timestamp() // 60)}"
+    try:
+        session = bill.create_checkout(BILLING, user, key)
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+    track("checkout_started", metadata={"product": "consumer-pro"})
+    return {"url": session["url"], "id": session["id"]}
+
+
+@app.get("/v1/account/billing/checkout/{session_id}")
+def account_checkout_status(request: Request, session_id: str):
+    user = _viewer(request)
+    if not all(c.isalnum() or c == "_" for c in session_id) or len(session_id) > 64:
+        raise HTTPException(status_code=400, detail="Bad session id.")
+    return {"status": bill.checkout_status(RESULT_STORE, user["id"], session_id)}
+
+
+@app.post("/v1/billing/webhook")
+async def billing_webhook(request: Request):
+    if not BILLING.enabled or not BILLING.webhook_secret:
+        raise HTTPException(status_code=503, detail=BILLING.reason)
+    raw = await request.body()
+    try:
+        event = bill.verify_signature(raw, request.headers.get("stripe-signature"), BILLING.webhook_secret)
+    except acct.AccountError as exc:
+        raise HTTPException(status_code=400, detail=exc.message) from exc
+    result = bill.handle_event(RESULT_STORE, event, expect_livemode=BILLING.mode == "live")
+    if result["status"] == "in_progress":
+        raise HTTPException(status_code=409, detail=result["detail"])
+    return {"received": True, **result}
