@@ -16,10 +16,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --experimental-strip-types --test src/tone.test.ts src/format.test.ts"
   },
-  "peerDependencies": { "react": "^18.3.1" },
+  "peerDependencies": { "react": "^18.3.1 || ^19.0.0" },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "react": "^18.3.1",
+    "@types/react": "^19",
+    "react": "19.2.8",
     "typescript": "^5.6.0"
   }
 }
