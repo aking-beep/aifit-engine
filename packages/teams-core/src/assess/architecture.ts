@@ -125,7 +125,7 @@ function componentsFor(p: Pattern, w: Workload): string[] {
   if (p === 'bounded-agent') base.push('Approval gate for consequential actions');
   if (p === 'hybrid-human-loop') base.push('Review queue UI', 'Accept/edit/reject capture (this is your training data)');
   if (w.output.mustBeStructured) base.push('Output schema validation with a reject-and-retry path');
-  base.push('ARK Control telemetry hook (token, cost, latency, outcome)');
+  base.push('ARC Control telemetry hook (token, cost, latency, outcome)');
   return base;
 }
 

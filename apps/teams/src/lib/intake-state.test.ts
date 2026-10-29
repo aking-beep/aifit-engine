@@ -216,3 +216,26 @@ describe('session persistence', () => {
     assert.deepEqual(got.state.regulated, ['none']);
   });
 });
+
+describe('planning answers', () => {
+  test('blank planning answers stay out of the Workload; given ones round-trip', () => {
+    const blank = stateFromWorkload(Workload.parse(SUPPORT_TRIAGE));
+    assert.equal(blank.monthlyBudgetUsd, '');
+    assert.equal(blank.offTheShelfAcceptable, true);
+    const filled = { ...blank, monthlyBudgetUsd: 1500, timelineWeeks: 10, offTheShelfAcceptable: false } as typeof blank;
+    const w = workloadFromState({ ...filled, latencyBudgetMs: 5000 });
+    assert.ok(w, 'complete state builds a workload');
+    assert.deepEqual(w!.planning, { monthlyBudgetUsd: 1500, timelineWeeks: 10, offTheShelfAcceptable: false });
+    const back = stateFromWorkload(Workload.parse(w));
+    assert.equal(back.monthlyBudgetUsd, 1500);
+    assert.equal(back.oneTimeBudgetUsd, '');
+    assert.equal(back.offTheShelfAcceptable, false);
+  });
+
+  test('a link made before planning existed decodes with planning blank', () => {
+    const { planning: _drop, ...old } = Workload.parse(SUPPORT_TRIAGE) as Record<string, unknown>;
+    const decoded = urlCodec(Workload).decode(encodeForUrlClient(old));
+    assert.ok(decoded);
+    assert.deepEqual(decoded!.planning, {});
+  });
+});

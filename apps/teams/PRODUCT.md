@@ -22,15 +22,15 @@ Success includes: `lookup`-only work returns “do not use a model”; blank “
 
 ## Positioning
 
-AI Fit Teams is the **estimator**. ARK Control is the **measurement**. They are the only two surfaces that talk (one HTTP calibration call, allowed to fail). A neighbouring token calculator cannot truthfully copy the claim that the same figure reads `heuristic` until Control answers and `measured` (with a sample size) when it does — and that the engine can return `not-ai`.
+AI Fit Teams is the **estimator**. ARC Control is the **measurement**. They are the only two surfaces that talk (one HTTP calibration call, allowed to fail). A neighbouring token calculator cannot truthfully copy the claim that the same figure reads `heuristic` until Control answers and `measured` (with a sample size) when it does — and that the engine can return `not-ai`.
 
 The estimator does not get more confident over time. It gets more informed, and every figure says which of the two just happened.
 
 ## Operating Context
 
 - Local: `npm run dev:teams` (repository root) on :3001. Optional `ARK_CONTROL_URL` + `ARK_CONTROL_TOKEN` against Control :3002.
-- Intake is encoded into the report link and the assessment is recomputed on every view. Nothing the user enters is stored on the server.
-- Nav may link to ARK Control. It must not invite the person to take the AI Fit consumer quiz.
+- Intake is encoded into the report link and the assessment is recomputed on every view. Nothing the user enters is stored on the server unless a signed-in user saves it to their workspace (opt-in, versioned, org-isolated).
+- Nav may link to ARC Control. It must not invite the person to take the AI Fit consumer quiz.
 - Route map: `/` (intro), `/assess` (intake), `/report` (result), `/methodology`.
 - `POST /api/assess` scores one workload or a backlog in CI. `POST /api/measure` (non-`not-ai` only) sent one synthetic Runtime sample into Control in the ARK monorepo; this build carries no Runtime, so it is always disabled and calibration is the only call to Control.
 
@@ -44,7 +44,7 @@ The estimator does not get more confident over time. It gets more informed, and 
 
 **Calibration:** `fetchCalibration({ days: 30 })` returns a set or `null`. Null on missing URL, 2.5s timeout, non-200, or schema mismatch. Never a partial “looks measured” state. Promotion to `measured` requires Control and the 30-trace floor.
 
-**Does not:** persist intake; predict accuracy; price procurement/security-review queues; model a portfolio of workloads; depend on `@ark/db`; import the consumer Python engine.
+**Does not:** persist intake unless a signed-in user saves it to a workspace; predict accuracy; price procurement/security-review queues; model a portfolio of workloads; depend on `@ark/db`; import the consumer Python engine.
 
 **Open:** accessibility standard not set in init.
 

@@ -1,20 +1,49 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "../design/tokens.css";
+
+/*
+ * Pre-2.0 palette names, kept as theme-aware aliases of the design tokens so
+ * any class still written with them renders in the right theme. The ink scale
+ * follows the theme: in light mode it is inverted, so ink-950 is the page and
+ * ink-100 the strongest text, exactly as in dark mode.
+ */
+@theme {
+  --color-ink-950: var(--color-canvas);
+  --color-ink-900: var(--color-surface);
+  --color-ink-850: var(--color-raised);
+  --color-ink-800: var(--color-sunken);
+  --color-ink-700: var(--color-line);
+  --color-ink-600: var(--color-line-strong);
+  --color-ink-500: var(--color-fg-muted);
+  --color-ink-400: var(--color-fg-muted);
+  --color-ink-300: var(--color-fg-muted);
+  --color-ink-200: var(--color-fg-2);
+  --color-ink-100: var(--color-fg);
+  --color-signal: var(--color-accent);
+  --color-signal-dim: var(--color-accent-subtle);
+  --color-signal-glow: var(--color-accent);
+  --color-warn-dim: color-mix(in srgb, var(--color-warn) 18%, transparent);
+  --color-danger-dim: color-mix(in srgb, var(--color-danger) 18%, transparent);
+  --color-good-dim: color-mix(in srgb, var(--color-good) 18%, transparent);
+  --color-info: var(--color-ev-estimated);
+  --color-info-dim: color-mix(in srgb, var(--color-ev-estimated) 18%, transparent);
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --radius-xl2: 1rem;
+  --shadow-panel: var(--shadow-pop);
+}
 
 @layer base {
-  html {
-    color-scheme: dark;
+  /* Tailwind 3 drew borders in a grey by default; keep that so unmigrated borders stay visible. */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-line);
   }
-  body {
-    @apply bg-ink-950 text-ink-200 antialiased;
-  }
-  /* One visible keyboard focus ring for every control. Nothing in this app
-     removes it; inputs also get a signal border on any focus. */
-  :focus-visible {
-    @apply outline outline-2 outline-offset-2 outline-signal;
-  }
-  ::selection {
-    @apply bg-signal/30 text-ink-100;
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
   }
 }

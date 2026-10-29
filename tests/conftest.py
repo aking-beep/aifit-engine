@@ -8,3 +8,6 @@ import tempfile
 os.environ.setdefault("AIFIT_STORE", tempfile.mkdtemp(prefix="aifit-test-store-"))
 for name in ("UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "KV_REST_API_URL", "KV_REST_API_TOKEN"):
     os.environ.pop(name, None)
+# Agents stay off in tests unless a test turns them on with a scripted client.
+for name in ("AIFIT_AGENTS", "ANTHROPIC_API_KEY", "AIFIT_AGENT_MODEL", "AIFIT_AGENT_DAILY_CAP"):
+    os.environ.pop(name, None)

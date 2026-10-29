@@ -87,6 +87,11 @@ export interface IntakeState {
   hasMlExperience: boolean;
   hasSecurityReview: boolean;
   canOperate247: boolean;
+  // planning — optional, for the build/buy/automate comparison
+  monthlyBudgetUsd: number | Blank;
+  oneTimeBudgetUsd: number | Blank;
+  timelineWeeks: number | Blank;
+  offTheShelfAcceptable: boolean;
 }
 
 export function emptyIntake(): IntakeState {
@@ -120,6 +125,10 @@ export function emptyIntake(): IntakeState {
     hasMlExperience: false,
     hasSecurityReview: false,
     canOperate247: false,
+    monthlyBudgetUsd: '',
+    oneTimeBudgetUsd: '',
+    timelineWeeks: '',
+    offTheShelfAcceptable: true,
   };
 }
 
@@ -202,6 +211,12 @@ function common(s: IntakeState) {
       ...(s.hourlyUsd === '' ? {} : { fullyLoadedHourlyUsd: s.hourlyUsd }),
       ...(s.humanErrorRate === '' ? {} : { humanErrorRate: s.humanErrorRate / 100 }),
     },
+    planning: {
+      ...(s.monthlyBudgetUsd === '' ? {} : { monthlyBudgetUsd: s.monthlyBudgetUsd }),
+      ...(s.oneTimeBudgetUsd === '' ? {} : { oneTimeBudgetUsd: s.oneTimeBudgetUsd }),
+      ...(s.timelineWeeks === '' ? {} : { timelineWeeks: s.timelineWeeks }),
+      ...(s.offTheShelfAcceptable ? {} : { offTheShelfAcceptable: false }),
+    },
   };
 }
 
@@ -236,6 +251,7 @@ export function workloadFromState(s: IntakeState, now = Date.now()): Workload | 
     regulated: s.regulated.length ? s.regulated : ['none'],
     dataResidency: s.dataResidency,
     current: c.current,
+    planning: c.planning,
     team: {
       engineers: s.engineers as number,
       hasMlExperience: s.hasMlExperience,
@@ -315,6 +331,7 @@ export function shortCircuitWorkload(s: IntakeState, now = Date.now()): Workload
     regulated: s.regulated.length ? s.regulated : ['none'],
     dataResidency: s.dataResidency,
     current: c.current,
+    planning: c.planning,
     team: {
       engineers: pick('engineers') as number,
       hasMlExperience: s.hasMlExperience,
@@ -377,6 +394,10 @@ export function stateFromWorkload(w: Workload): IntakeState {
     hasMlExperience: w.team.hasMlExperience,
     hasSecurityReview: w.team.hasSecurityReview,
     canOperate247: w.team.canOperate247,
+    monthlyBudgetUsd: w.planning?.monthlyBudgetUsd ?? '',
+    oneTimeBudgetUsd: w.planning?.oneTimeBudgetUsd ?? '',
+    timelineWeeks: w.planning?.timelineWeeks ?? '',
+    offTheShelfAcceptable: w.planning?.offTheShelfAcceptable ?? true,
   };
 }
 
@@ -437,6 +458,10 @@ const SavedState = z.object({
   hasMlExperience: z.boolean().catch(false),
   hasSecurityReview: z.boolean().catch(false),
   canOperate247: z.boolean().catch(false),
+  monthlyBudgetUsd: numOrBlank.catch(''),
+  oneTimeBudgetUsd: numOrBlank.catch(''),
+  timelineWeeks: numOrBlank.catch(''),
+  offTheShelfAcceptable: z.boolean().catch(true),
 });
 
 /**

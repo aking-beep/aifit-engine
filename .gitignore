@@ -15,3 +15,5 @@ apps/web/test-results/
 apps/web/playwright-report/
 .vercel/
 *.tsbuildinfo
+.data/
+apps/teams/.data/

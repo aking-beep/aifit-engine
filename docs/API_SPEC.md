@@ -79,7 +79,31 @@ Age bands. Stale rows lose confidence.
 1–5 rating and optional comment. No identity fields. Stored for 30 days.
 
 ### GET /v1/analytics/summary
-Anonymous in-process event counts, plus the stored feedback count.
+Anonymous in-process event counts, the stored feedback count, and the durable
+activation counters (`activation_durable` says whether they survive restarts).
+
+### POST /v1/decision
+Five-outcome task check (`no_change`, `conventional_software`,
+`conventional_automation`, `buy_ai`, `build_ai`) from `aifit.decision`, which
+mirrors `@aifit/decision-core` and reads the same
+`packages/decision-core/rules/decision-rules.v1.json`. Body is a
+`DecisionIntake`; `surface` is forced to `consumer` and `externalEstimates` is
+dropped. Returns `{decision, tools}`. Stores nothing. Free text is hashed into
+`decision.engine.inputHash` but never scored. Validation errors (422) do not
+echo the input.
+
+### POST /v1/activation
+`{event}` from a fixed allow-list (`quiz_started`, `quiz_completed`,
+`results_viewed`, `persona_copied`, `persona_opened`, `export_downloaded`,
+`bundle_downloaded`, `check_started`, `check_completed`, `history_viewed`,
+`share_created`). Increments an anonymous counter; anything else is 400.
+
+### POST /v1/export/pack
+Returns the setup bundle zip (base64) and its `manifest`: every file with size,
+SHA-256 and the format checks that ran (UTF-8, size, NUL bytes, credential
+patterns, JSON parses, Cursor front matter, Markdown heading). Credential-like
+strings are redacted before validation; any failed check returns 422 and no
+bundle. Single-file exports are redacted and validated the same way.
 
 
 ## Response requirement

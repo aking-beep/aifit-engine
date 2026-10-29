@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { CopyReportLink, PrintButton } from './report-actions';
 
 const SECONDARY =
-  'inline-flex min-h-10 items-center rounded-lg px-3 py-2 text-sm text-ink-300 transition hover:bg-ink-800 hover:text-ink-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal';
+  'inline-flex min-h-10 items-center rounded-lg px-3 py-2 text-sm text-fg-2 transition hover:bg-sunken hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
 /**
  * One next action for the planning meeting, then the ways back in.
@@ -12,7 +12,7 @@ const SECONDARY =
  */
 export function ReportFooter({ edit }: { edit: { href: string; label: string } }) {
   return (
-    <section className="border-t border-ink-800 pt-6 print:hidden" aria-label="What to do with this report">
+    <section className="border-t border-line pt-6 print:hidden" aria-label="What to do with this report">
       <CopyReportLink />
       <div className="mt-5 flex flex-wrap items-center gap-2">
         <PrintButton />

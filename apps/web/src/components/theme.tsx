@@ -3,11 +3,12 @@
 import { useSyncExternalStore } from "react";
 import { Moon, Sun } from "lucide-react";
 
-const STORAGE_KEY = "fit.theme";
+import { THEME_BOOT_SCRIPT, THEME_STORAGE_KEY } from "@/design";
 
-// Blocking snippet injected before paint so the correct theme is applied with
-// no flash. If the visitor has no saved choice we follow their OS setting.
-export const themeInitScript = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}');var dark=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',dark);}catch(e){}})();`;
+// One theme choice across the site and the /app workspace: the same storage
+// key and boot script as the design system's ThemeProvider.
+const STORAGE_KEY = THEME_STORAGE_KEY;
+export const themeInitScript = THEME_BOOT_SCRIPT;
 
 const listeners = new Set<() => void>();
 
@@ -32,6 +33,7 @@ function getServerSnapshot(): boolean {
 export function setDark(dark: boolean) {
   try {
     document.documentElement.classList.toggle("dark", dark);
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
     window.localStorage.setItem(STORAGE_KEY, dark ? "dark" : "light");
   } catch {
     // Ignore storage failures; the class toggle still applies for this visit.

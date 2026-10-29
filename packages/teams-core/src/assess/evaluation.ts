@@ -64,7 +64,7 @@ export function evaluationPlan(w: Workload, pattern: Pattern): EvaluationPlan {
     {
       name: 'Cost per successful outcome',
       threshold: 'Within 20% of the modelled figure',
-      measuredHow: 'ARK Control, attributed to this workload, retries and failed attempts included.',
+      measuredHow: 'ARC Control, attributed to this workload, retries and failed attempts included.',
       blocksLaunch: false,
     },
     {
@@ -188,7 +188,7 @@ function deterministicPlan(w: Workload): EvaluationPlan {
       {
         name: 'p95 latency',
         threshold: `<= ${w.latencyBudgetMs.toLocaleString()} ms`,
-        measuredHow: 'Your own service metrics. There are no model calls for ARK Control to observe.',
+        measuredHow: 'Your own service metrics. There are no model calls for ARC Control to observe.',
         blocksLaunch: w.actor === 'customer',
       },
     ],

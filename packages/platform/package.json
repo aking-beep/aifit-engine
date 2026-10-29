@@ -1,0 +1,17 @@
+{
+  "name": "@aifit/platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Server-side platform for AI Fit Teams: storage adapters, accounts and sessions, organisations and roles, versioned assessments, entitlements, Stripe Checkout and webhooks. No framework imports, so every rule here is unit-tested directly.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json && node --test dist/*.test.js dist/**/*.test.js"
+  },
+  "dependencies": { "zod": "^3.23.8" },
+  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.9.0" }
+}

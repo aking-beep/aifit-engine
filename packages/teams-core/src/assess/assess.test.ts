@@ -103,7 +103,7 @@ describe('not-ai does not recommend a model', () => {
     assert.equal(r.evaluation.goldenSetSize, null);
     for (const m of r.evaluation.metrics) {
       assert.doesNotMatch(m.name, /golden|accuracy/i);
-      assert.doesNotMatch(m.measuredHow, /golden set|ARK Control measures/i);
+      assert.doesNotMatch(m.measuredHow, /golden set|ARC Control measures/i);
     }
     assert.ok(r.evaluation.metrics.some((m) => /property/i.test(m.name)));
     assert.doesNotMatch(r.evaluation.regressionPolicy, /golden set/i);

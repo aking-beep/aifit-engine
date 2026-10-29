@@ -6,6 +6,7 @@ import { DATA_CLASS_GROUPS, REGIME_GROUPS, SHAPE_GROUPS } from './options';
 import {
   ActionEditor, Area, ChipGroups, Choices, Field, NumInput, Section, TextInput, Toggle,
 } from './primitives';
+import { SuggestAnswers, useAgentsEnabled } from '../agent-assist';
 
 /**
  * The eight sections. Every field here exists because it changes an output:
@@ -21,6 +22,7 @@ interface StepProps { s: IntakeState; set: Setter }
 const toggleIn = <T,>(xs: readonly T[], x: T): T[] => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x]);
 
 export function JobStep({ s, set }: StepProps) {
+  const agentsOn = useAgentsEnabled();
   return (
     <Section
       title="What is the job?"
@@ -40,6 +42,14 @@ export function JobStep({ s, set }: StepProps) {
           />
         )}
       </Field>
+      {agentsOn ? (
+        <SuggestAnswers
+          s={s}
+          apply={(patch) => {
+            for (const [k, v] of Object.entries(patch)) set(k as keyof IntakeState, v as IntakeState[keyof IntakeState]);
+          }}
+        />
+      ) : null}
       <Choices
         label="Who the output is for"
         value={s.actor}
@@ -111,9 +121,9 @@ export function InputOutputStep({ s, set }: StepProps) {
               placeholder="Paste the prompt you would actually send, including any system instructions you already know about."
             />
             {est > 0 && (
-              <p className="mt-2 font-mono text-2xs text-ink-300">
+              <p className="mt-2 font-mono text-2xs text-fg-2">
                 ≈ {est.toLocaleString()} input tokens
-                <span className="ml-2 text-ink-400">heuristic · 4 characters ≈ 1 token</span>
+                <span className="ml-2 text-fg-muted">heuristic · 4 characters ≈ 1 token</span>
               </p>
             )}
           </>
@@ -198,8 +208,8 @@ export function DataStep({ s, set }: StepProps) {
         toggle={(id) => set('dataClasses', toggleIn(s.dataClasses, id))}
       />
       <div>
-        <p className="text-xs font-medium text-ink-200">Actions it would take in other systems</p>
-        <p className="mt-1 max-w-2xl text-2xs leading-relaxed text-ink-400">
+        <p className="text-xs font-medium text-fg-2">Actions it would take in other systems</p>
+        <p className="mt-1 max-w-2xl text-2xs leading-relaxed text-fg-muted">
           Leave empty if it only produces text. Adding a write action is the single biggest change you can make to this report.
         </p>
         <div className="mt-2.5">
@@ -271,7 +281,7 @@ export function TodayStep({ s, set }: StepProps) {
       title="What does this cost you today?"
       help={
         <>
-          <strong className="font-medium text-ink-200">Optional — leave blank if you don’t know.</strong>{' '}
+          <strong className="font-medium text-fg-2">Optional — leave blank if you don’t know.</strong>{' '}
           The report will then say the ROI is unknowable rather than invent a denominator — which is the honest
           outcome, and more useful than a confident fiction.
         </>
@@ -321,6 +331,29 @@ export function TeamStep({ s, set }: StepProps) {
         set={(v) => set('canOperate247', v)}
         label="We can respond to a production problem outside business hours"
         help="If not, autonomous patterns are off the table regardless of what the data says."
+      />
+      <div className="border-t border-line pt-5">
+        <p className="text-sm font-medium text-fg">Budget and timeline</p>
+        <p className="mt-1 text-xs leading-relaxed text-fg-muted">
+          Optional. These feed the build-versus-buy-versus-automate comparison; blank means the report says it does not know.
+        </p>
+      </div>
+      <div className="grid gap-5 sm:grid-cols-3">
+        <Field label="Monthly budget" optional>
+          {(p) => <NumInput {...p} value={s.monthlyBudgetUsd} onChange={(v) => set('monthlyBudgetUsd', v)} max={10_000_000} suffix="$/mo" placeholder="unknown" />}
+        </Field>
+        <Field label="One-time budget" optional>
+          {(p) => <NumInput {...p} value={s.oneTimeBudgetUsd} onChange={(v) => set('oneTimeBudgetUsd', v)} max={100_000_000} suffix="$" placeholder="unknown" />}
+        </Field>
+        <Field label="Weeks until it must work" optional>
+          {(p) => <NumInput {...p} value={s.timelineWeeks} onChange={(v) => set('timelineWeeks', v)} max={520} suffix="wk" placeholder="unknown" />}
+        </Field>
+      </div>
+      <Toggle
+        on={s.offTheShelfAcceptable}
+        set={(v) => set('offTheShelfAcceptable', v)}
+        label="A third-party hosted tool is acceptable for this work"
+        help="Turn off if policy rules out sending this data to an outside SaaS product. That removes “buy” from the comparison."
       />
     </Section>
   );

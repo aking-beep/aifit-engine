@@ -1,4 +1,5 @@
 import type { InteractionEvent, QuizNote, Scenario, ScoreResult } from "./types";
+import type { DecisionResponse } from "./decision-types";
 
 export type FitFilterInput = { local_only?: boolean; max_pricing_tier?: string | null };
 
@@ -6,6 +7,21 @@ export type ScoreInput = {
   session_id?: string;
   events: InteractionEvent[];
   notes?: QuizNote[];
+};
+
+export type AgentsStatus = { enabled: boolean; reason: string };
+export type AgentStatus = "ok" | "disabled" | "invalid_input" | "refused" | "rejected" | "error" | "timeout";
+export type IntakeSuggestion = {
+  field: "workTypes" | "frequencyPerMonth" | "minutesPerOccurrence" | "correctness" | "errorImpact" | "dataClasses" | "localOnly" | "integrations";
+  value: string | number | boolean | string[];
+  evidence: string;
+  confidence: "low" | "medium" | "high";
+};
+export type IntakeSuggestions = { status: AgentStatus; suggestions: IntakeSuggestion[]; questions: string[]; reason?: string };
+export type ExplainResponse = {
+  status: AgentStatus;
+  outcome: string;
+  explanation: { source: "model" | "rules"; summary: string; keyPoints: string[]; rejected?: string };
 };
 
 type ShareCreated = { share_id: string; path: string; durable?: boolean };
@@ -86,6 +102,40 @@ export const api = {
   products: () => request<Record<string, unknown>[]>("/v1/registry/products"),
   models: () => request<Record<string, unknown>[]>("/v1/registry/models"),
   freshness: () => request<{ needs_review: unknown[]; products: unknown[]; models: unknown[] }>("/v1/registry/freshness"),
+  decision: (intake: Record<string, unknown>) =>
+    request<DecisionResponse>("/v1/decision", { method: "POST", body: JSON.stringify(intake) }),
+  agentsStatus: () => request<AgentsStatus>("/v1/agents"),
+  suggestAnswers: (text: string) =>
+    request<IntakeSuggestions>("/v1/agents/intake", { method: "POST", body: JSON.stringify({ text }) }),
+  explainDecision: (intake: Record<string, unknown>) =>
+    request<ExplainResponse>("/v1/agents/explain", { method: "POST", body: JSON.stringify(intake) }),
   feedback: (body: { session_id?: string; rating: number; comment: string; useful?: boolean }) =>
     request<{ ok: boolean }>("/v1/feedback", { method: "POST", body: JSON.stringify(body) }),
 };
+
+export type ActivationEvent =
+  | "quiz_started"
+  | "quiz_completed"
+  | "results_viewed"
+  | "persona_copied"
+  | "persona_opened"
+  | "export_downloaded"
+  | "bundle_downloaded"
+  | "check_started"
+  | "check_completed"
+  | "history_viewed"
+  | "share_created";
+
+/** Anonymous activation counter. Fire-and-forget: never blocks or breaks the page. */
+export function trackActivation(event: ActivationEvent) {
+  try {
+    void fetch("/v1/activation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event }),
+      keepalive: true,
+    }).catch(() => {});
+  } catch {
+    // Ignore.
+  }
+}

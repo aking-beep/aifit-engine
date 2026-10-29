@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored from packages/design by scripts/sync-design.mjs; linted and typechecked at the source.
+    "src/design/**",
   ]),
 ]);
 

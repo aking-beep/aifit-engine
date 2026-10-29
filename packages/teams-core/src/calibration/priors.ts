@@ -7,7 +7,7 @@ import { Estimate, estimate, Basis } from '../schema/provenance.js';
  *
  * MY AI for teams ships with rules of thumb for how many turns a pattern takes, how
  * often calls fail, how much context an agent accumulates. Those are guesses.
- * ARK Control observes the same quantities in production and emits a
+ * ARC Control observes the same quantities in production and emits a
  * CalibrationSet. MY AI for teams then prefers observed values over its own priors, and
  * re-labels the resulting estimates from `heuristic` to `calibrated` or
  * `measured`.
@@ -54,7 +54,7 @@ export function resolveCallShape(
       basis: 'heuristic',
       source: observed
         ? `ARK rubric — only ${observed.sampleSize} observations for "${pattern}", below the ${minSample} needed to trust them`
-        : 'ARK rubric v0.1 — no telemetry for this pattern yet. Connect ARK Control to replace this with measurement.',
+        : 'ARK rubric v0.1 — no telemetry for this pattern yet. Connect ARC Control to replace this with measurement.',
     };
   }
 
@@ -66,7 +66,7 @@ export function resolveCallShape(
     cacheHitRate: observed.cacheHitRate,
     basis: calibration!.basis,
     sampleSize: observed.sampleSize,
-    source: `ARK Control, ${calibration!.windowDays}-day window, ${observed.sampleSize.toLocaleString()} outcomes`,
+    source: `ARC Control, ${calibration!.windowDays}-day window, ${observed.sampleSize.toLocaleString()} outcomes`,
   };
 }
 

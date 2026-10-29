@@ -16,9 +16,9 @@ export type Basis =
   | 'heuristic'
   /** Published third-party benchmark or vendor-stated figure. */
   | 'benchmark'
-  /** Derived from ARK Control telemetry across other organizations' workloads. */
+  /** Derived from ARC Control telemetry across other organizations' workloads. */
   | 'calibrated'
-  /** Derived from THIS organization's own ARK Control telemetry. */
+  /** Derived from THIS organization's own ARC Control telemetry. */
   | 'measured';
 
 export const BASIS_RANK: Record<Basis, number> = {
@@ -79,7 +79,7 @@ export function describeBasis(e: Estimate<unknown>): string {
     case 'measured':
       return `Measured from your own telemetry${e.sampleSize ? ` (${fmt(e.sampleSize)} observations)` : ''}.`;
     case 'calibrated':
-      return `Calibrated from ARK Control observations${e.sampleSize ? ` (${fmt(e.sampleSize)} of them)` : ''} — derived from telemetry, not itself observed.`;
+      return `Calibrated from ARC Control observations${e.sampleSize ? ` (${fmt(e.sampleSize)} of them)` : ''} — derived from telemetry, not itself observed.`;
     case 'benchmark':
       return `Published figure${e.asOf ? ` as of ${e.asOf}` : ''}. Verify before you rely on it.`;
     case 'heuristic':

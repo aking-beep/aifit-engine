@@ -4,7 +4,7 @@ import type { RateLimiter } from './request-guard';
 
 /**
  * Measure mode: one synthetic sample for a workload, run on a model and
- * reported to ARK Control as a trace.
+ * reported to ARC Control as a trace.
  *
  * In ark this called `@ark/runtime`, which ran the sample and then POSTed it
  * to `${ARK_CONTROL_URL}/api/v1/events`. That is a second wire to Control,
@@ -127,7 +127,7 @@ export function measureGate(
         reason: 'disabled',
         message: executor
           ? 'Measuring is disabled on this deployment (ARK_MEASURE_ENABLED=1 enables it).'
-          : 'Measuring is not part of this build: it carries no ARK Runtime, so it sends nothing to ARK Control but the calibration read.',
+          : 'Measuring is not part of this build: it carries no ARK Runtime, so it sends nothing to ARC Control but the calibration read.',
       },
       headers: { 'cache-control': 'no-store' },
     };

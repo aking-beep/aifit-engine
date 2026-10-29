@@ -5,7 +5,7 @@ import { z } from 'zod';
  *
  * Not "a company" and not "a use case" — a specific repeating job that
  * currently consumes human time, described precisely enough to reason about.
- * Both MY AI products produce one of these; ARK Control attributes cost to one.
+ * Both MY AI products produce one of these; ARC Control attributes cost to one.
  */
 
 export const TaskShape = z.enum([
@@ -125,6 +125,20 @@ export const Workload = z.object({
     costPerUnitUsd: z.number().nonnegative().optional(),
     /** How often the humans doing it today get it wrong. The honest baseline. */
     humanErrorRate: z.number().min(0).max(1).optional(),
+  }).default({}),
+
+  /**
+   * Planning constraints for the build-vs-buy-vs-automate decision
+   * (@aifit/decision-core). All optional: links made before this existed
+   * decode with an empty object, and a missing figure is reported as missing.
+   */
+  planning: z.object({
+    monthlyBudgetUsd: z.number().nonnegative().max(1e9).optional(),
+    oneTimeBudgetUsd: z.number().nonnegative().max(1e9).optional(),
+    timelineWeeks: z.number().nonnegative().max(520).optional(),
+    /** False when a third-party hosted tool is not acceptable for this work. */
+    offTheShelfAcceptable: z.boolean().optional(),
+    currentWorksWell: z.boolean().optional(),
   }).default({}),
 
   /** Team that would own it. Small teams change the architecture answer. */

@@ -117,9 +117,23 @@ Product list        Model list
 
 The registry, methodology, and evidence live under **How it works**. They are credibility infrastructure, not the homepage.
 
+## Should I use AI for this? (`/check`)
+
+A two-minute task check that compares five options — leave it alone, ordinary software, rules-based automation, an AI tool, or building something — with fixed, published rules (`GET /v1/decision/rules`). Free text is shown back but never scored. Results and the history list (`/history`) stay in the browser.
+
 ## AI Fit Teams
 
-`apps/teams` is a separate product, AI Fit Teams, with its own Vercel project and its own TypeScript packages (`packages/teams-core`, `packages/ui`, `packages/calibration-contract`). It does not share code with Fit or link to it. See `apps/teams/README.md`.
+`apps/teams` is a separate product, AI Fit Teams, with its own Vercel project and its own TypeScript packages (`packages/teams-core`, `packages/ui`, `packages/calibration-contract`, `packages/platform`, `packages/deliverables`, `packages/control-export-contract`). It does not link to Fit. See `apps/teams/README.md`.
+
+## Shared decision intelligence
+
+`packages/decision-core/rules/decision-rules.v1.json` holds every weight and threshold of the five-outcome decision engine. It is implemented twice — TypeScript (`@aifit/decision-core`, used by Teams) and Python (`aifit.decision`, used by Fit's API) — and both test suites must reproduce `packages/decision-core/fixtures/golden.json` (15 workloads, every outcome) field for field, input hash included. After an intended rules change: `npm run golden --workspace @aifit/decision-core`.
+
+See `docs/ai-fit-2/` for the audit, plan and release report.
+
+## Agents (optional, off)
+
+`packages/agents` (TypeScript) and `aifit.agents` (Python) add suggest-only model agents. They suggest intake answers, explain a decision in plain language, and check catalog prices and registry products every week. Each reply has to pass a schema and a deterministic check written in code before anyone sees it, and nothing is applied without the person. They run only when `AIFIT_AGENTS=1` and `ANTHROPIC_API_KEY` are set. See `docs/ai-fit-2/AGENTS.md`.
 
 ## Pack docs
 

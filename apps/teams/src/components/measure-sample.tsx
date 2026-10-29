@@ -62,17 +62,17 @@ export function MeasureSample({
   }
 
   return (
-    <div className="rounded-lg border border-ink-800 bg-ink-850 p-4">
-      <p className="text-sm font-medium text-ink-100">Once it runs, ARK Control measures it</p>
-      <p className="mt-1 text-xs leading-relaxed text-ink-400">
-        This report estimates. ARK Control replaces the estimates with what your running system actually
+    <div className="rounded-lg border border-line bg-raised p-4">
+      <p className="text-sm font-medium text-fg">Once it runs, ARC Control measures it</p>
+      <p className="mt-1 text-xs leading-relaxed text-fg-muted">
+        This report estimates. ARC Control replaces the estimates with what your running system actually
         does. To give it a first trace now, send one synthetic sample: it carries the workload id and task
         shapes, never your description. One sample does not calibrate anything; thirty traces for this
         pattern do.
       </p>
       {!enabled && (
         <div className="mt-3 text-xs leading-relaxed" data-testid="measure-disabled">
-          <p className="text-ink-300">{describeMeasureFailure('disabled').line}</p>
+          <p className="text-fg-2">{describeMeasureFailure('disabled').line}</p>
           <Recovery text={describeMeasureFailure('disabled').recovery} />
         </div>
       )}
@@ -81,22 +81,22 @@ export function MeasureSample({
           type="button"
           onClick={send}
           disabled={!enabled || state.kind === 'pending'}
-          className="min-h-10 rounded-lg border border-ink-600 px-4 py-2 text-sm font-medium text-ink-100 transition hover:border-ink-500 hover:bg-ink-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal disabled:opacity-50"
+          className="min-h-10 rounded-lg border border-line-strong px-4 py-2 text-sm font-medium text-fg transition hover:border-line-strong hover:bg-sunken focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
         >
           {state.kind === 'pending' ? 'Sending…' : 'Send one sample'}
         </button>
         {controlUrl && (
-          <a href={controlUrl} className="text-xs text-ink-300 underline underline-offset-2 hover:text-ink-100">
-            Open ARK Control
+          <a href={controlUrl} className="text-xs text-fg-2 underline underline-offset-2 hover:text-fg">
+            Open ARC Control
           </a>
         )}
       </div>
       <div aria-live="polite">
         {state.kind === 'ok' && (
           <div className="mt-3 text-xs leading-relaxed" data-testid="measure-outcome">
-            <p className="text-ink-300">
+            <p className="text-fg-2">
               Sample answered by <span className="font-mono">{state.modelId}</span> in {state.latencyMs} ms.{' '}
-              {state.telemetry ? state.telemetry.line : 'ARK Control accepted the trace.'}
+              {state.telemetry ? state.telemetry.line : 'ARC Control accepted the trace.'}
             </p>
             {state.telemetry && <Recovery text={state.telemetry.recovery} />}
           </div>
@@ -114,8 +114,8 @@ export function MeasureSample({
 
 function Recovery({ text }: { text: string }) {
   return (
-    <p className="mt-1 text-ink-400">
-      <span className="text-ink-300">For the operator:</span> {text}
+    <p className="mt-1 text-fg-muted">
+      <span className="text-fg-2">For the operator:</span> {text}
     </p>
   );
 }
