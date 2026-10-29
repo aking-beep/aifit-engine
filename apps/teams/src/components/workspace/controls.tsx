@@ -26,7 +26,7 @@ export function WorkspaceSwitcher({ orgs, activeId }: { orgs: { id: string; name
   const [error, setError] = useState<string | null>(null);
   return (
     <div className="space-y-2">
-      <label htmlFor="workspace-switch" className="text-xs text-ink-300">Workspace</label>
+      <label htmlFor="workspace-switch" className="text-xs text-fg-2">Workspace</label>
       <select
         id="workspace-switch"
         defaultValue={activeId}
@@ -47,7 +47,7 @@ export function WorkspaceSwitcher({ orgs, activeId }: { orgs: { id: string; name
 }
 
 /** Starts Stripe-hosted Checkout and redirects there. */
-export function CheckoutButton({ product, assessmentId, label }: { product: 'team' | 'blueprint'; assessmentId?: string; label: string }) {
+export function CheckoutButton({ product, assessmentId, label }: { product: 'team' | 'blueprint' | 'assessment'; assessmentId?: string; label: string }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   return (
@@ -113,7 +113,7 @@ export function DeleteAssessmentButton({ id }: { id: string }) {
   if (!confirming) return <button type="button" className={DANGER} onClick={() => setConfirming(true)}>Delete assessment</button>;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-ink-300">Delete every version? This cannot be undone.</span>
+      <span className="text-sm text-fg-2">Delete every version? This cannot be undone.</span>
       <button
         type="button"
         className={DANGER}
@@ -146,7 +146,7 @@ export function SendToControlButton({ id }: { id: string }) {
       >
         Send to ARC Control
       </button>
-      {note ? <span className="text-xs text-ink-300" aria-live="polite">{note}</span> : null}
+      {note ? <span className="text-xs text-fg-2" aria-live="polite">{note}</span> : null}
     </span>
   );
 }

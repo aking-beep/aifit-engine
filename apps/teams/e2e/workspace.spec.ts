@@ -50,7 +50,7 @@ test('invite a viewer: they can read but not download or save', async ({ browser
   await signUp(owner, uniqueEmail('owner'), 'Ola', 'Shared Co');
   await saveTriage(owner);
   const savedUrl = owner.url();
-  await owner.goto('/workspace');
+  await owner.goto('/workspace/admin');
   await owner.getByLabel('Email to invite').fill(viewerEmail);
   await owner.getByLabel('Role').selectOption('viewer');
   await owner.getByRole('button', { name: 'Create invite link' }).click();

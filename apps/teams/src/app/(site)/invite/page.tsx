@@ -11,7 +11,7 @@ export default async function Invite() {
   const v = await currentViewer();
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-semibold text-ink-100">You have been invited to a workspace</h1>
+      <h1 className="text-3xl font-semibold text-fg">You have been invited to a workspace</h1>
       <InviteAccept signedIn={Boolean(v)} />
     </div>
   );

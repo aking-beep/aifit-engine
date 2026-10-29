@@ -1,12 +1,14 @@
 'use client';
 
-/** Small shared pieces for the workspace screens. Styling matches the report's chrome. */
+/** Small shared pieces for the workspace screens, in the AI Fit design system's styles. */
 
-export const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal';
-export const PRIMARY = `inline-flex min-h-10 items-center justify-center rounded-lg bg-signal px-4 py-2 text-sm font-medium text-ink-950 transition hover:bg-signal-glow disabled:opacity-60 ${FOCUS}`;
-export const SECONDARY = `inline-flex min-h-10 items-center justify-center rounded-lg border border-ink-600 px-4 py-2 text-sm text-ink-100 transition hover:border-ink-500 hover:bg-ink-800 disabled:opacity-60 ${FOCUS}`;
-export const DANGER = `inline-flex min-h-10 items-center justify-center rounded-lg border border-danger/60 px-4 py-2 text-sm text-danger transition hover:bg-danger/10 disabled:opacity-60 ${FOCUS}`;
-export const INPUT = `min-h-10 w-full rounded-md border border-ink-600 bg-ink-900 px-3 py-2 text-sm text-ink-100 placeholder:text-ink-400 ${FOCUS}`;
+export const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+/** The design system's button and input classes, for links and native controls that cannot use <Button>. */
+const BASE = `inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-sm px-3.5 py-1.5 text-label-md transition-colors duration-150 disabled:pointer-events-none disabled:opacity-50 ${FOCUS}`;
+export const PRIMARY = `${BASE} bg-accent text-on-accent hover:bg-accent/90`;
+export const SECONDARY = `${BASE} border border-line-strong bg-surface text-fg hover:bg-sunken`;
+export const DANGER = `${BASE} border border-danger/40 text-danger hover:bg-danger/10`;
+export const INPUT = `min-h-9 w-full rounded-sm border border-line-strong bg-surface px-3 py-1.5 text-body-md text-fg placeholder:text-fg-muted focus:border-accent ${FOCUS}`;
 
 export interface ApiResult<T> {
   ok: boolean;
@@ -32,7 +34,7 @@ export async function api<T = Record<string, unknown>>(path: string, init: { met
 export function ErrorText({ message, id }: { message: string | null; id?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-sm text-danger">
+    <p id={id} role="alert" className="text-body-sm text-danger">
       {message}
     </p>
   );
@@ -41,11 +43,11 @@ export function ErrorText({ message, id }: { message: string | null; id?: string
 export function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-sm font-medium text-ink-100">
+      <label htmlFor={id} className="block text-label-md text-fg">
         {label}
       </label>
       {children}
-      {hint ? <p className="text-xs text-ink-400">{hint}</p> : null}
+      {hint ? <p className="text-body-sm text-fg-muted">{hint}</p> : null}
     </div>
   );
 }

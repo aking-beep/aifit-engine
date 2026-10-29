@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import type { IntakeState } from '@/lib/intake-state';
 import { describePatch, patchFromSuggestion, SUGGESTION_LABEL, type AgentSuggestion } from '@/lib/intake-suggestions';
 
-const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal';
-const BTN = 'inline-flex min-h-10 items-center rounded-lg border border-ink-600 px-4 py-2 text-sm text-ink-100 transition hover:border-ink-500 hover:bg-ink-800 disabled:opacity-60 ' + FOCUS;
+const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
+const BTN = 'inline-flex min-h-10 items-center rounded-lg border border-line-strong px-4 py-2 text-sm text-fg transition hover:border-line-strong hover:bg-sunken disabled:opacity-60 ' + FOCUS;
 
 /**
  * Optional AI assistance. Rendered only when the server reports agents on.
@@ -60,25 +60,25 @@ export function SuggestAnswers({ s, apply }: { s: IntakeState; apply: (p: Patch)
     : [];
 
   return (
-    <div className="space-y-3 rounded-lg border border-dashed border-ink-600 p-4 text-sm">
+    <div className="space-y-3 rounded-lg border border-dashed border-line-strong p-4 text-sm">
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" onClick={run} disabled={state.kind === 'loading'} className={BTN}>
           {state.kind === 'loading' ? 'Reading…' : 'Suggest answers from this description'}
         </button>
-        <span className="text-xs text-ink-300">AI-written. The name and description are sent to Anthropic&apos;s API and not stored.</span>
+        <span className="text-xs text-fg-2">AI-written. The name and description are sent to Anthropic&apos;s API and not stored.</span>
       </div>
       <div aria-live="polite" className="space-y-3">
-        {state.kind === 'message' ? <p className="text-ink-200">{state.text}</p> : null}
+        {state.kind === 'message' ? <p className="text-fg-2">{state.text}</p> : null}
         {state.kind === 'done' && offers.length === 0 && state.questions.length === 0 ? (
-          <p className="text-ink-200">The description did not clearly answer any of this form&apos;s questions.</p>
+          <p className="text-fg-2">The description did not clearly answer any of this form&apos;s questions.</p>
         ) : null}
         {offers.length ? (
           <ul className="space-y-2" aria-label="Suggested answers">
             {offers.map(({ item, patch }) => (
-              <li key={item.field} className="flex flex-col gap-2 rounded-md bg-ink-800/60 p-3 sm:flex-row sm:items-center sm:justify-between">
+              <li key={item.field} className="flex flex-col gap-2 rounded-md bg-sunken/60 p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-ink-100"><span className="font-medium">{SUGGESTION_LABEL[item.field]}:</span> {describePatch(patch)}</p>
-                  <p className="text-xs text-ink-300">Because the description says “{item.evidence}”</p>
+                  <p className="text-fg"><span className="font-medium">{SUGGESTION_LABEL[item.field]}:</span> {describePatch(patch)}</p>
+                  <p className="text-xs text-fg-2">Because the description says “{item.evidence}”</p>
                 </div>
                 <button
                   type="button"
@@ -98,11 +98,11 @@ export function SuggestAnswers({ s, apply }: { s: IntakeState; apply: (p: Patch)
         ) : null}
         {state.kind === 'done' && state.questions.length ? (
           <div>
-            <p className="font-medium text-ink-100">Worth pinning down</p>
-            <ul className="list-disc pl-5 text-ink-200">{state.questions.map((q) => <li key={q}>{q}</li>)}</ul>
+            <p className="font-medium text-fg">Worth pinning down</p>
+            <ul className="list-disc pl-5 text-fg-2">{state.questions.map((q) => <li key={q}>{q}</li>)}</ul>
           </div>
         ) : null}
-        {offers.length ? <p className="text-xs text-ink-300">Check each answer in the steps that follow. The rules score the form, not the AI.</p> : null}
+        {offers.length ? <p className="text-xs text-fg-2">Check each answer in the steps that follow. The rules score the form, not the AI.</p> : null}
       </div>
     </div>
   );
@@ -113,7 +113,7 @@ export function ExplainDecision({ encoded }: { encoded: string }) {
     { kind: 'idle' } | { kind: 'loading' } | { kind: 'failed'; text: string } | { kind: 'done'; source: 'model' | 'rules'; summary: string; keyPoints: string[] }
   >({ kind: 'idle' });
   return (
-    <div className="space-y-3 rounded-lg border border-ink-700 p-4 text-sm" data-testid="explain-decision">
+    <div className="space-y-3 rounded-lg border border-line p-4 text-sm" data-testid="explain-decision">
       {state.kind !== 'done' ? (
         <button
           type="button"
@@ -135,14 +135,14 @@ export function ExplainDecision({ encoded }: { encoded: string }) {
         </button>
       ) : null}
       <div aria-live="polite">
-        {state.kind === 'failed' ? <p className="text-ink-200">{state.text}</p> : null}
+        {state.kind === 'failed' ? <p className="text-fg-2">{state.text}</p> : null}
         {state.kind === 'done' ? (
           <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink-300">
+            <p className="text-xs font-medium uppercase tracking-wide text-fg-2">
               {state.source === 'model' ? 'AI-written from the decision above. It cannot change it.' : 'Written by the rules (the AI explanation was not used).'}
             </p>
-            <p className="text-ink-100">{state.summary}</p>
-            {state.keyPoints.length ? <ul className="list-disc pl-5 text-ink-200">{state.keyPoints.map((k) => <li key={k}>{k}</li>)}</ul> : null}
+            <p className="text-fg">{state.summary}</p>
+            {state.keyPoints.length ? <ul className="list-disc pl-5 text-fg-2">{state.keyPoints.map((k) => <li key={k}>{k}</li>)}</ul> : null}
           </div>
         ) : null}
       </div>

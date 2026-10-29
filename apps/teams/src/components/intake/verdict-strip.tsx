@@ -26,16 +26,16 @@ export function VerdictStrip({
       aria-label="Provisional verdict"
       aria-live="polite"
       className={
-        'mb-8 rounded-xl border bg-ink-850 ' +
-        (decided ? 'border-ink-500' : 'border-ink-700') +
+        'mb-8 rounded-xl border bg-raised ' +
+        (decided ? 'border-line-strong' : 'border-line') +
         (compact ? ' px-4 py-3' : ' p-5')
       }
     >
-      <p className="font-mono text-2xs uppercase tracking-widest text-ink-400">
+      <p className="font-mono text-2xs uppercase tracking-widest text-fg-muted">
         {decided ? 'Verdict · decided by the shape of the work' : 'Provisional verdict · not decided yet'}
       </p>
-      <p className={'mt-1 font-medium text-ink-100 ' + (compact ? 'text-sm' : 'text-base')}>{verdict.title}</p>
-      {!compact && <p className="mt-1.5 max-w-3xl text-xs leading-relaxed text-ink-300">{verdict.body}</p>}
+      <p className={'mt-1 font-medium text-fg ' + (compact ? 'text-sm' : 'text-base')}>{verdict.title}</p>
+      {!compact && <p className="mt-1.5 max-w-3xl text-xs leading-relaxed text-fg-2">{verdict.body}</p>}
       {decided && (
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
           <button
@@ -46,8 +46,8 @@ export function VerdictStrip({
             className={
               'inline-flex min-h-10 items-center rounded-lg px-4 text-sm font-medium transition ' +
               (canShortCircuit
-                ? 'bg-signal text-ink-950 hover:bg-signal-glow'
-                : 'cursor-not-allowed bg-ink-700 text-ink-300')
+                ? 'bg-accent text-on-accent hover:bg-accent/90'
+                : 'cursor-not-allowed bg-line text-fg-2')
             }
           >
             See the report now
@@ -56,13 +56,13 @@ export function VerdictStrip({
             <button
               type="button"
               onClick={onContinue}
-              className="inline-flex min-h-10 items-center px-1 text-sm text-ink-300 transition hover:text-ink-100"
+              className="inline-flex min-h-10 items-center px-1 text-sm text-fg-2 transition hover:text-fg"
             >
               Continue the full assessment
             </button>
           )}
           {!canShortCircuit && (
-            <p id="verdict-needs-name" className="text-2xs text-ink-300">
+            <p id="verdict-needs-name" className="text-2xs text-fg-2">
               Name the job first; the report is titled with it.
             </p>
           )}

@@ -46,8 +46,10 @@ function sessionStore(): KeyValueStore | null {
 }
 
 export function Intake({
-  initial, initialStep, badLink, reassess = null,
+  initial, initialStep, badLink, reassess = null, defaults = null,
 }: {
+  /** Workspace profile defaults for a new intake. A link or a draft in this tab wins over them. */
+  defaults?: Partial<IntakeState> | null;
   /** A saved assessment id this intake will become a new version of (checked server-side on save). */
   reassess?: string | null;
   /** Prefill decoded from `?w=` on the server. */
@@ -58,7 +60,8 @@ export function Intake({
   badLink: boolean;
 }) {
   const router = useRouter();
-  const [state, setState] = useState<IntakeState>(() => initial ?? emptyIntake());
+  const blank = (): IntakeState => ({ ...emptyIntake(), ...(defaults ?? {}) });
+  const [state, setState] = useState<IntakeState>(() => initial ?? blank());
   const [step, setStep] = useState(initialStep ?? 0);
   const [restored, setRestored] = useState(false);
   const [notice, setNotice] = useState<string | null>(
@@ -151,7 +154,7 @@ export function Intake({
 
   function startOver() {
     clearSaved(sessionStore());
-    setState(emptyIntake());
+    setState(blank());
     setAcknowledged(false);
     setConfirmReset(false);
     setNotice(null);
@@ -171,12 +174,12 @@ export function Intake({
             const cls =
               'inline-flex min-h-10 items-center gap-1 rounded-md px-2 ' +
               (current
-                ? 'font-medium text-signal'
+                ? 'font-medium text-accent'
                 : i < step
-                  ? 'text-ink-300 hover:text-ink-100'
+                  ? 'text-fg-2 hover:text-fg'
                   : i <= reachable
-                    ? 'text-ink-400 hover:text-ink-200'
-                    : 'text-ink-400');
+                    ? 'text-fg-muted hover:text-fg-2'
+                    : 'text-fg-muted');
             return (
               <li key={label}>
                 {current || i > reachable ? (
@@ -198,18 +201,18 @@ export function Intake({
         {SECTIONS.map((label, i) => (
           <div
             key={label}
-            className={'h-1 flex-1 rounded-full transition ' + (i <= step ? 'bg-signal' : 'bg-ink-800')}
+            className={'h-1 flex-1 rounded-full transition ' + (i <= step ? 'bg-accent' : 'bg-sunken')}
           />
         ))}
       </div>
 
       {notice && (
-        <p role="status" className="mb-6 flex flex-wrap items-center gap-x-3 text-xs text-ink-300">
+        <p role="status" className="mb-6 flex flex-wrap items-center gap-x-3 text-xs text-fg-2">
           {notice}
           <button
             type="button"
             onClick={() => setNotice(null)}
-            className="min-h-10 px-1 text-ink-400 underline-offset-2 hover:text-ink-200 hover:underline"
+            className="min-h-10 px-1 text-fg-muted underline-offset-2 hover:text-fg-2 hover:underline"
           >
             Dismiss
           </button>
@@ -228,18 +231,18 @@ export function Intake({
 
       <StepView s={state} set={set} />
 
-      <div className="mt-10 border-t border-ink-800 pt-6">
+      <div className="mt-10 border-t border-line pt-6">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <button
             type="button"
             onClick={() => go(step - 1)}
             disabled={step === 0}
-            className="min-h-10 px-1 text-sm text-ink-300 transition hover:text-ink-100 disabled:invisible"
+            className="min-h-10 px-1 text-sm text-fg-2 transition hover:text-fg disabled:invisible"
           >
             Back
           </button>
           <div className="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
-            <span className="text-2xs text-ink-400">
+            <span className="text-2xs text-fg-muted">
               {step + 1} of {SECTIONS.length}
             </span>
             <button
@@ -251,8 +254,8 @@ export function Intake({
                 // No transition: enabled and disabled must never be mid-fade.
                 'min-h-10 rounded-lg px-5 text-sm font-medium ' +
                 (canAdvance
-                  ? 'bg-signal text-ink-950 hover:bg-signal-glow'
-                  : 'cursor-not-allowed bg-ink-700 text-ink-300')
+                  ? 'bg-accent text-on-accent hover:bg-accent/90'
+                  : 'cursor-not-allowed bg-line text-fg-2')
               }
             >
               {isLast ? 'Generate the report' : 'Next'}
@@ -260,7 +263,7 @@ export function Intake({
           </div>
         </div>
         {reason && (
-          <p id="intake-next-reason" className="mt-3 text-right text-xs text-ink-300">
+          <p id="intake-next-reason" className="mt-3 text-right text-xs text-fg-2">
             {reason}
             {earlierGap !== null && (
               <>
@@ -268,7 +271,7 @@ export function Intake({
                 <button
                   type="button"
                   onClick={() => go(earlierGap)}
-                  className="text-signal underline-offset-2 hover:underline"
+                  className="text-accent underline-offset-2 hover:underline"
                 >
                   Go to {SECTIONS[earlierGap]}
                 </button>
@@ -276,19 +279,19 @@ export function Intake({
             )}
           </p>
         )}
-        <div className="mt-8 flex flex-wrap items-center gap-x-3 text-2xs text-ink-400">
+        <div className="mt-8 flex flex-wrap items-center gap-x-3 text-2xs text-fg-muted">
           {confirmReset ? (
             <>
               <span>Clear every answer in this tab?</span>
-              <button type="button" onClick={startOver} className="min-h-10 px-1 text-ink-200 hover:text-ink-100">
+              <button type="button" onClick={startOver} className="min-h-10 px-1 text-fg-2 hover:text-fg">
                 Yes, start over
               </button>
-              <button type="button" onClick={() => setConfirmReset(false)} className="min-h-10 px-1 hover:text-ink-200">
+              <button type="button" onClick={() => setConfirmReset(false)} className="min-h-10 px-1 hover:text-fg-2">
                 Keep my answers
               </button>
             </>
           ) : (
-            <button type="button" onClick={() => setConfirmReset(true)} className="min-h-10 px-1 hover:text-ink-200">
+            <button type="button" onClick={() => setConfirmReset(true)} className="min-h-10 px-1 hover:text-fg-2">
               Start over
             </button>
           )}

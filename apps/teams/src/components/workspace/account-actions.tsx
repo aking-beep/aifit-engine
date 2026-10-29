@@ -22,9 +22,9 @@ export function AccountActions({ email }: { email: string }) {
       <div className="space-y-2">
         <a href="/api/account" className={SECONDARY} download>Download everything stored about me (JSON)</a>
       </div>
-      <form onSubmit={del} className="max-w-md space-y-3 border-t border-ink-800 pt-6">
-        <p className="text-sm font-medium text-ink-100">Delete my account</p>
-        <p className="text-xs leading-relaxed text-ink-400">
+      <form onSubmit={del} className="max-w-md space-y-3 border-t border-line pt-6">
+        <p className="text-sm font-medium text-fg">Delete my account</p>
+        <p className="text-xs leading-relaxed text-fg-muted">
           Workspaces where you are the only member are deleted with everything in them. In shared workspaces you are
           removed and the team keeps its assessments. If you are the only owner of a shared workspace, make someone else
           an owner first. Cancel any paid plan in Stripe before deleting.

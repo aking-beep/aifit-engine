@@ -14,8 +14,8 @@ export default async function SignIn({ searchParams }: { searchParams: Promise<{
   if (await currentViewer()) redirect(next);
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-semibold text-ink-100">Sign in</h1>
-      <p className="max-w-2xl text-sm leading-relaxed text-ink-300">
+      <h1 className="text-3xl font-semibold text-fg">Sign in</h1>
+      <p className="max-w-2xl text-sm leading-relaxed text-fg-2">
         An account is only needed to save assessments, work with your team, and download blueprints. Running an
         assessment never needs one.
       </p>

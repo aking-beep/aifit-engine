@@ -1,7 +1,7 @@
 'use client'
 // GENERATED from packages/design by scripts/sync-design.mjs. Do not edit here.
 
-import React, { useState } from 'react'
+import React, { useId, useState } from 'react'
 import { Check, Copy, Download, FileCode2, FileJson, FileText, Terminal } from 'lucide-react'
 import type { GeneratedFile } from './types'
 import { Button } from './Button'
@@ -32,9 +32,10 @@ export function downloadFiles(name: string, files: GeneratedFile[]) {
  * Download preview: file tree + code viewer with copy, and a download action.
  * Used for consumer setup packages and enterprise blueprints.
  */
-export function DownloadPreview({ name, files, onDownload, meta }: { name: string; files: GeneratedFile[]; onDownload?: () => void; meta?: React.ReactNode }) {
+export function DownloadPreview({ name, files, onDownload, meta, canDownload = true }: { name: string; files: GeneratedFile[]; onDownload?: () => void; meta?: React.ReactNode; canDownload?: boolean }) {
   const [active, setActive] = useState(0)
   const [copied, setCopied] = useState(false)
+  const uid = useId().replace(/:/g, '')
   const file = files[active] ?? files[0] ?? { path: '', language: 'text' as const, content: '' }
   const copy = () => {
     navigator.clipboard?.writeText(file.content).catch(() => {})
@@ -48,17 +49,22 @@ export function DownloadPreview({ name, files, onDownload, meta }: { name: strin
           <p className="truncate font-mono text-label-md text-fg">{name}</p>
           {meta && <div className="mt-0.5 text-label-sm text-fg-muted">{meta}</div>}
         </div>
-        <Button variant="primary" size="sm" icon={<Download size={13} />} onClick={onDownload ?? (() => downloadFiles(name, files))}>
-          Download
-        </Button>
+        {canDownload && (
+          <Button variant="primary" size="sm" icon={<Download size={13} />} onClick={onDownload ?? (() => downloadFiles(name, files))}>
+            Download
+          </Button>
+        )}
       </header>
       <div className="grid md:grid-cols-[220px_1fr]">
-        <ul className="flex gap-1 overflow-x-auto border-b border-line p-2 md:flex-col md:border-r md:border-b-0" role="tablist" aria-label="Files">
+        <div className="flex gap-1 overflow-x-auto border-b border-line p-2 md:flex-col md:border-r md:border-b-0" role="tablist" aria-label="Files">
           {files.map((f, i) => (
-            <li key={f.path}>
               <button
+                key={f.path}
+                id={`${uid}-tab-${i}`}
                 role="tab"
                 aria-selected={i === active}
+                aria-controls={`${uid}-panel`}
+                tabIndex={i === active ? 0 : -1}
                 onClick={() => setActive(i)}
                 className={cn(
                   'flex w-full items-center gap-2 whitespace-nowrap rounded-xs px-2 py-1.5 text-left font-mono text-code-sm transition-colors duration-150',
@@ -68,15 +74,14 @@ export function DownloadPreview({ name, files, onDownload, meta }: { name: strin
                 {ICON[f.language]}
                 {f.path}
               </button>
-            </li>
           ))}
-        </ul>
-        <div className="relative min-w-0 bg-sunken">
+        </div>
+        <div className="relative min-w-0 bg-sunken" role="tabpanel" id={`${uid}-panel`} aria-labelledby={`${uid}-tab-${active}`}>
           <button onClick={copy} aria-label="Copy file" className="absolute top-2 right-2 inline-flex items-center gap-1.5 rounded-xs border border-line bg-surface px-2 py-1 text-label-sm text-fg-2 transition-colors duration-150 hover:text-fg">
             {copied ? <Check size={12} /> : <Copy size={12} />}
             {copied ? 'Copied' : 'Copy'}
           </button>
-          <pre className="max-h-[420px] overflow-auto p-4 pr-20 font-mono text-code-sm text-fg-2">
+          <pre tabIndex={0} aria-label={`Contents of ${file.path}`} className="max-h-[420px] overflow-auto p-4 pr-20 font-mono text-code-sm text-fg-2">
             {file.content.split('\n').map((line, i) => (
               <div key={i} className="flex">
                 <span className="mr-4 inline-block w-6 shrink-0 text-right text-fg-muted select-none">{i + 1}</span>

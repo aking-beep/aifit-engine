@@ -1,4 +1,4 @@
-import { Panel, CardTable, BasisTag } from '@aifit/ui';
+import { Panel, CardTable, BasisTag } from '@/components/kit';
 import { ASSESS_API_LIMITS, CALL_SHAPE, PATTERN_LABEL, SUITABILITY_RUBRIC, type Pattern } from '@aifit/teams-core';
 
 export const metadata = { title: 'Methodology — AI Fit Teams' };
@@ -14,21 +14,21 @@ export default function Methodology() {
   return (
     <div className="space-y-8">
       <section className="max-w-3xl">
-        <h1 className="text-3xl font-semibold leading-tight text-ink-100">How this is scored</h1>
-        <p className="mt-4 text-base leading-relaxed text-ink-300">
+        <h1 className="text-3xl font-semibold leading-tight text-fg">How this is scored</h1>
+        <p className="mt-4 text-base leading-relaxed text-fg-2">
           Everything below is the actual rubric, not a summary of one. If a report tells you something you
           disagree with, this page should let you find the exact assumption you disagree with and say so.
         </p>
-        <p className="mt-4 text-sm leading-relaxed text-ink-400">
+        <p className="mt-4 text-sm leading-relaxed text-fg-muted">
           This product is the estimator. ARC Control is the measurement. They are the only two surfaces that
           talk. The map — Assess → Measure → Control, four grains on one trace, how a figure is promoted
-          from heuristic to measured — is <code className="font-mono text-ink-200">docs/08-how-ark-works.md</code> in the ARK repository.
-          Connect production at Control <code className="font-mono text-ink-200">/start</code>.
+          from heuristic to measured — is <code className="font-mono text-fg-2">docs/08-how-ark-works.md</code> in the ARK repository.
+          Connect production at Control <code className="font-mono text-fg-2">/start</code>.
         </p>
       </section>
 
       <Panel title="The provenance ladder" subtitle="Four rungs. Every figure in every report carries one.">
-        <p className="max-w-3xl text-sm leading-relaxed text-ink-300">
+        <p className="max-w-3xl text-sm leading-relaxed text-fg-2">
           The central design commitment of this system is that a guess and a measurement must never look the
           same on screen. Confidence in a user interface is a claim, and an unlabelled number is a claim
           made without evidence.
@@ -51,7 +51,7 @@ export default function Methodology() {
             the only rung that can contradict the rubric, and it is allowed to.
           </Rung>
         </div>
-        <p className="mt-5 max-w-3xl text-xs leading-relaxed text-ink-400">
+        <p className="mt-5 max-w-3xl text-xs leading-relaxed text-fg-muted">
           A prior is promoted only above a minimum sample of 30 traces for that pattern. Below the floor the
           number stays <span className="font-mono text-warn">heuristic</span> and says so, because a mean
           drawn from four traces is noise wearing a decimal point.
@@ -71,13 +71,13 @@ export default function Methodology() {
           rows={SUITABILITY_RUBRIC.map((d) => ({
             key: d.key,
             cells: [
-              <span key="l" className="text-ink-200">{d.label}</span>,
+              <span key="l" className="text-fg-2">{d.label}</span>,
               d.weight.toFixed(2),
-              <span key="m" className="text-xs leading-relaxed text-ink-400">{d.movedBy}</span>,
+              <span key="m" className="text-xs leading-relaxed text-fg-muted">{d.movedBy}</span>,
             ],
           }))}
         />
-        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-ink-400">
+        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-fg-muted">
           This table is the engine&apos;s own rubric, rendered from the same constant the scoring code reads,
           so it cannot describe a different rubric from the one that scored your report. A weighted average
           alone would let a high volume score paper over a workload that must be exactly right. It does not:
@@ -105,8 +105,8 @@ export default function Methodology() {
               key: p,
               cells: [
                 <span key="p">
-                  <span className="text-ink-200">{PATTERN_LABEL[p]}</span>
-                  <span className="mt-0.5 block font-mono text-2xs text-ink-500">{p}</span>
+                  <span className="text-fg-2">{PATTERN_LABEL[p]}</span>
+                  <span className="mt-0.5 block font-mono text-2xs text-fg-muted">{p}</span>
                 </span>,
                 s.turnsPerOutcome,
                 s.contextGrowthPerTurn,
@@ -117,7 +117,7 @@ export default function Methodology() {
             };
           })}
         />
-        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-ink-400">
+        <p className="mt-4 max-w-3xl text-xs leading-relaxed text-fg-muted">
           Turns per outcome and failure rate are where cost estimates go wrong by an order of magnitude. An
           agent that averages seven turns in a benchmark and nineteen in production is not a rounding error
           — it is a bill that arrives at nearly three times the forecast, and no amount of care with the
@@ -126,7 +126,7 @@ export default function Methodology() {
       </Panel>
 
       <Panel title="How cost is computed" subtitle="Cost per successful outcome, not cost per call.">
-        <div className="space-y-4 text-sm leading-relaxed text-ink-300">
+        <div className="space-y-4 text-sm leading-relaxed text-fg-2">
           <p>
             One attempt costs the input tokens plus the accumulated context of every prior turn, priced at
             the model&apos;s input rate, plus the output tokens at the output rate, less the share of input
@@ -139,7 +139,7 @@ export default function Methodology() {
             multiplied by the cost of an attempt. Divide by the success rate and you get the cost of a
             result you can actually use. That is the number this report quotes.
           </p>
-          <p className="text-ink-400">
+          <p className="text-fg-muted">
             Every tool that quotes a price per thousand tokens and stops there is quoting the cost of the
             attempt, not the cost of the outcome. For a single-shot classifier the gap is a few per cent.
             For a bounded agent it is routinely forty.
@@ -148,11 +148,11 @@ export default function Methodology() {
       </Panel>
 
       <Panel title="Where the report refuses to answer" subtitle="The parts that are deliberately blank.">
-        <ul className="space-y-3 text-sm leading-relaxed text-ink-300">
+        <ul className="space-y-3 text-sm leading-relaxed text-fg-2">
           <li className="flex gap-2">
             <span className="text-warn">&middot;</span>
             <span>
-              <span className="text-ink-100">ROI without a baseline.</span> If you do not tell it what the
+              <span className="text-fg">ROI without a baseline.</span> If you do not tell it what the
               work costs today, it reports payback as unknowable rather than inventing a denominator. A
               fabricated ROI is worse than no ROI, because it survives being repeated.
             </span>
@@ -160,7 +160,7 @@ export default function Methodology() {
           <li className="flex gap-2">
             <span className="text-warn">&middot;</span>
             <span>
-              <span className="text-ink-100">Accuracy.</span> This tool cannot tell you how accurate a model
+              <span className="text-fg">Accuracy.</span> This tool cannot tell you how accurate a model
               will be on your data. Nobody can, before the golden set exists. What it gives you instead is
               the threshold your error tolerance implies and the size of the set you need to measure it
               honestly.
@@ -169,7 +169,7 @@ export default function Methodology() {
           <li className="flex gap-2">
             <span className="text-warn">&middot;</span>
             <span>
-              <span className="text-ink-100">The human baseline.</span> If you did not supply a human error
+              <span className="text-fg">The human baseline.</span> If you did not supply a human error
               rate, the report says so rather than treating your current process as perfect. &ldquo;93%
               accurate&rdquo; is a result or a regression depending entirely on a number most teams have
               never measured.
@@ -178,7 +178,7 @@ export default function Methodology() {
           <li className="flex gap-2">
             <span className="text-warn">&middot;</span>
             <span>
-              <span className="text-ink-100">Displacement.</span> AI removing 60% of the human minutes on a
+              <span className="text-fg">Displacement.</span> AI removing 60% of the human minutes on a
               task is an assumption, stated as one and adjustable. Teams routinely model it as 100% and are
               routinely wrong.
             </span>
@@ -186,7 +186,7 @@ export default function Methodology() {
           <li className="flex gap-2">
             <span className="text-warn">&middot;</span>
             <span>
-              <span className="text-ink-100">A model for a not-ai job.</span> When the verdict is not-ai the
+              <span className="text-fg">A model for a not-ai job.</span> When the verdict is not-ai the
               report names no model, prices no tokens, sizes no golden set and offers no sample. It sizes the
               deterministic build and its tests instead. Recommending a model in the same breath as refusing
               one would make the refusal decorative.
@@ -196,15 +196,15 @@ export default function Methodology() {
       </Panel>
 
       <Panel title="Use it from CI" subtitle="The same engine, without the form. Score a backlog on every change to it.">
-        <div className="space-y-4 text-sm leading-relaxed text-ink-300">
+        <div className="space-y-4 text-sm leading-relaxed text-fg-2">
           <p>
-            <code className="font-mono text-ink-100">POST /api/assess</code> takes one Workload, or an array of
+            <code className="font-mono text-fg">POST /api/assess</code> takes one Workload, or an array of
             up to {ASSESS_API_LIMITS.maxWorkloads}, as JSON. The body may be at most{' '}
             {ASSESS_API_LIMITS.maxBodyBytes / 1024} KB. A larger batch is refused with 413 rather than
-            truncated; split it. <code className="font-mono text-ink-100">GET /api/assess</code> returns a
+            truncated; split it. <code className="font-mono text-fg">GET /api/assess</code> returns a
             complete example Workload.
           </p>
-          <pre className="overflow-x-auto rounded-lg border border-ink-700 bg-ink-950 p-4 font-mono text-xs leading-relaxed text-ink-200">
+          <pre className="overflow-x-auto rounded-lg border border-line bg-canvas p-4 font-mono text-xs leading-relaxed text-fg-2">
 {`curl -sS https://<this-host>/api/assess \\
   -H 'content-type: application/json' \\
   -d '{"id":"wl_triage","name":"Triage support tickets",
@@ -217,19 +217,19 @@ export default function Methodology() {
   | jq '{verdict, modelId, costPerUnit: .costPerUnit.value, basis: .costPerUnit.basis}'`}
           </pre>
           <p>
-            Each result carries <span className="font-mono text-ink-100">verdict</span>,{' '}
-            <span className="font-mono text-ink-100">blockers</span>,{' '}
-            <span className="font-mono text-ink-100">pattern</span>, the cost and payback estimates with
-            their basis, the risk level, the <span className="font-mono text-ink-100">trust</span> block and
-            the full <span className="font-mono text-ink-100">assessment</span>. When the verdict is not-ai,{' '}
-            <span className="font-mono text-ink-100">modelId</span> and{' '}
-            <span className="font-mono text-ink-100">assessment.model</span> are{' '}
-            <span className="font-mono text-ink-100">null</span>, cost is zero with a deterministic source,
-            and <span className="font-mono text-ink-100">assessment.evaluation.kind</span> is{' '}
-            <span className="font-mono text-ink-100">deterministic</span>. A useful gate: fail the build when a
+            Each result carries <span className="font-mono text-fg">verdict</span>,{' '}
+            <span className="font-mono text-fg">blockers</span>,{' '}
+            <span className="font-mono text-fg">pattern</span>, the cost and payback estimates with
+            their basis, the risk level, the <span className="font-mono text-fg">trust</span> block and
+            the full <span className="font-mono text-fg">assessment</span>. When the verdict is not-ai,{' '}
+            <span className="font-mono text-fg">modelId</span> and{' '}
+            <span className="font-mono text-fg">assessment.model</span> are{' '}
+            <span className="font-mono text-fg">null</span>, cost is zero with a deterministic source,
+            and <span className="font-mono text-fg">assessment.evaluation.kind</span> is{' '}
+            <span className="font-mono text-fg">deterministic</span>. A useful gate: fail the build when a
             workload someone wants to fund comes back not-ai or not-yet.
           </p>
-          <p className="text-ink-400">
+          <p className="text-fg-muted">
             A body that is not a Workload is a 422 with the schema issues. Nothing is stored: the response is
             the only copy.
           </p>
@@ -237,10 +237,10 @@ export default function Methodology() {
       </Panel>
 
       <Panel title="Known limitations" subtitle="Written down so they can be argued with rather than discovered.">
-        <ul className="space-y-2.5 text-xs leading-relaxed text-ink-400">
+        <ul className="space-y-2.5 text-xs leading-relaxed text-fg-muted">
           {LIMITATIONS.map((l, i) => (
             <li key={i} className="flex gap-2">
-              <span className="text-ink-500" aria-hidden>&middot;</span>
+              <span className="text-fg-muted" aria-hidden>&middot;</span>
               {l}
             </li>
           ))}
@@ -252,11 +252,11 @@ export default function Methodology() {
 
 function Rung({ basis, children }: { basis: 'heuristic' | 'benchmark' | 'calibrated' | 'measured'; children: React.ReactNode }) {
   return (
-    <div className="flex gap-4 rounded-lg border border-ink-800 bg-ink-900 p-4">
+    <div className="flex gap-4 rounded-lg border border-line bg-surface p-4">
       <div className="shrink-0 pt-0.5">
         <BasisTag basis={basis} />
       </div>
-      <p className="text-xs leading-relaxed text-ink-400">{children}</p>
+      <p className="text-xs leading-relaxed text-fg-muted">{children}</p>
     </div>
   );
 }

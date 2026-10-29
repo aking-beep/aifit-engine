@@ -40,14 +40,14 @@ export function MembersPanel({ members, canManage, selfId }: { members: Member[]
 
   return (
     <div className="space-y-4">
-      <ul className="divide-y divide-ink-800" aria-label="Members">
+      <ul className="divide-y divide-line" aria-label="Members">
         {members.map((m) => (
           <li key={m.userId} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
             <div>
-              <p className="text-sm text-ink-100">
-                {m.name} {m.userId === selfId ? <span className="text-ink-400">(you)</span> : null}
+              <p className="text-sm text-fg">
+                {m.name} {m.userId === selfId ? <span className="text-fg-muted">(you)</span> : null}
               </p>
-              <p className="text-xs text-ink-400">{m.email}</p>
+              <p className="text-xs text-fg-muted">{m.email}</p>
             </div>
             {canManage && m.userId !== selfId ? (
               <div className="flex items-center gap-2">
@@ -67,15 +67,15 @@ export function MembersPanel({ members, canManage, selfId }: { members: Member[]
                 </button>
               </div>
             ) : (
-              <span className="text-xs text-ink-300">{m.role}</span>
+              <span className="text-xs text-fg-2">{m.role}</span>
             )}
           </li>
         ))}
       </ul>
       <ErrorText message={error} />
       {canManage ? (
-        <form onSubmit={invite} className="space-y-3 border-t border-ink-800 pt-4">
-          <p className="text-sm font-medium text-ink-100">Invite someone</p>
+        <form onSubmit={invite} className="space-y-3 border-t border-line pt-4">
+          <p className="text-sm font-medium text-fg">Invite someone</p>
           <div className="flex flex-wrap gap-2">
             <label className="sr-only" htmlFor="invite-email">Email to invite</label>
             <input id="invite-email" name="email" type="email" required placeholder="name@company.com" className={INPUT + ' max-w-xs'} />
@@ -89,7 +89,7 @@ export function MembersPanel({ members, canManage, selfId }: { members: Member[]
           </div>
           {link ? (
             <div className="space-y-1">
-              <label htmlFor="invite-link" className="text-xs text-ink-300">
+              <label htmlFor="invite-link" className="text-xs text-fg-2">
                 Send this link to them yourself (this build sends no email). It works once, for that email, for 7 days.
               </label>
               <input id="invite-link" readOnly value={link} onFocus={(e) => e.currentTarget.select()} className={INPUT + ' font-mono text-2xs'} />

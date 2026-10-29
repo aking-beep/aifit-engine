@@ -82,7 +82,7 @@ export function ArchitectureDiagram({
     <>
       {/* Desktop diagram */}
       <div className="hidden overflow-x-auto md:block">
-        <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full min-w-[720px]" role="img" aria-label="Recommended architecture diagram">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full min-w-[720px]" role="group" aria-label="Recommended architecture diagram">
           <defs>
             <marker id={`${uid}-arrow`} viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
               <path d="M0,0 L8,4 L0,8 z" fill="var(--color-fg-muted)" />
@@ -139,9 +139,14 @@ export function ArchitectureDiagram({
                 opacity={dim ? 0.35 : 1}
                 style={{ transition: 'opacity 150ms ease-out' }}
                 role="button"
-                aria-label={`${n.label}, ${KIND_LABEL[n.kind]}`}
+                aria-pressed={isSel}
                 tabIndex={0}
-                onKeyDown={(ev) => ev.key === 'Enter' && onSelect?.(isSel ? null : n.id)}
+                onKeyDown={(ev) => {
+                  if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault()
+                    onSelect?.(isSel ? null : n.id)
+                  }
+                }}
               >
                 <rect width={NODE_W} height={NODE_H} rx={8} fill="var(--color-surface)" stroke={isSel ? 'var(--color-accent)' : 'var(--color-line-strong)'} strokeWidth={isSel ? 2 : 1} />
                 {n.kind === 'model' && <rect x={0} y={10} width={3} height={NODE_H - 20} rx={1.5} fill="var(--color-accent)" />}

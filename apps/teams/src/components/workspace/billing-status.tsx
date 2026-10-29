@@ -41,8 +41,8 @@ export function BillingStatus({ status, sessionId }: { status: string | null; se
   };
   return (
     <div className="space-y-4">
-      <p className="text-sm text-ink-200" aria-live="polite">{message[state] ?? message.unconfirmed}</p>
-      <Link href="/workspace" className="text-sm text-signal underline underline-offset-2">Back to the workspace</Link>
+      <p className="text-sm text-fg-2" aria-live="polite">{message[state] ?? message.unconfirmed}</p>
+      <Link href="/workspace" className="text-sm text-accent underline underline-offset-2">Back to the workspace</Link>
     </div>
   );
 }

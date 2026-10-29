@@ -59,11 +59,11 @@ export function AuthForm({ mode, next }: { mode: 'signin' | 'signup'; next: stri
           {busy ? 'One moment…' : mode === 'signup' ? 'Create account' : 'Sign in'}
         </button>
         {mode === 'signup' ? (
-          <Link href={`/signin?next=${encodeURIComponent(next)}`} className="text-sm text-ink-300 underline underline-offset-2 hover:text-ink-100">
+          <Link href={`/signin?next=${encodeURIComponent(next)}`} className="text-sm text-fg-2 underline underline-offset-2 hover:text-fg">
             I already have an account
           </Link>
         ) : (
-          <Link href={`/signup?next=${encodeURIComponent(next)}`} className="text-sm text-ink-300 underline underline-offset-2 hover:text-ink-100">
+          <Link href={`/signup?next=${encodeURIComponent(next)}`} className="text-sm text-fg-2 underline underline-offset-2 hover:text-fg">
             Create an account
           </Link>
         )}

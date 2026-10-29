@@ -49,6 +49,8 @@ jobs:
           cache: npm
           cache-dependency-path: package-lock.json
       - run: npm ci
+      # The design system is vendored into both apps; a hand edit to a copy fails here.
+      - run: node scripts/sync-design.mjs --check
       # Contract fixtures, teams-core (engine, calibration client), ui, then the app's own tests.
       - run: npm run test:teams
       - run: npm run typecheck:teams

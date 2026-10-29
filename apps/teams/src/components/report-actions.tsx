@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 
 const FOCUS =
-  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal';
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent';
 
 /**
  * The report's one next action: take the link to the meeting.
@@ -35,11 +35,11 @@ export function CopyReportLink() {
       <button
         type="button"
         onClick={copy}
-        className={'min-h-10 rounded-lg bg-signal px-4 py-2 text-sm font-medium text-ink-950 transition hover:bg-signal-glow ' + FOCUS}
+        className={'min-h-10 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent transition hover:bg-accent/90 ' + FOCUS}
       >
         {state === 'copied' ? 'Link copied' : 'Copy link to this report'}
       </button>
-      <p className="mt-2 text-xs leading-relaxed text-ink-400" aria-live="polite">
+      <p className="mt-2 text-xs leading-relaxed text-fg-muted" aria-live="polite">
         {state === 'manual'
           ? 'Your browser blocked the clipboard. The link is selected below: copy it by hand.'
           : 'The link is the document — nothing is stored, so bring this URL to the meeting.'}
@@ -52,7 +52,7 @@ export function CopyReportLink() {
             readOnly
             value={href}
             onFocus={(e) => e.currentTarget.select()}
-            className={'w-full rounded-md border border-ink-700 bg-ink-900 px-3 py-2 font-mono text-2xs text-ink-200 ' + FOCUS}
+            className={'w-full rounded-md border border-line bg-surface px-3 py-2 font-mono text-2xs text-fg-2 ' + FOCUS}
           />
         </label>
       )}
@@ -65,7 +65,7 @@ export function PrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className={'min-h-10 rounded-lg border border-ink-600 px-4 py-2 text-sm text-ink-100 transition hover:border-ink-500 hover:bg-ink-800 ' + FOCUS}
+      className={'min-h-10 rounded-lg border border-line-strong px-4 py-2 text-sm text-fg transition hover:border-line-strong hover:bg-sunken ' + FOCUS}
     >
       Print or save as PDF
     </button>

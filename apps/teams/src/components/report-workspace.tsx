@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-const FOCUS = 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal';
-const BTN = 'inline-flex min-h-10 items-center rounded-lg border border-ink-600 px-4 py-2 text-sm text-ink-100 transition hover:border-ink-500 hover:bg-ink-800 disabled:opacity-60 ' + FOCUS;
+import { SECONDARY as BTN } from './workspace/ui';
 
 /**
  * Save this report to a workspace (or as a new version of a saved one), and
@@ -55,9 +54,9 @@ export function ReportWorkspaceActions({
           </>
         ) : null}
       </div>
-      <p className="text-xs text-ink-400" aria-live="polite">
+      <p className="text-body-sm text-fg-muted" aria-live="polite">
         {state.kind === 'saved' && state.href ? (
-          <>{state.text} <Link href={state.href} className="text-signal underline underline-offset-2">Open it in the workspace</Link></>
+          <>{state.text} <Link href={state.href} className="text-accent underline underline-offset-2">Open it in the workspace</Link></>
         ) : state.kind === 'error' ? (
           <span className="text-danger">{state.text}</span>
         ) : anonymousBlueprint ? (

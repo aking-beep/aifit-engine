@@ -1,12 +1,9 @@
 @import "tailwindcss";
 @import "../design/tokens.css";
 
-/* Components shared with the rest of the repo still carry the pre-2.0 palette. */
-@source "../../../../packages/ui/src";
-
 /*
- * Pre-2.0 palette (@aifit/ui tailwind preset), kept as compatibility tokens so
- * components not yet moved to the design system keep rendering. The ink scale
+ * Pre-2.0 palette names, kept as theme-aware aliases of the design tokens so
+ * any class still written with them renders in the right theme. The ink scale
  * follows the theme: in light mode it is inverted, so ink-950 is the page and
  * ink-100 the strongest text, exactly as in dark mode.
  */

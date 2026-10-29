@@ -11,10 +11,10 @@ export function InviteAccept({ signedIn }: { signedIn: boolean }) {
   const [error, setError] = useState<string | null>(null);
   if (!signedIn) {
     return (
-      <p className="text-sm text-ink-300">
+      <p className="text-sm text-fg-2">
         Sign in or create an account with the email address the invite was sent to, then open the invite link again.{' '}
-        <Link href="/signin?next=/workspace" className="text-signal underline underline-offset-2">Sign in</Link> ·{' '}
-        <Link href="/signup?next=/workspace" className="text-signal underline underline-offset-2">Create an account</Link>
+        <Link href="/signin?next=/workspace" className="text-accent underline underline-offset-2">Sign in</Link> ·{' '}
+        <Link href="/signup?next=/workspace" className="text-accent underline underline-offset-2">Create an account</Link>
       </p>
     );
   }

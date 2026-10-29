@@ -14,6 +14,7 @@ const fakeStripe = {
   BILLING_MODE: 'test',
   STRIPE_SECRET_KEY: 'sk_test_e2e_not_a_real_key',
   STRIPE_WEBHOOK_SECRET: 'whsec_e2e_local_signing_only',
+  STRIPE_PRICE_ASSESSMENT: 'price_e2e_assessment',
   STRIPE_PRICE_BLUEPRINT: 'price_e2e_blueprint',
   STRIPE_PRICE_TEAM_MONTHLY: 'price_e2e_team',
 };
@@ -24,9 +25,9 @@ export default defineConfig({
   workers: 1,
   use: { baseURL: 'http://127.0.0.1:3011', trace: 'retain-on-failure' },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /(billing|agents)\.spec/ },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /(billing[a-z-]*|agents)\.spec/ },
     { name: 'agents', use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:3013' }, testMatch: /agents\.spec/ },
-    { name: 'billing', use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:3012' }, testMatch: /billing\.spec/ },
+    { name: 'billing', use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:3012' }, testMatch: /billing[a-z-]*\.spec/ },
   ],
   webServer: [
     {

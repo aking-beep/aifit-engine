@@ -13,7 +13,7 @@ export default async function Billing({ searchParams }: { searchParams: Promise<
   const { status, session_id } = await searchParams;
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-semibold text-ink-100">Billing</h1>
+      <h1 className="text-3xl font-semibold text-fg">Billing</h1>
       <BillingStatus status={status ?? null} sessionId={typeof session_id === 'string' && /^cs_[A-Za-z0-9_]+$/.test(session_id) ? session_id : null} />
     </div>
   );

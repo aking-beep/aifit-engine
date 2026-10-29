@@ -36,8 +36,9 @@ export function EvalResults({ checks }: { checks: EvalCheck[] }) {
           const colour = c.evidence === 'verified' ? s.cls : STATUS[c.status === 'pass' || c.status === 'fail' ? 'pending' : c.status].cls
           return (
             <li key={c.id} className="grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1 border-b border-line px-4 py-3 last:border-0 md:grid-cols-[auto_1.4fr_1fr_1fr_auto] md:items-center">
-              <span className={cn('flex h-6 w-6 items-center justify-center rounded-full border', colour)} aria-label={s.label}>
-                {s.icon}
+              <span className={cn('flex h-6 w-6 items-center justify-center rounded-full border', colour)}>
+                <span aria-hidden>{s.icon}</span>
+                <span className="sr-only">{s.label}</span>
               </span>
               <div className="min-w-0">
                 <p className="text-label-md text-fg">{c.name}</p>

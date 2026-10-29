@@ -15,10 +15,10 @@ export default async function SignUp({ searchParams }: { searchParams: Promise<{
   if (await currentViewer()) redirect(next);
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-semibold text-ink-100">Create a team workspace</h1>
-      <p className="max-w-2xl text-sm leading-relaxed text-ink-300">
+      <h1 className="text-3xl font-semibold text-fg">Create a team workspace</h1>
+      <p className="max-w-2xl text-sm leading-relaxed text-fg-2">
         Your workspace keeps saved assessments, their versions and your team. Only people you invite can see it. See{' '}
-        <Link href="/privacy" className="text-signal underline underline-offset-2">what is stored</Link>.
+        <Link href="/privacy" className="text-accent underline underline-offset-2">what is stored</Link>.
       </p>
       <AuthForm mode="signup" next={next} />
     </div>

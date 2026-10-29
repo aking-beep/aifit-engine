@@ -121,9 +121,9 @@ export function InputOutputStep({ s, set }: StepProps) {
               placeholder="Paste the prompt you would actually send, including any system instructions you already know about."
             />
             {est > 0 && (
-              <p className="mt-2 font-mono text-2xs text-ink-300">
+              <p className="mt-2 font-mono text-2xs text-fg-2">
                 ≈ {est.toLocaleString()} input tokens
-                <span className="ml-2 text-ink-400">heuristic · 4 characters ≈ 1 token</span>
+                <span className="ml-2 text-fg-muted">heuristic · 4 characters ≈ 1 token</span>
               </p>
             )}
           </>
@@ -208,8 +208,8 @@ export function DataStep({ s, set }: StepProps) {
         toggle={(id) => set('dataClasses', toggleIn(s.dataClasses, id))}
       />
       <div>
-        <p className="text-xs font-medium text-ink-200">Actions it would take in other systems</p>
-        <p className="mt-1 max-w-2xl text-2xs leading-relaxed text-ink-400">
+        <p className="text-xs font-medium text-fg-2">Actions it would take in other systems</p>
+        <p className="mt-1 max-w-2xl text-2xs leading-relaxed text-fg-muted">
           Leave empty if it only produces text. Adding a write action is the single biggest change you can make to this report.
         </p>
         <div className="mt-2.5">
@@ -281,7 +281,7 @@ export function TodayStep({ s, set }: StepProps) {
       title="What does this cost you today?"
       help={
         <>
-          <strong className="font-medium text-ink-200">Optional — leave blank if you don’t know.</strong>{' '}
+          <strong className="font-medium text-fg-2">Optional — leave blank if you don’t know.</strong>{' '}
           The report will then say the ROI is unknowable rather than invent a denominator — which is the honest
           outcome, and more useful than a confident fiction.
         </>
@@ -332,9 +332,9 @@ export function TeamStep({ s, set }: StepProps) {
         label="We can respond to a production problem outside business hours"
         help="If not, autonomous patterns are off the table regardless of what the data says."
       />
-      <div className="border-t border-ink-800 pt-5">
-        <p className="text-sm font-medium text-ink-100">Budget and timeline</p>
-        <p className="mt-1 text-xs leading-relaxed text-ink-400">
+      <div className="border-t border-line pt-5">
+        <p className="text-sm font-medium text-fg">Budget and timeline</p>
+        <p className="mt-1 text-xs leading-relaxed text-fg-muted">
           Optional. These feed the build-versus-buy-versus-automate comparison; blank means the report says it does not know.
         </p>
       </div>

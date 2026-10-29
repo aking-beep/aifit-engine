@@ -6,7 +6,7 @@ import {
   PATTERN_LABEL,
   type Workload,
 } from '@aifit/teams-core';
-import { Panel, Badge, BasisTag, Callout, DimensionList } from '@aifit/ui';
+import { Panel, Badge, BasisTag, Callout, DimensionList } from '@/components/kit';
 import { ReportFooter, intakeHref } from './report-footer';
 
 /**
@@ -30,16 +30,16 @@ export function VerdictOnlyReport({ workload, encoded }: { workload: Workload; e
     <div className="space-y-10">
       <section>
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-xs text-ink-400">{workload.name}</p>
+          <p className="text-xs text-fg-muted">{workload.name}</p>
           <Badge tone="neutral">verdict from the shape of the work</Badge>
         </div>
         <h1 className="mt-3 text-4xl font-semibold leading-tight text-danger">Do not use a model for this</h1>
-        <p className="mt-4 max-w-3xl text-base leading-relaxed text-ink-300">
+        <p className="mt-4 max-w-3xl text-base leading-relaxed text-fg-2">
           You described {describeShapes(workload.task)}. That has a computable right answer. A deterministic
           implementation is correct by construction, testable, and costs approximately nothing to run. A
           language model would be probabilistic about something that does not need to be.
         </p>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-400">
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-fg-muted">
           Nothing later in the assessment can change this verdict, which is why the report stops here.
         </p>
       </section>
@@ -57,26 +57,26 @@ export function VerdictOnlyReport({ workload, encoded }: { workload: Workload; e
 
       <Panel title="What to build instead" subtitle="And what was considered and rejected.">
         <Badge tone="signal">{arch.label}</Badge>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-ink-300">{arch.summary}</p>
+        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-fg-2">{arch.summary}</p>
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div>
-            <h2 className="text-xs font-medium uppercase tracking-wider text-ink-400">Components</h2>
+            <h2 className="text-xs font-medium uppercase tracking-wider text-fg-muted">Components</h2>
             <ul className="mt-2.5 space-y-1.5">
               {arch.components.map((c) => (
-                <li key={c} className="flex gap-2 text-xs leading-relaxed text-ink-300">
-                  <span className="text-ink-500" aria-hidden>&middot;</span>
+                <li key={c} className="flex gap-2 text-xs leading-relaxed text-fg-2">
+                  <span className="text-fg-muted" aria-hidden>&middot;</span>
                   {c}
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <h2 className="text-xs font-medium uppercase tracking-wider text-ink-400">Rejected, and why</h2>
+            <h2 className="text-xs font-medium uppercase tracking-wider text-fg-muted">Rejected, and why</h2>
             <ul className="mt-2.5 space-y-3">
               {arch.rejected.map((r) => (
                 <li key={r.pattern}>
-                  <p className="font-mono text-2xs text-ink-400">{PATTERN_LABEL[r.pattern] ?? r.pattern}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-ink-400">{r.why}</p>
+                  <p className="font-mono text-2xs text-fg-muted">{PATTERN_LABEL[r.pattern] ?? r.pattern}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-fg-muted">{r.why}</p>
                 </li>
               ))}
             </ul>
@@ -91,17 +91,17 @@ export function VerdictOnlyReport({ workload, encoded }: { workload: Workload; e
       >
         <ol className="space-y-5">
           {phases.map((p) => (
-            <li key={p.name} className="border-l border-ink-700 pl-6">
+            <li key={p.name} className="border-l border-line pl-6">
               <div className="flex flex-wrap items-baseline gap-3">
-                <h3 className="text-sm font-medium text-ink-100">{p.name}</h3>
-                <span className="font-mono text-2xs text-ink-400">
+                <h3 className="text-sm font-medium text-fg">{p.name}</h3>
+                <span className="font-mono text-2xs text-fg-muted">
                   about {p.durationWeeks} week{p.durationWeeks === 1 ? '' : 's'}
                 </span>
               </div>
-              <p className="mt-1.5 max-w-3xl text-xs leading-relaxed text-ink-300">{p.goal}</p>
+              <p className="mt-1.5 max-w-3xl text-xs leading-relaxed text-fg-2">{p.goal}</p>
               <ul className="mt-2.5 space-y-1">
                 {p.exitCriteria.map((e) => (
-                  <li key={e} className="text-xs leading-relaxed text-ink-400">&#10003; {e}</li>
+                  <li key={e} className="text-xs leading-relaxed text-fg-muted">&#10003; {e}</li>
                 ))}
               </ul>
               <p className="mt-2 text-xs leading-relaxed text-danger/90">
@@ -115,15 +115,15 @@ export function VerdictOnlyReport({ workload, encoded }: { workload: Workload; e
       <Panel title="Not asked, because it would not change this verdict">
         <ul className="space-y-2.5">
           {NOT_ASKED.map(([what, why]) => (
-            <li key={what} className="text-sm leading-relaxed text-ink-300">
-              <span className="text-ink-100">{what}.</span> <span className="text-ink-400">{why}</span>
+            <li key={what} className="text-sm leading-relaxed text-fg-2">
+              <span className="text-fg">{what}.</span> <span className="text-fg-muted">{why}</span>
             </li>
           ))}
         </ul>
-        <p className="mt-5 max-w-3xl text-xs leading-relaxed text-ink-400">
+        <p className="mt-5 max-w-3xl text-xs leading-relaxed text-fg-muted">
           If you want the build sized anyway — what the deterministic version costs to build, the controls it
           needs, how to test it — the full assessment asks for these and produces the complete document.{' '}
-          <Link href={continueHref} className="text-signal underline underline-offset-2">
+          <Link href={continueHref} className="text-accent underline underline-offset-2">
             Continue the full assessment
           </Link>
           .

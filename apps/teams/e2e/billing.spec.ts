@@ -18,7 +18,7 @@ test('test-mode billing: locked until a signed webhook pays, once, for that asse
   await signUp(page, uniqueEmail('payer'), 'Pat', 'Paying Co');
   await expect(page.getByText(/Stripe test mode/)).toBeVisible();
   await saveTriage(page);
-  await expect(page.getByText(/Buy this blueprint or start a team plan/)).toBeVisible();
+  await expect(page.getByText(/Buy this blueprint or start a workspace plan/)).toBeVisible();
   await expect(page.getByRole('button', { name: 'Buy this blueprint' })).toBeVisible();
   const id = page.url().split('/').pop()!;
   expect((await pageApi(page, `/api/assessments/${id}/blueprint`)).status).toBe(402);

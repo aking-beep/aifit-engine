@@ -1,122 +1,109 @@
 import Link from 'next/link';
+import { assess, FIXTURES } from '@aifit/teams-core';
+import { OUTCOME_LABEL } from '@aifit/decision-core';
+import { EvidenceLabel, Panel, VERDICT_META, VerdictChip, verdictFromOutcome, type Verdict } from '@/design';
+import { PublicPlanCards } from '@/components/plan-cards';
+import { decisionFor } from '@/server/assessments';
+import { encodeWorkload } from '@/lib/encode';
+import { currentViewer } from '@/server/platform';
+import { compactUsd } from '@/components/assessment/bits';
 
-const LOOP = [
-  {
-    n: '1',
-    title: 'Assess',
-    body: 'Eight short sections about one repeating job. A verdict after the first; after the last, architecture, model, controls, eval plan, cost and roadmap — every figure labelled.',
-  },
-  {
-    n: '2',
-    title: 'Measure',
-    body: 'From the report, send one synthetic sample into Control. It does not sit in production traffic. Cost stays heuristic until thirty real traces land.',
-  },
-  {
-    n: '3',
-    title: 'Control',
-    body: 'Production traces and protocol evidence. Spend is per outcome. Drift is the estimate versus the bill. A missing approval is an alert, not a paragraph.',
-  },
-] as const;
+export const dynamic = 'force-dynamic';
 
 const REPORT = [
-  'Verdict — including not-ai, with the reason written down',
-  'The numbers — cost per successful outcome, labelled',
-  'Architecture — the pattern, and the rejected ones',
-  'Model — cheapest adequate, with priced alternatives',
-  'Security controls — each with how Control verifies it',
-  'Evaluation plan — golden-set size and a launch threshold',
-  'Roadmap — every phase has a kill criterion',
-  'What this report does not know — named, not buried',
+  ['Verdict', 'Including “don’t use AI”, with the reason written down'],
+  ['Build vs buy vs automate', 'Five options scored by published rules'],
+  ['Cost and ROI', 'Cost per successful outcome, every figure labelled with its basis'],
+  ['Architecture and models', 'The pattern, the rejected ones, a priced shortlist across providers'],
+  ['Governance, security, risks', 'Controls with how each is verified, exportable to ARC Control'],
+  ['Evaluation and roadmap', 'Acceptance criteria and phases that each carry a kill criterion'],
 ] as const;
 
-export default function Landing() {
+const ORDER: Verdict[] = ['no-ai', 'software', 'automation', 'buy', 'build'];
+
+export default async function Landing() {
+  const viewer = await currentViewer().catch(() => null);
+  // The bundled example workloads, assessed live by the same engines as yours.
+  const examples = FIXTURES.map((w) => {
+    const a = assess(w, { depth: 'business' });
+    const d = decisionFor(a);
+    return { w, a, d, href: `/report?w=${encodeURIComponent(encodeWorkload(w))}` };
+  });
   return (
-    <div className="space-y-12">
+    <div className="space-y-20">
       <section className="max-w-3xl">
-        <p className="font-mono text-2xs uppercase tracking-widest text-signal">AI Fit Teams</p>
-        <h1 className="mt-3 text-4xl font-semibold leading-tight text-ink-100">
-          Should your team build this, and what happens when it runs?
-        </h1>
-        <p className="mt-5 text-base leading-relaxed text-ink-300">
-          Describe one repeating job — not a strategy, a job. You get a verdict after the first step, and
-          after eight short sections a planning document a meeting can argue with. It is built to be able to
-          say no. When a workload should be a query and a scheduled job, the report says so instead of
-          proposing an agent.
+        <p className="text-label-md text-accent">AI Fit Teams</p>
+        <h1 className="mt-3 text-display-xl text-fg">Know what to automate, what to build, and what to avoid.</h1>
+        <p className="mt-5 text-body-lg text-fg-2">
+          Describe one repeating job. AI Fit compares five answers (leave it, ordinary software, rules-based automation, buy an AI tool,
+          build one) with fixed, published rules, and is built to say no. Only one of the five is “build custom AI”.
         </p>
-        <div className="mt-7 flex flex-wrap items-center gap-4">
-          <Link
-            href="/assess"
-            className="inline-flex rounded-lg bg-signal px-5 py-2.5 text-sm font-medium text-ink-950 transition hover:bg-signal-glow"
-          >
-            Assess a workload
-          </Link>
-          <Link href="/methodology" className="inline-flex min-h-10 items-center text-sm text-ink-300 transition hover:text-ink-100">
-            How the scoring works &rarr;
-          </Link>
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <Link href="/assess" className="inline-flex h-11 items-center rounded-sm bg-accent px-5 text-body-md font-medium text-on-accent hover:bg-accent/90">Assess a workload</Link>
+          <Link href={viewer ? '/workspace' : '/signup'} className="inline-flex h-11 items-center rounded-sm border border-line-strong px-5 text-body-md text-fg hover:bg-sunken">{viewer ? 'Open your workspace' : 'Create a workspace'}</Link>
+          <Link href="/methodology" className="text-body-md text-fg-2 underline underline-offset-4 hover:text-fg">How the scoring works</Link>
         </div>
+        <p className="mt-4 text-body-sm text-fg-muted">The assessment is free and needs no account. Nothing you enter is stored unless you save it.</p>
       </section>
 
-      <section aria-labelledby="the-loop">
-        <h2 id="the-loop" className="text-sm font-semibold text-ink-100">
-          Assess → Measure → Control
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm text-ink-400">
-          The estimator does not get more confident. It gets more informed, and it tells you which one just
-          happened. AI Fit Teams is this product. Control is a separate product — the measurement. AI Fit,
-          the personal quiz, is a third product and is not linked from here.
-        </p>
-        <ol className="mt-5 grid gap-4 md:grid-cols-3">
-          {LOOP.map((step) => (
-            <li key={step.n} className="rounded-xl border border-ink-800 bg-ink-850 p-5">
-              <p className="font-mono text-2xs uppercase tracking-widest text-ink-400">Step {step.n}</p>
-              <h3 className="mt-1 text-sm font-medium text-ink-100">{step.title}</h3>
-              <p className="mt-2 text-xs leading-relaxed text-ink-400">{step.body}</p>
-            </li>
-          ))}
-        </ol>
+      <section aria-labelledby="examples">
+        <h2 id="examples" className="text-headline-md text-fg">Three example workloads, assessed live</h2>
+        <p className="mt-1 text-body-md text-fg-muted">The documented examples that ship with the engine, run through it now. Open one to see every section.</p>
+        <Panel className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[640px] text-body-sm">
+            <caption className="sr-only">Example workloads and their recommendations</caption>
+            <thead>
+              <tr className="border-b border-line text-left text-label-sm text-fg-muted">
+                <th scope="col" className="px-4 py-2 font-medium">Workload</th>
+                <th scope="col" className="px-3 py-2 font-medium">Recommendation</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Run cost / mo</th>
+                <th scope="col" className="px-4 py-2 font-medium">Basis</th>
+              </tr>
+            </thead>
+            <tbody>
+              {examples.map(({ w, a, d, href }) => (
+                <tr key={w.id} className="border-b border-line last:border-0">
+                  <td className="px-4 py-2"><Link href={href} className="text-fg underline-offset-2 hover:underline">{w.name}</Link><span className="ml-2 text-label-sm text-fg-muted">Example</span></td>
+                  <td className="px-3 py-2"><span className="inline-flex items-center gap-2"><VerdictChip verdict={verdictFromOutcome(d.outcome)} />{OUTCOME_LABEL[d.outcome]}</span></td>
+                  <td className="px-3 py-2 text-right font-mono tabular text-fg">{a.model ? compactUsd(a.cost.perMonth.value) : '≈ $0'}</td>
+                  <td className="px-4 py-2"><EvidenceLabel kind={a.trust.calibrated ? 'verified' : 'estimated'} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Panel>
       </section>
 
-      <section>
-        <h2 className="text-sm font-semibold text-ink-100">What you walk out with</h2>
-        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-          {REPORT.map((item) => (
-            <li
-              key={item}
-              className="rounded-lg border border-ink-800 bg-ink-850 px-4 py-3 text-xs leading-relaxed text-ink-300"
-            >
-              {item}
+      <section aria-labelledby="verdicts-heading" id="verdicts">
+        <h2 id="verdicts-heading" className="text-headline-md text-fg">Five possible answers</h2>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {ORDER.map((v) => (
+            <li key={v} className="rounded-md border border-line bg-surface p-4">
+              <VerdictChip verdict={v} />
+              <p className="mt-2 text-body-sm text-fg-2">{VERDICT_META[v].sentence}</p>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card title="Sized for a small team">
-          The intake asks how many engineers you have, whether anyone has shipped ML, and whether you can
-          operate overnight. Those answers change the recommendation. A three-person team gets told to build
-          the workflow, not the agent.
-        </Card>
-        <Card title="Cost per successful outcome">
-          Not cost per call. Retries, failed attempts and agent loops are priced in, because those are what
-          actually arrive on the invoice and they are what every vendor calculator leaves out.
-        </Card>
-        <Card title="Every number is labelled">
-          <span className="font-mono text-warn">heuristic</span>,{' '}
-          <span className="font-mono text-info">benchmark</span>,{' '}
-          <span className="font-mono text-signal">calibrated</span> or{' '}
-          <span className="font-mono text-good">measured</span>. A guess and a measurement never look the
-          same on screen.
-        </Card>
+      <section aria-labelledby="deliverables-heading" id="deliverables">
+        <h2 id="deliverables-heading" className="text-headline-md text-fg">What you can defend in the meeting</h2>
+        <ul className="mt-4 grid gap-3 md:grid-cols-2">
+          {REPORT.map(([t, d]) => (
+            <li key={t} className="rounded-md border border-line bg-surface p-4">
+              <p className="text-title-md text-fg">{t}</p>
+              <p className="mt-1 text-body-sm text-fg-2">{d}</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-4 text-body-sm text-fg-muted">Plus a technical blueprint (Markdown and JSON) and a governance export for ARC Control, marked recommended-not-enforced.</p>
       </section>
-    </div>
-  );
-}
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-ink-800 bg-ink-850 p-5">
-      <h3 className="text-sm font-medium text-ink-100">{title}</h3>
-      <p className="mt-2 text-xs leading-relaxed text-ink-400">{children}</p>
+      <section aria-labelledby="pricing-heading" id="pricing">
+        <h2 id="pricing-heading" className="text-headline-md text-fg">Pricing</h2>
+        <p className="mt-1 text-body-md text-fg-muted">Prices shown from plan configuration. Payment is on Stripe’s hosted checkout.</p>
+        <div className="mt-4"><PublicPlanCards signedIn={Boolean(viewer)} /></div>
+      </section>
     </div>
   );
 }

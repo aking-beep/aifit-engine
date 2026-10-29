@@ -20,17 +20,17 @@ export function Section({ title, help, children }: { title: string; help?: React
   return (
     <div>
       {/* Focus lands here when the step changes, so a screen reader hears where it is. */}
-      <h1 id={HEADING_ID} tabIndex={-1} className="text-2xl font-semibold leading-snug text-ink-100">
+      <h1 id={HEADING_ID} tabIndex={-1} className="text-2xl font-semibold leading-snug text-fg">
         {title}
       </h1>
-      {help && <p className="mt-2 max-w-3xl text-sm leading-relaxed text-ink-400">{help}</p>}
+      {help && <p className="mt-2 max-w-3xl text-sm leading-relaxed text-fg-muted">{help}</p>}
       <div className="mt-7 space-y-6">{children}</div>
     </div>
   );
 }
 
-const LABEL = 'block text-xs font-medium text-ink-200';
-const HINT = 'mt-1 max-w-2xl text-2xs leading-relaxed text-ink-400';
+const LABEL = 'block text-xs font-medium text-fg-2';
+const HINT = 'mt-1 max-w-2xl text-2xs leading-relaxed text-fg-muted';
 
 /** A labelled single control. `children` receives the id and describedby to wire up. */
 export function Field({
@@ -47,7 +47,7 @@ export function Field({
     <div>
       <label htmlFor={id} className={LABEL}>
         {label}
-        {optional && <span className="ml-2 font-normal text-ink-400">optional</span>}
+        {optional && <span className="ml-2 font-normal text-fg-muted">optional</span>}
       </label>
       {hint && <p id={hintId} className={HINT}>{hint}</p>}
       <div className="mt-2.5">{children({ id, describedBy: hint ? hintId : undefined })}</div>
@@ -70,7 +70,7 @@ export function Group({
 }
 
 const INPUT =
-  'w-full rounded-lg border border-ink-700 bg-ink-850 px-4 py-2.5 text-sm text-ink-100 placeholder:text-ink-400 focus:border-signal';
+  'w-full rounded-lg border border-line bg-raised px-4 py-2.5 text-sm text-fg placeholder:text-fg-muted focus:border-accent';
 
 export function TextInput({
   id, describedBy, value, onChange, placeholder, autoFocus, mono,
@@ -142,13 +142,13 @@ export function NumInput({
         }}
         className={INPUT + ' font-mono'}
       />
-      {suffix && <span className="shrink-0 font-mono text-2xs text-ink-400">{suffix}</span>}
+      {suffix && <span className="shrink-0 font-mono text-2xs text-fg-muted">{suffix}</span>}
     </div>
   );
 }
 
-const CHOICE_ON = 'border-signal bg-signal/10 text-ink-100';
-const CHOICE_OFF = 'border-ink-700 bg-ink-850 text-ink-300 hover:border-ink-600';
+const CHOICE_ON = 'border-accent bg-accent/10 text-fg';
+const CHOICE_OFF = 'border-line bg-raised text-fg-2 hover:border-line-strong';
 
 export function Chip({
   on, onClick, label, help,
@@ -165,14 +165,14 @@ export function Chip({
           aria-hidden
           className={
             'flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-sm border text-[0.6rem] ' +
-            (on ? 'border-signal bg-signal text-ink-950' : 'border-ink-600')
+            (on ? 'border-accent bg-accent text-on-accent' : 'border-line-strong')
           }
         >
           {on ? '✓' : ''}
         </span>
         {label}
       </span>
-      {help && <span className="mt-0.5 block pl-5 text-2xs leading-relaxed text-ink-400">{help}</span>}
+      {help && <span className="mt-0.5 block pl-5 text-2xs leading-relaxed text-fg-muted">{help}</span>}
     </button>
   );
 }
@@ -198,16 +198,16 @@ export function ChipGroups<T extends string>({
         {groups.map((g) => (
           <fieldset
             key={g.label}
-            className={g.fork ? 'min-w-0 rounded-xl border border-dashed border-ink-600 p-3' : 'min-w-0'}
+            className={g.fork ? 'min-w-0 rounded-xl border border-dashed border-line-strong p-3' : 'min-w-0'}
           >
             <legend
               className={
-                'font-mono text-2xs uppercase tracking-widest ' + (g.fork ? 'px-1 text-ink-200' : 'text-ink-400')
+                'font-mono text-2xs uppercase tracking-widest ' + (g.fork ? 'px-1 text-fg-2' : 'text-fg-muted')
               }
             >
               {g.label}
             </legend>
-            {g.note && <p className="mt-1 text-2xs leading-relaxed text-ink-300">{g.note}</p>}
+            {g.note && <p className="mt-1 text-2xs leading-relaxed text-fg-2">{g.note}</p>}
             <div className={'mt-2 grid gap-2 ' + (columns === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2')}>
               {g.options.map((o) => (
                 <Chip
@@ -280,12 +280,12 @@ export function Choices<T extends string>({
                 aria-hidden
                 className={
                   'mt-1 h-3.5 w-3.5 shrink-0 rounded-full border ' +
-                  (on ? 'border-signal bg-signal shadow-[inset_0_0_0_2px_#12151c]' : 'border-ink-600')
+                  (on ? 'border-accent bg-accent shadow-[inset_0_0_0_2px_#12151c]' : 'border-line-strong')
                 }
               />
               <span>
                 <span className="block text-sm">{o.label}</span>
-                {o.help && <span className="mt-0.5 block text-2xs leading-relaxed text-ink-400">{o.help}</span>}
+                {o.help && <span className="mt-0.5 block text-2xs leading-relaxed text-fg-muted">{o.help}</span>}
               </span>
             </button>
           );
@@ -305,21 +305,21 @@ export function Toggle({
       onClick={() => set(!on)}
       className={
         'flex min-h-10 w-full items-start gap-3 rounded-lg border px-4 py-3 text-left transition ' +
-        (on ? 'border-signal bg-signal/10' : 'border-ink-700 bg-ink-850 hover:border-ink-600')
+        (on ? 'border-accent bg-accent/10' : 'border-line bg-raised hover:border-line-strong')
       }
     >
       <span
         aria-hidden
         className={
           'mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border text-2xs ' +
-          (on ? 'border-signal bg-signal text-ink-950' : 'border-ink-600')
+          (on ? 'border-accent bg-accent text-on-accent' : 'border-line-strong')
         }
       >
         {on ? '✓' : ''}
       </span>
       <span>
-        <span className={'block text-sm ' + (on ? 'text-ink-100' : 'text-ink-300')}>{label}</span>
-        {help && <span className="mt-0.5 block text-2xs leading-relaxed text-ink-400">{help}</span>}
+        <span className={'block text-sm ' + (on ? 'text-fg' : 'text-fg-2')}>{label}</span>
+        {help && <span className="mt-0.5 block text-2xs leading-relaxed text-fg-muted">{help}</span>}
       </span>
     </button>
   );
@@ -338,11 +338,11 @@ export function ActionEditor({
   return (
     <div className="space-y-3">
       {actions.map((a, i) => (
-        <fieldset key={i} className="min-w-0 rounded-lg border border-ink-700 bg-ink-850 p-4">
+        <fieldset key={i} className="min-w-0 rounded-lg border border-line bg-raised p-4">
           <legend className="sr-only">Action {i + 1}</legend>
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor={`${base}-${i}-name`} className="block text-2xs text-ink-400">Action</label>
+              <label htmlFor={`${base}-${i}-name`} className="block text-2xs text-fg-muted">Action</label>
               <input
                 id={`${base}-${i}-name`}
                 value={a.name}
@@ -352,7 +352,7 @@ export function ActionEditor({
               />
             </div>
             <div>
-              <label htmlFor={`${base}-${i}-system`} className="block text-2xs text-ink-400">In system</label>
+              <label htmlFor={`${base}-${i}-system`} className="block text-2xs text-fg-muted">In system</label>
               <input
                 id={`${base}-${i}-system`}
                 value={a.system}
@@ -369,7 +369,7 @@ export function ActionEditor({
               onClick={() => update(i, { write: !a.write })}
               className={
                 'min-h-10 rounded-md border px-3 text-2xs transition ' +
-                (a.write ? 'border-warn bg-warn/10 text-warn' : 'border-ink-600 text-ink-300')
+                (a.write ? 'border-warn bg-warn/10 text-warn' : 'border-line-strong text-fg-2')
               }
             >
               {a.write ? 'writes' : 'read only'}
@@ -387,8 +387,8 @@ export function ActionEditor({
                     (a.blastRadius === b
                       ? b === 'irreversible'
                         ? 'border-danger bg-danger/10 text-danger'
-                        : 'border-signal bg-signal/10 text-ink-100'
-                      : 'border-ink-700 text-ink-400 hover:border-ink-600')
+                        : 'border-accent bg-accent/10 text-fg'
+                      : 'border-line text-fg-muted hover:border-line-strong')
                   }
                 >
                   {b}
@@ -398,7 +398,7 @@ export function ActionEditor({
             <button
               type="button"
               onClick={() => setActions(actions.filter((_, n) => n !== i))}
-              className="ml-auto min-h-10 px-2 text-2xs text-ink-400 transition hover:text-danger"
+              className="ml-auto min-h-10 px-2 text-2xs text-fg-muted transition hover:text-danger"
             >
               remove<span className="sr-only"> action {i + 1}</span>
             </button>
@@ -410,7 +410,7 @@ export function ActionEditor({
         onClick={() =>
           setActions([...actions, { name: '', system: '', write: false, blastRadius: 'reversible' }])
         }
-        className="min-h-10 rounded-lg border border-dashed border-ink-700 px-4 py-2.5 text-xs text-ink-300 transition hover:border-ink-600 hover:text-ink-200"
+        className="min-h-10 rounded-lg border border-dashed border-line px-4 py-2.5 text-xs text-fg-2 transition hover:border-line-strong hover:text-fg-2"
       >
         + Add an action
       </button>
