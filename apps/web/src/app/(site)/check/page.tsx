@@ -11,6 +11,8 @@ import { SaveToAccount } from "@/components/app/save-to-account";
 import { ExplainInPlainLanguage, SuggestAnswers, useAgentsEnabled } from "@/components/agent-assist";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArcCta } from "@/design";
+import { ARC_LINKS } from "@/lib/arc";
 
 const WORK = [
   { id: "generate", label: "Writing or drafting" },
@@ -171,6 +173,7 @@ export default function CheckPage() {
       {result ? (
         <div ref={resultRef} tabIndex={-1} className="space-y-6 outline-none">
           <DecisionView data={result} goal={goal} />
+          <ArcCta links={ARC_LINKS} app="ai-fit" placement="check-result" title="Is this a business decision?" body="ARC Transformation Group can check this answer against your systems and costs, and help with the build, the automation or the decision not to." />
           {fresh?.intake ? (
             <SaveToAccount payload={{ kind: "check", intake: fresh.intake, label: goal.trim().slice(0, 80) || "Task check" }} />
           ) : null}

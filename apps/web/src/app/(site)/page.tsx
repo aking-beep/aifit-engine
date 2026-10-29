@@ -9,6 +9,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Compass, FileDown, Sparkles } from "lucide-react";
+import { ArcCta, LeadForm } from "@/design";
+import { ARC_LINKS, LEAD_HEADERS } from "@/lib/arc";
 
 const audiences = ["Homework", "Home life", "Shop or studio", "Side hustle", "Small team"];
 
@@ -149,6 +151,15 @@ export default function HomePage() {
             </CardContent>
           </Card>
         </section>
+
+        <ArcCta
+          links={ARC_LINKS}
+          app="ai-fit"
+          placement="landing"
+          title="Choosing AI for a team or a business?"
+          body="ARC Transformation Group, the people behind AI Fit, assess whether a workload should use AI at all, what it would cost to run, and how to ship it safely."
+        />
+        <LeadForm endpoint="/v1/leads" app="ai-fit" page="landing" headers={LEAD_HEADERS} defaultInterest="advisory" />
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { defineConfig, devices } from '@playwright/test';
  * Each run uses fresh, throwaway file stores under .data/ (gitignored).
  */
 const run = Date.now().toString(36);
+export const LEADS_TOKEN = 'e2e-leads-export-token-0123456789';
 const fakeStripe = {
   BILLING_MODE: 'test',
   STRIPE_SECRET_KEY: 'sk_test_e2e_not_a_real_key',
@@ -33,7 +34,7 @@ export default defineConfig({
     {
       command: 'npx next start -p 3011',
       url: 'http://127.0.0.1:3011',
-      env: { AIFIT_TEAMS_STORE: `.data/e2e-${run}-off` },
+      env: { AIFIT_TEAMS_STORE: `.data/e2e-${run}-off`, LEADS_EXPORT_TOKEN: LEADS_TOKEN },
       reuseExistingServer: false,
     },
     {

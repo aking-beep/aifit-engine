@@ -23,6 +23,15 @@ export default function Privacy() {
           <li>Rate-limit counters keyed by a hash of the email or network address, kept for minutes.</li>
         </ul>
       </Panel>
+      <Panel title="Follow-up requests, analytics and email">
+        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-fg-2">
+          <li>If you send the “Get a follow-up from ARC” form: your email, the optional name, company, role and message, what you are interested in, the page you sent it from and the campaign that brought you (for example utm_source). ARC Transformation Group uses it only to reply. It may be forwarded to ARC&apos;s CRM.</li>
+          <li>Page views and a few named events (assessment started, report viewed, form sent, booking link clicked) are counted with Vercel Web Analytics, which uses no cookies and does not identify you.</li>
+          <li>The campaign that first brought you here is remembered in this browser only, to attribute a form or a booking to it.</li>
+          <li>Advertising pixels (Meta, Google, LinkedIn) load only if the operator configured them and you accept them in the cookie banner.</li>
+          <li>Email (password reset, invites, receipts) is sent through Resend when the operator has set it up. Messages are plain text with no tracking.</li>
+        </ul>
+      </Panel>
       <Panel title="Your controls">
         <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-fg-2">
           <li>Download everything stored about you from the Account page.</li>

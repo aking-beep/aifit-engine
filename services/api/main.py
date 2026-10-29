@@ -1060,4 +1060,148 @@ async def billing_webhook(request: Request):
     result = bill.handle_event(RESULT_STORE, event, expect_livemode=BILLING.mode == "live")
     if result["status"] == "in_progress":
         raise HTTPException(status_code=409, detail=result["detail"])
+    if result["status"] == "processed":
+        _send_receipt(event)
     return {"received": True, **result}
+
+
+def _send_receipt(event: dict[str, Any]) -> bool:
+    """One receipt per paid checkout event (the event id is the idempotency key)."""
+    obj = (event.get("data") or {}).get("object") or {}
+    if event.get("type") not in ("checkout.session.completed", "checkout.session.async_payment_succeeded"):
+        return False
+    if obj.get("payment_status") != "paid":
+        return False
+    details = obj.get("customer_details") if isinstance(obj.get("customer_details"), dict) else {}
+    to = details.get("email") or obj.get("customer_email")
+    if not isinstance(to, str):
+        return False
+    cents = obj.get("amount_total")
+    currency = str(obj.get("currency") or "usd").upper()
+    amount = f"{cents / 100:,.2f} {currency}" if isinstance(cents, int) else "see the Stripe receipt"
+    when = datetime.now(timezone.utc).date().isoformat()
+    subject, text = mailer.receipt("AI Fit Pro", amount, when, f"{MAIL.app_url}/app/subscription")
+    return mailer.send(MAIL, to, subject, text, idempotency_key=f"receipt-{event.get('id')}")
+
+
+# Leads -----------------------------------------------------------------------
+#
+# The "Get a follow-up from ARC" form. Stored when the store is durable and
+# forwarded to LEAD_WEBHOOK_URL when set; with neither, the endpoint is off and
+# the page points people at the booking link.
+
+from aifit import leads as lead_mod  # noqa: E402
+from aifit import mailer  # noqa: E402
+
+MAIL = mailer.mail_config(dict(os.environ))
+
+
+def _rate_limited(bucket: str, subject: str, limit: int, window: int) -> bool:
+    """Fixed window, kept in the store so it holds across instances on Redis."""
+    slot = int(datetime.now(timezone.utc).timestamp() // window)
+    key = hashlib.sha256(f"{bucket}:{subject}:{slot}".encode()).hexdigest()[:48]
+    row = RESULT_STORE.get("rate_limits", key) or {"n": 0}
+    row["n"] = int(row.get("n", 0)) + 1
+    RESULT_STORE.put("rate_limits", key, row, ttl=window * 2)
+    return row["n"] > limit
+
+
+def _client(request: Request) -> str:
+    hops = [h.strip() for h in (request.headers.get("x-forwarded-for") or "").split(",") if h.strip()]
+    return hops[-1] if hops else (request.client.host if request.client else "unknown")
+
+
+@app.post("/v1/leads")
+def create_lead(request: Request, payload: dict[str, Any] = Body(...)):
+    _same_origin(request)
+    webhook = os.environ.get("LEAD_WEBHOOK_URL")
+    if not RESULT_STORE.durable and not webhook:
+        raise _fail(acct.AccountError("unavailable", "Lead capture needs a durable store (Upstash) or LEAD_WEBHOOK_URL."))
+    try:
+        lead = lead_mod.LeadInput.model_validate(payload)
+    except ValidationError as exc:
+        field = str((exc.errors()[0].get("loc") or ["?"])[0])
+        message = {"email": "Enter a valid email address.", "consent": "Tick the box so we may contact you about this request."}
+        detail = {"code": "invalid", "message": message.get(field, "Some of the details are not valid.")}
+        raise HTTPException(status_code=422, detail=detail) from exc
+    if _rate_limited("lead", _client(request), 5, 3600):
+        raise HTTPException(status_code=429, detail={"code": "rate_limited", "message": "Too many requests. Try again later."})
+    if lead.website:  # honeypot: same answer as people get, nothing kept
+        return {"received": True, "stored": False}
+    user = None if _accounts_reason() else acct.current_user(RESULT_STORE, _token(request))
+    record = lead_mod.to_record(lead, user["id"] if user else None)
+    stored = RESULT_STORE.durable
+    if stored:
+        lead_mod.save(RESULT_STORE, record)
+    forwarded = lead_mod.forward(webhook, os.environ.get("LEAD_WEBHOOK_SECRET"), record)
+    if not stored and not forwarded:
+        raise _fail(acct.AccountError("unavailable", "We could not record that right now. Please book a call instead."))
+    notify = (os.environ.get("LEAD_NOTIFY_EMAIL") or "").strip()
+    if notify:
+        subject, text = mailer.lead_notice(lead_mod.summary(record))
+        mailer.send(MAIL, notify, subject, text, idempotency_key=record["id"])
+    track("lead_submitted", metadata={"interest": lead.interest})
+    return {"received": True, "stored": stored}
+
+
+@app.get("/v1/leads")
+def export_leads(request: Request, format: str = "json"):
+    allowed = lead_mod.authorize_export(request.headers.get("authorization"), os.environ.get("LEADS_EXPORT_TOKEN"))
+    if allowed is None:
+        raise HTTPException(status_code=503, detail="Lead export is off (set LEADS_EXPORT_TOKEN, at least 24 characters).")
+    if not allowed:
+        raise HTTPException(status_code=401, detail="Wrong or missing token.")
+    rows = lead_mod.recent(RESULT_STORE)
+    if format == "csv":
+        return Response(
+            lead_mod.to_csv(rows), media_type="text/csv",
+            headers={"Content-Disposition": 'attachment; filename="aifit-leads.csv"', "Cache-Control": "no-store"},
+        )
+    return {"leads": rows}
+
+
+# Password reset ----------------------------------------------------------------
+
+
+class ResetRequestBody(BaseModel):
+    email: str = Field(max_length=254)
+
+
+class ResetCompleteBody(BaseModel):
+    token: str = Field(min_length=20, max_length=200)
+    password: str = Field(min_length=1, max_length=acct.MAX_PASSWORD)
+
+
+@app.post("/v1/account/password/reset")
+def account_reset_request(request: Request, payload: ResetRequestBody):
+    _require_accounts()
+    _same_origin(request)
+    if not MAIL.enabled:
+        message = "Password reset by email is not set up on this deployment. Contact support."
+        raise _fail(acct.AccountError("unavailable", message))
+    email = payload.email.strip().lower()
+    if _rate_limited("reset-ip", _client(request), 10, 3600) or _rate_limited("reset-email", email, 3, 3600):
+        raise _fail(acct.AccountError("locked", "Too many requests. Try again later."))
+    started = acct.start_password_reset(RESULT_STORE, email)
+    if started:
+        user, token = started
+        subject, text = mailer.password_reset(f"{MAIL.app_url}/reset?token={token}", acct.RESET_MINUTES)
+        mailer.send(MAIL, user["email"], subject, text)
+    message = f"If an account uses that email, a reset link is on its way. It works for {acct.RESET_MINUTES} minutes."
+    return {"sent": True, "message": message}
+
+
+@app.post("/v1/account/password/reset/complete")
+def account_reset_complete(request: Request, response: Response, payload: ResetCompleteBody):
+    _require_accounts()
+    _same_origin(request)
+    if _rate_limited("reset-complete", _client(request), 20, 3600):
+        raise _fail(acct.AccountError("locked", "Too many requests. Try again later."))
+    try:
+        user = acct.complete_password_reset(RESULT_STORE, payload.token, payload.password)
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
+    subject, text = mailer.password_changed()
+    mailer.send(MAIL, user["email"], subject, text)
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return {"reset": True}

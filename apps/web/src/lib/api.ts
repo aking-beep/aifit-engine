@@ -1,5 +1,6 @@
 import type { InteractionEvent, QuizNote, Scenario, ScoreResult } from "./types";
 import type { DecisionResponse } from "./decision-types";
+import { trackConversion, type ConversionEvent } from "@/design";
 
 export type FitFilterInput = { local_only?: boolean; max_pricing_tier?: string | null };
 
@@ -126,8 +127,19 @@ export type ActivationEvent =
   | "history_viewed"
   | "share_created";
 
+// The same moments, as the conversion events both products report (Vercel Analytics, consented pixels).
+const CONVERSION: Partial<Record<ActivationEvent, [ConversionEvent, Record<string, string>]>> = {
+  quiz_started: ["assessment_started", { kind: "quiz" }],
+  quiz_completed: ["assessment_completed", { kind: "quiz" }],
+  results_viewed: ["report_viewed", { kind: "quiz" }],
+  check_started: ["assessment_started", { kind: "check" }],
+  check_completed: ["assessment_completed", { kind: "check" }],
+};
+
 /** Anonymous activation counter. Fire-and-forget: never blocks or breaks the page. */
 export function trackActivation(event: ActivationEvent) {
+  const conversion = CONVERSION[event];
+  if (conversion) trackConversion(conversion[0], { app: "ai-fit", ...conversion[1] });
   try {
     void fetch("/v1/activation", {
       method: "POST",

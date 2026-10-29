@@ -117,3 +117,51 @@ export async function revokeAllSessions(store: KvStore, userId: string): Promise
   for (const hash of await store.smembers(K.userSessions(userId))) await store.del(K.session(hash));
   await store.del(K.userSessions(userId));
 }
+
+// Password reset ---------------------------------------------------------------
+
+export const RESET_TTL_SECONDS = 30 * 60;
+const resetKey = (hash: string) => `pwreset:${hash}`;
+
+interface ResetRecord {
+  userId: string;
+  expiresAt: string;
+}
+
+/**
+ * A one-time reset token for this email, or null when no account has it. The
+ * caller answers the same way in both cases so the form does not reveal who
+ * has an account. Only the token's hash is stored.
+ */
+export async function createPasswordReset(store: KvStore, email: string, now = new Date()): Promise<{ token: string; user: User } | null> {
+  const parsed = z.string().trim().toLowerCase().email().max(254).safeParse(email);
+  if (!parsed.success) return null;
+  const user = await findUserByEmail(store, parsed.data);
+  if (!user) return null;
+  const token = randomToken();
+  const record: ResetRecord = { userId: user.id, expiresAt: new Date(now.getTime() + RESET_TTL_SECONDS * 1000).toISOString() };
+  await store.set(resetKey(sha256(token)), record, { ttlSeconds: RESET_TTL_SECONDS });
+  return { token, user };
+}
+
+export const ResetInput = z.object({
+  token: z.string().min(20).max(200),
+  password: z.string().min(12, 'Use at least 12 characters.').max(200),
+}).strict();
+
+/** Sets the new password, burns the token and signs out every existing session. */
+export async function completePasswordReset(store: KvStore, input: z.input<typeof ResetInput>, now = new Date()): Promise<User> {
+  const parsed = ResetInput.safeParse(input);
+  if (!parsed.success) throw new PlatformError('invalid', parsed.error.issues[0]?.message ?? 'Invalid reset request.');
+  const key = resetKey(sha256(parsed.data.token));
+  const record = await store.get<ResetRecord>(key);
+  // Delete first: a token works once even if two requests race.
+  await store.del(key);
+  if (!record || new Date(record.expiresAt) <= now) throw new PlatformError('invalid', 'This reset link has expired or was already used. Ask for a new one.');
+  const user = await getUser(store, record.userId);
+  if (!user) throw new PlatformError('invalid', 'This reset link has expired or was already used. Ask for a new one.');
+  const updated: User = { ...user, passwordHash: await hashPassword(parsed.data.password) };
+  await store.set(K.user(user.id), updated);
+  await revokeAllSessions(store, user.id);
+  return updated;
+}

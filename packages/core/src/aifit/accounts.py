@@ -39,6 +39,8 @@ K_SESSIONS = "acct_sessions"
 K_SAVED = "acct_saved"
 K_HISTORY = "acct_history"
 K_ENTITLEMENTS = "acct_entitlements"
+K_RESETS = "acct_resets"
+RESET_MINUTES = 30
 
 _EMAIL = re.compile(r"^[^@\s]{1,64}@[^@\s]{1,190}\.[A-Za-z]{2,24}$")
 
@@ -169,12 +171,17 @@ def public_user(user: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _start_session(store: Store, user_id: str, at: datetime) -> str:
+def _start_session(store: Store, user_id: str, at: datetime, epoch: int = 0) -> str:
     token = secrets.token_urlsafe(32)
     store.put(
         K_SESSIONS,
         token_key(token),
-        {"user_id": user_id, "created_at": _iso(at), "expires_at": _iso(at + timedelta(days=SESSION_DAYS))},
+        {
+            "user_id": user_id,
+            "epoch": epoch,
+            "created_at": _iso(at),
+            "expires_at": _iso(at + timedelta(days=SESSION_DAYS)),
+        },
         ttl=SESSION_DAYS * 86400,
     )
     return token
@@ -221,7 +228,7 @@ def sign_in(store: Store, data: Credentials, at: datetime | None = None) -> tupl
         user["failed_logins"] = 0
         user["locked_until"] = None
         store.put(K_USERS, user["id"], user)
-    return user, _start_session(store, user["id"], at)
+    return user, _start_session(store, user["id"], at, int(user.get("session_epoch", 0)))
 
 
 def sign_out(store: Store, token: str | None) -> None:
@@ -239,7 +246,12 @@ def current_user(store: Store, token: str | None, at: datetime | None = None) ->
     if not expires or expires <= (at or now_utc()):
         store.delete(K_SESSIONS, token_key(token))
         return None
-    return store.get(K_USERS, session["user_id"])
+    user = store.get(K_USERS, session["user_id"])
+    # A password reset bumps the epoch, which signs out every session started before it.
+    if user and int(session.get("epoch", 0)) != int(user.get("session_epoch", 0)):
+        store.delete(K_SESSIONS, token_key(token))
+        return None
+    return user
 
 
 def require_user(store: Store, token: str | None) -> dict[str, Any]:
@@ -366,3 +378,56 @@ def delete_account(store: Store, user: dict[str, Any], token: str | None) -> Non
     store.delete(K_EMAIL, email_key(user["email"]))
     store.delete(K_USERS, user["id"])
     sign_out(store, token)
+
+
+# Password reset ----------------------------------------------------------------
+
+
+def start_password_reset(store: Store, email: str, at: datetime | None = None) -> tuple[dict[str, Any], str] | None:
+    """A single-use reset token for this email, or None when no account has it.
+
+    Callers answer the same way either way so the form does not reveal who has an account.
+    Only the token's hash is stored, and it expires after RESET_MINUTES.
+    """
+    at = at or now_utc()
+    email = (email or "").strip().lower()
+    if not _EMAIL.match(email):
+        return None
+    link = store.get(K_EMAIL, email_key(email))
+    user = store.get(K_USERS, link["user_id"]) if link else None
+    if not user:
+        return None
+    token = secrets.token_urlsafe(32)
+    store.put(
+        K_RESETS,
+        token_key(token),
+        {"user_id": user["id"], "expires_at": _iso(at + timedelta(minutes=RESET_MINUTES))},
+        ttl=RESET_MINUTES * 60,
+    )
+    return user, token
+
+
+def complete_password_reset(store: Store, token: str, new: str, at: datetime | None = None) -> dict[str, Any]:
+    """Sets the new password, burns the token and signs out every session."""
+    at = at or now_utc()
+    if not (MIN_PASSWORD <= len(new or "") <= MAX_PASSWORD):
+        raise AccountError("invalid", f"Use at least {MIN_PASSWORD} characters.")
+    expired = AccountError("invalid", "This reset link has expired or was already used. Ask for a new one.")
+    if not token or len(token) > 200:
+        raise expired
+    key = token_key(token)
+    record = store.get(K_RESETS, key)
+    # Delete first, so a token works once even if two requests race.
+    store.delete(K_RESETS, key)
+    expires = _parse(record.get("expires_at")) if record else None
+    if not record or not expires or expires <= at:
+        raise expired
+    user = store.get(K_USERS, record["user_id"])
+    if not user:
+        raise expired
+    user["password"] = hash_password(new)
+    user["session_epoch"] = int(user.get("session_epoch", 0)) + 1
+    user["failed_logins"] = 0
+    user["locked_until"] = None
+    store.put(K_USERS, user["id"], user)
+    return user

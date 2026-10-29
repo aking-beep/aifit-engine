@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { EvidenceLabel, PageHeader, Panel, PanelHeader, ProgressBar, StageRail, type StageId } from "@/design";
+import { ArcCta, EvidenceLabel, PageHeader, Panel, PanelHeader, ProgressBar, StageRail, type StageId } from "@/design";
 import { useAccount } from "@/components/app/account-context";
 import { Loading, LoadError, NoProfile, category, date, pct } from "@/components/app/bits";
 import { useLoad } from "@/components/app/use-load";
 import { account } from "@/lib/account";
 import { OUTCOME_LABEL } from "@/lib/decision-types";
+import { ARC_LINKS } from "@/lib/arc";
 
 function greeting() {
   const h = new Date().getHours();
@@ -97,6 +98,8 @@ export default function Dashboard() {
           </section>
         </>
       )}
+
+      <ArcCta className="mt-10" links={ARC_LINKS} app="ai-fit" placement="app-dashboard" title="Bringing AI into your team?" body="ARC Transformation Group runs the team version of this: which workloads should use AI, the cost to run them, and a delivery plan." />
 
       <div className="mt-10 grid gap-10 lg:grid-cols-2">
         <section aria-labelledby="checks-h">

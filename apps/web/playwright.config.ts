@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const web = "http://127.0.0.1:43123";
+export const LEADS_TOKEN = "e2e-consumer-leads-token-0123456789";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -24,6 +25,7 @@ export default defineConfig({
       cwd: "../..",
       url: "http://127.0.0.1:8472/health",
       reuseExistingServer: true,
+      env: { LEADS_EXPORT_TOKEN: LEADS_TOKEN },
     },
     {
       command: "npm run start",

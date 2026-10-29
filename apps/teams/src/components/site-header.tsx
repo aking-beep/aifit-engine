@@ -2,7 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Logo, ThemeToggle, cn } from '@/design';
+import { Logo, ThemeToggle, arcUtm, cn, trackConversion, withUtm } from '@/design';
+import { ARC_LINKS } from '@/lib/arc';
+
+const BOOKING = withUtm(ARC_LINKS.booking, arcUtm('ai-fit-teams', 'header', null));
 
 /**
  * Public header. The current route is marked for assistive technology and
@@ -41,6 +44,17 @@ export function SiteHeader({ controlUrl, account }: { controlUrl: string; accoun
                 </li>
               );
             })}
+            <li>
+              <a
+                href={BOOKING}
+                target="_blank"
+                rel="noopener"
+                onClick={() => trackConversion('booking_clicked', { app: 'ai-fit-teams', placement: 'header' })}
+                className="inline-flex min-h-10 items-center border-b-2 border-transparent px-2 text-label-md text-accent hover:underline"
+              >
+                Talk to ARC
+              </a>
+            </li>
             <li>
               <a href={controlUrl} className="inline-flex min-h-10 items-center border-b-2 border-transparent px-2 text-label-md text-fg-muted hover:text-fg">
                 ARC Control

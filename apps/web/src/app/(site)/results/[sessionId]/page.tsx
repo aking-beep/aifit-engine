@@ -10,6 +10,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ResultsView } from "@/components/results-view";
 import { SaveToAccount } from "@/components/app/save-to-account";
+import { ArcCta } from "@/design";
+import { ARC_LINKS } from "@/lib/arc";
 
 export default function ResultsPage() {
   const params = useParams<{ sessionId: string }>();
@@ -74,6 +76,9 @@ export default function ResultsPage() {
         </div>
       ) : null}
       <ResultsView result={result} sessionId={params.sessionId} />
+      <div className="mx-auto w-full max-w-5xl space-y-6 px-4 pb-12">
+        <ArcCta links={ARC_LINKS} app="ai-fit" placement="results" title="Setting up AI for a team, not just yourself?" body="ARC Transformation Group runs the business version of this assessment: should a workload use AI at all, what would it cost to run, and how to ship it safely." />
+      </div>
     </>
   );
 }
