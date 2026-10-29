@@ -62,7 +62,8 @@ test("SEO surfaces, legal pages and the reset page", async ({ page, request }) =
   await page.goto("/signin");
   await page.getByRole("link", { name: "Forgot password?" }).click();
   await page.waitForURL(/\/reset$/);
-  // A fill that lands before hydration never reaches React state, leaving the button disabled.
+  // Sign-in and reset both label a field "Email", and the URL changes before the reset form
+  // renders, so a fill can land in the outgoing sign-in field. Refill until the reset form has it.
   const send = page.getByRole("button", { name: "Send reset link" });
   await expect(async () => {
     await page.getByLabel("Email").fill("someone@example.com");
