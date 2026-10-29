@@ -61,7 +61,12 @@ test("SEO surfaces, legal pages and the reset page", async ({ page, request }) =
   }
   await page.goto("/signin");
   await page.getByRole("link", { name: "Forgot password?" }).click();
+  // /signin also has an Email field. Wait until that page is gone so fill
+  // cannot land on the sign-in form and leave the reset button disabled.
+  await expect(page).toHaveURL(/\/reset/);
+  await expect(page.getByRole("heading", { name: "Reset your password" })).toBeVisible();
   await page.getByLabel("Email").fill("someone@example.com");
+  await expect(page.getByRole("button", { name: "Send reset link" })).toBeEnabled();
   await page.getByRole("button", { name: "Send reset link" }).click();
   await expect(page.getByText(/not set up on this deployment/)).toBeVisible();
 });
