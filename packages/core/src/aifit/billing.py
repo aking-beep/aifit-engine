@@ -517,3 +517,23 @@ def checkout_status(store: Store, user_id: str, session_id: str) -> str:
     if not row or row.get("user_id") != user_id:
         return "unknown"
     return str(row.get("status", "unknown"))
+
+
+def create_portal(cfg: BillingConfig, customer_id: str, transport: Transport | None = None) -> str:
+    """A Stripe customer-portal link where the person cancels, resumes or updates their card.
+
+    Needs the portal to be configured once in the Stripe dashboard (test mode has its own settings).
+    Changes made there reach this app through the subscription webhooks.
+    """
+    if not cfg.enabled or not cfg.secret_key:
+        raise AccountError("unavailable", cfg.reason)
+    status, body = (transport or _urllib_transport)(
+        "https://api.stripe.com/v1/billing_portal/sessions",
+        {"Authorization": f"Bearer {cfg.secret_key}", "Content-Type": "application/x-www-form-urlencoded"},
+        urllib.parse.urlencode({"customer": customer_id, "return_url": f"{cfg.app_url}/app/subscription"}).encode("ascii"),
+    )
+    if status != 200 or not body.get("url"):
+        error = body.get("error")
+        message = error.get("message") if isinstance(error, dict) else None
+        raise AccountError("unavailable", f"Stripe did not open the billing portal{': ' + message if message else ''}.")
+    return str(body["url"])

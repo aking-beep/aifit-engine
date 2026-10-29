@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { ReadingLevelToggle } from "@/components/reading-level";
 import { ThemeToggle } from "@/components/theme";
+import { AccountLink } from "@/components/app/account-link";
 import { Button } from "@/components/ui/button";
 
 const links = [
@@ -44,6 +45,7 @@ export function SiteHeader() {
                 </Link>
               );
             })}
+            <AccountLink className="font-medium text-foreground hover:underline" />
           </nav>
           <Button
             type="button"
@@ -79,6 +81,9 @@ export function SiteHeader() {
                 </li>
               );
             })}
+            <li>
+              <AccountLink className="block min-h-11 rounded-lg px-3 py-3 text-sm font-medium text-foreground" />
+            </li>
           </ul>
         </nav>
       ) : null}

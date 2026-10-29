@@ -109,6 +109,12 @@ jobs:
         env:
           API_ORIGIN: http://127.0.0.1:8472
           AIFIT_STORE: ${{ runner.temp }}/aifit-store
+      # Consumer Pro billing: the API restarts in Stripe test-mode configuration
+      # with a fake key; webhooks are signed locally and nothing reaches Stripe.
+      - run: npx playwright test -c playwright.billing.config.ts
+        working-directory: apps/web
+        env:
+          AIFIT_STORE: ${{ runner.temp }}/aifit-store-billing
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

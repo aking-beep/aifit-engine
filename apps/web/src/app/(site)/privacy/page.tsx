@@ -5,8 +5,8 @@ export default function PrivacyPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-12">
       <h1 className="text-3xl font-semibold tracking-tight">Privacy</h1>
       <p className="text-muted-foreground">
-        Fit runs in anonymous mode. It does not ask for your name, an account, your employer, or demographic
-        attributes, and it does not infer protected characteristics.
+        Without an account, Fit runs in anonymous mode. It does not ask for your name, an account, your employer, or
+        demographic attributes, and it does not infer protected characteristics. Accounts are optional.
       </p>
       <Card>
         <CardHeader>
@@ -43,6 +43,30 @@ export default function PrivacyPage() {
           <p>
             Downloaded setup files are checked for anything that looks like a password or API key before you get them,
             and any match is replaced with [REDACTED].
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>If you create an account</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>
+            We store your email, the name and role you give us, a scrypt hash of your password (never the password),
+            the quiz results and task checks you choose to save, your saved tools, and a monthly count of setup packages.
+            Saved results are re-scored on our server from your answers.
+          </p>
+          <p>
+            Sign-in uses an HttpOnly cookie that holds a random token; we keep only a hash of it. Sessions last 30 days.
+          </p>
+          <p>
+            If billing is on and you buy Pro, payment happens on Stripe&apos;s checkout page. Card details never reach Fit.
+            We keep the Stripe customer and subscription IDs and a record of each payment, failure and refund Stripe
+            reports.
+          </p>
+          <p>
+            Settings → Download my data exports everything the account stores as JSON. Delete account removes all of it
+            at once. Stripe keeps its own records of past payments.
           </p>
         </CardContent>
       </Card>

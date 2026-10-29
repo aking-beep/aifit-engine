@@ -409,3 +409,43 @@ def test_unknown_account_events_are_ignored(billing_on):
         == "ignored"
     )
     assert webhook(c, event("payment_intent.created", {"id": "pi_1"}))["status"] == "ignored"
+
+
+def test_quiz_answers_are_scored_server_side():
+    c = client()
+    signup(c, "answers@example.com")
+    demo = c.post("/v1/sessions/demo").json()
+    events = demo["session"]["events"]
+    r = c.post(
+        "/v1/account/assessments",
+        json={"kind": "quiz", "events": events, "notes": [], "result": {"persona": {"label": "Forged"}}},
+        headers=H,
+    )
+    assert r.status_code == 200, r.text
+    assert r.json()["result"]["persona"]["label"] == demo["result"]["persona"]["label"]
+
+
+def test_profile_update_validates_role():
+    c = client()
+    signup(c, "role@example.com")
+    r = c.patch("/v1/account/me", json={"name": "Robin", "role": "engineer"}, headers=H)
+    assert r.json()["user"]["role"] == "engineer"
+    assert c.patch("/v1/account/me", json={"role": "admin"}, headers=H).status_code == 422
+    assert c.patch("/v1/account/me", json={"role": "student"}).status_code == 403
+
+
+def test_portal_needs_a_customer_and_uses_it(billing_on, monkeypatch):
+    seen = {}
+
+    def fake(url, headers, body):
+        seen.update(url=url, body=body.decode())
+        return 200, {"url": "https://billing.stripe.com/p/session/test_1"}
+
+    monkeypatch.setattr(bill, "_urllib_transport", fake)
+    c = client()
+    uid = signup(c, "portal@example.com")["user"]["id"]
+    assert c.post("/v1/account/billing/portal", headers=H).status_code == 404
+    _paid(c, uid, "cs_portal")
+    r = c.post("/v1/account/billing/portal", headers=H)
+    assert r.status_code == 200 and r.json()["url"].startswith("https://billing.stripe.com/")
+    assert "cus_1" in seen["body"] and seen["url"].endswith("/billing_portal/sessions")

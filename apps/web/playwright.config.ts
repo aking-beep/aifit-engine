@@ -10,7 +10,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "chromium", testIgnore: /billing\.spec/, use: { ...devices["Desktop Chrome"] } },
     {
       name: "mobile",
       testMatch: /mobile-release/,

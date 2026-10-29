@@ -160,7 +160,13 @@ def _new_id(prefix: str) -> str:
 
 
 def public_user(user: dict[str, Any]) -> dict[str, Any]:
-    return {"id": user["id"], "email": user["email"], "name": user.get("name", ""), "created_at": user["created_at"]}
+    return {
+        "id": user["id"],
+        "email": user["email"],
+        "name": user.get("name", ""),
+        "role": user.get("role"),
+        "created_at": user["created_at"],
+    }
 
 
 def _start_session(store: Store, user_id: str, at: datetime) -> str:
@@ -243,8 +249,24 @@ def require_user(store: Store, token: str | None) -> dict[str, Any]:
     return user
 
 
-def update_name(store: Store, user: dict[str, Any], name: str) -> dict[str, Any]:
-    user["name"] = name.strip()[:80]
+Role = Literal[
+    "individual", "student", "creator", "freelancer", "small_business_owner", "engineer", "manager", "executive", "other"
+]
+
+
+class ProfileInput(BaseModel):
+    """What the person tells us about themselves. The role pre-fills the task check; the quiz never reads it."""
+
+    model_config = ConfigDict(extra="forbid")
+    name: str | None = Field(default=None, max_length=80)
+    role: Role | None = None
+
+
+def update_profile(store: Store, user: dict[str, Any], data: ProfileInput) -> dict[str, Any]:
+    if data.name is not None:
+        user["name"] = data.name.strip()
+    if data.role is not None:
+        user["role"] = data.role
     store.put(K_USERS, user["id"], user)
     return user
 

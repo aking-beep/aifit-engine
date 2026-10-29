@@ -139,7 +139,9 @@ export default function AssessmentPage() {
     const scored = await api.scoreFull({ session_id: id, events: eventsRef.current, notes: notesRef.current });
     saveResult(id, scored);
     trackActivation("quiz_completed");
-    router.push(`/results/${id}`);
+    // Onboarding sends people here with ?save=account; the results page then saves to the account.
+    const save = new URLSearchParams(window.location.search).get("save") === "account" ? "?save=account" : "";
+    router.push(`/results/${id}${save}`);
   }
 
   // Ends the current scene: wait for saves, ask the server whether to continue,

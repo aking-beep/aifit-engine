@@ -802,20 +802,20 @@ def account_me(request: Request):
     return _me(_viewer(request))
 
 
-class NameBody(BaseModel):
-    name: str = Field(max_length=80)
-
-
 class PasswordBody(BaseModel):
     current: str = Field(min_length=1, max_length=acct.MAX_PASSWORD)
     new: str = Field(min_length=acct.MIN_PASSWORD, max_length=acct.MAX_PASSWORD)
 
 
 @app.patch("/v1/account/me")
-def account_rename(request: Request, payload: NameBody):
+def account_update(request: Request, payload: dict[str, Any] = Body(...)):
     user = _viewer(request)
     _same_origin(request)
-    return _me(acct.update_name(RESULT_STORE, user, payload.name))
+    try:
+        data = acct.ProfileInput.model_validate(payload)
+    except ValidationError as exc:
+        raise _invalid(exc) from exc
+    return _me(acct.update_profile(RESULT_STORE, user, data))
 
 
 @app.post("/v1/account/password")
@@ -830,9 +830,11 @@ def account_password(request: Request, payload: PasswordBody):
 
 
 class SaveAssessmentBody(BaseModel):
-    """Either a quiz session (scored here from its stored answers) or a task check intake (decided here)."""
+    """A quiz (its answers, or a stored session, scored here) or a task check intake (decided here)."""
 
     kind: str = Field(pattern="^(quiz|check)$")
+    events: list[InteractionEvent] = Field(default_factory=list, max_length=MAX_SCORE_EVENTS)
+    notes: list[Note] = Field(default_factory=list, max_length=MAX_NOTES)
     session_id: uuid.UUID | None = None
     session_token: str | None = Field(default=None, max_length=200)
     intake: dict[str, Any] | None = None
@@ -857,12 +859,19 @@ def _view_entry(entry: dict[str, Any], limits: dict[str, int | None]) -> dict[st
 def account_save_assessment(request: Request, payload: SaveAssessmentBody):
     user = _viewer(request)
     _same_origin(request)
-    if payload.kind == "quiz":
+    if payload.kind == "quiz" and payload.events:
+        events = list(payload.events)
+        for note in payload.notes:
+            if note.text.strip():
+                events.extend(normalize_free_text(note.text, note.scenario_id, note.turn_id))
+        result = score_session(AssessmentSession(session_id="account", events=events), products=PRODUCTS, models=MODELS)
+        label = payload.label or str((result.get("persona") or {}).get("label") or "AI profile")
+    elif payload.kind == "quiz":
         if not payload.session_id:
-            raise HTTPException(status_code=400, detail="session_id is required for a quiz.")
+            raise HTTPException(status_code=400, detail="Send the quiz answers or a session_id.")
         key, record = _require_session(payload.session_id, payload.session_token)
         result = _score_and_store(_load_session(key, record))
-        label = payload.label or str((result.get("persona") or {}).get("name") or "AI profile")
+        label = payload.label or str((result.get("persona") or {}).get("label") or "AI profile")
     else:
         try:
             raw = {**(payload.intake or {}), "surface": "consumer", "externalEstimates": {}}
@@ -1016,6 +1025,19 @@ def account_checkout(request: Request):
         raise _fail(exc) from exc
     track("checkout_started", metadata={"product": "consumer-pro"})
     return {"url": session["url"], "id": session["id"]}
+
+
+@app.post("/v1/account/billing/portal")
+def account_portal(request: Request):
+    user = _viewer(request)
+    _same_origin(request)
+    customer = (bill.read_entitlements(RESULT_STORE, user["id"]).get("subscription") or {}).get("customer_id")
+    if not customer:
+        raise _fail(acct.AccountError("not_found", "There is no Stripe subscription on this account yet."))
+    try:
+        return {"url": bill.create_portal(BILLING, customer)}
+    except acct.AccountError as exc:
+        raise _fail(exc) from exc
 
 
 @app.get("/v1/account/billing/checkout/{session_id}")

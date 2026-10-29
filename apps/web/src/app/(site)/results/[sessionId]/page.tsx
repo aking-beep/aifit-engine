@@ -9,6 +9,7 @@ import { loadResult, loadSession, saveResult } from "@/lib/session-store";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ResultsView } from "@/components/results-view";
+import { SaveToAccount } from "@/components/app/save-to-account";
 
 export default function ResultsPage() {
   const params = useParams<{ sessionId: string }>();
@@ -63,5 +64,16 @@ export default function ResultsPage() {
       </div>
     );
   }
-  return <ResultsView result={result} sessionId={params.sessionId} />;
+  const stored = loadSession(params.sessionId);
+  const auto = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("save") === "account";
+  return (
+    <>
+      {stored?.events.length ? (
+        <div className="mx-auto w-full max-w-5xl px-4 pt-6">
+          <SaveToAccount payload={{ kind: "quiz", events: stored.events, notes: stored.notes }} auto={auto} />
+        </div>
+      ) : null}
+      <ResultsView result={result} sessionId={params.sessionId} />
+    </>
+  );
 }
