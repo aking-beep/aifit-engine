@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext } from 'react'
+import React, { createContext, createElement, useContext } from 'react'
 
 /**
  * The app injects its router's link (next/link) once, at the root. Design
@@ -17,6 +17,8 @@ export function LinkProvider({ component, children }: { component: LinkLike; chi
 }
 
 export function DLink(props: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
-  const L = useContext(LinkCtx)
-  return <L {...props} />
+  const Component = useContext(LinkCtx)
+  // createElement: the injected link is a stable component from context, not a
+  // type created during render. JSX `<Component />` trips react-hooks/static-components.
+  return createElement(Component, props)
 }
