@@ -34,6 +34,7 @@ export async function POST(req: Request) {
     await store.set(WK.checkout(session.id), { status: 'pending', orgId: v.ctx.orgId }, { ttlSeconds: 60 * 60 * 24 * 30 });
     return json({ url: session.url });
   } catch (e) {
-    return errorResponse(e);
+    // Billing switched off is a normal state, not an incident.
+    return errorResponse(e, billing().enabled ? { kind: 'checkout_failed', route: 'POST /api/billing/checkout' } : undefined);
   }
 }

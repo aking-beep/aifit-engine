@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     if (!customerId) throw new PlatformError('not_found', 'This workspace has no Stripe subscription yet.');
     return json(await createPortalSession(cfg, customerId));
   } catch (e) {
-    return errorResponse(e);
+    // Billing switched off is a normal state, not an incident.
+    return errorResponse(e, billing().enabled ? { kind: 'portal_failed', route: 'POST /api/billing/portal' } : undefined);
   }
 }

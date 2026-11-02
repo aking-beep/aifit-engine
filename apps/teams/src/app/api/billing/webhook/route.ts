@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     if (result.status === 'processed') await receipt(event).catch(() => false);
     return json(result);
   } catch (e) {
-    return errorResponse(e);
+    return errorResponse(e, { kind: 'webhook_failed', route: 'POST /api/billing/webhook' });
   }
 }
 

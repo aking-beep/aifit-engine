@@ -1022,6 +1022,8 @@ def account_checkout(request: Request):
     try:
         session = bill.create_checkout(BILLING, user, key)
     except acct.AccountError as exc:
+        if exc.code == "unavailable" and BILLING.enabled:
+            _alert("checkout_failed", f"POST /v1/account/billing/checkout: {exc.message}")
         raise _fail(exc) from exc
     track("checkout_started", metadata={"product": "consumer-pro"})
     return {"url": session["url"], "id": session["id"]}
@@ -1037,6 +1039,8 @@ def account_portal(request: Request):
     try:
         return {"url": bill.create_portal(BILLING, customer)}
     except acct.AccountError as exc:
+        if exc.code == "unavailable" and BILLING.enabled:
+            _alert("portal_failed", f"POST /v1/account/billing/portal: {exc.message}")
         raise _fail(exc) from exc
 
 
@@ -1051,13 +1055,19 @@ def account_checkout_status(request: Request, session_id: str):
 @app.post("/v1/billing/webhook")
 async def billing_webhook(request: Request):
     if not BILLING.enabled or not BILLING.webhook_secret:
+        # Stripe is sending events to a deployment with billing off: a configuration problem.
+        _alert("webhook_failed", f"POST /v1/billing/webhook: 503 {BILLING.reason}")
         raise HTTPException(status_code=503, detail=BILLING.reason)
     raw = await request.body()
     try:
         event = bill.verify_signature(raw, request.headers.get("stripe-signature"), BILLING.webhook_secret)
     except acct.AccountError as exc:
         raise HTTPException(status_code=400, detail=exc.message) from exc
-    result = bill.handle_event(RESULT_STORE, event, expect_livemode=BILLING.mode == "live")
+    try:
+        result = bill.handle_event(RESULT_STORE, event, expect_livemode=BILLING.mode == "live")
+    except Exception as exc:  # Stripe retries a 500, and application is idempotent
+        _alert("webhook_failed", f"POST /v1/billing/webhook: {type(exc).__name__}: {exc}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed; Stripe will retry.") from exc
     if result["status"] == "in_progress":
         raise HTTPException(status_code=409, detail=result["detail"])
     if result["status"] == "processed":
@@ -1094,6 +1104,21 @@ from aifit import leads as lead_mod  # noqa: E402
 from aifit import mailer  # noqa: E402
 
 MAIL = mailer.mail_config(dict(os.environ))
+
+from aifit import alerts as alert_mod  # noqa: E402
+
+ALERTS = alert_mod.alert_config(dict(os.environ))
+
+
+def _alert(kind: alert_mod.AlertKind, detail: str) -> bool:
+    """Tell the operator (off unless ALERT_WEBHOOK_URL or ALERT_EMAIL is set; throttled per kind)."""
+    return alert_mod.raise_alert(ALERTS, RESULT_STORE, kind, detail, env=dict(os.environ))
+
+
+@app.exception_handler(Exception)
+async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
+    _alert("server_error", f"{request.method} {request.url.path}: 500 {type(exc).__name__}: {exc}")
+    return JSONResponse(status_code=500, content={"detail": "Something went wrong on our side."})
 
 
 def _rate_limited(bucket: str, subject: str, limit: int, window: int) -> bool:
