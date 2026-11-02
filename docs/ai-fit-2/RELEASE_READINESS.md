@@ -138,9 +138,8 @@ No data migrations: new account data lives under new `acct_` keys.
 - ~~Teams dependency upgrades~~ and ~~password reset and transactional email~~: done; see
   [MARKETING_AND_SYNTHETIC.md](./MARKETING_AND_SYNTHETIC.md). Email needs `RESEND_API_KEY` and
   `EMAIL_FROM` on each project.
-- Three suitability-rubric behaviours found by the synthetic suite need an owner decision (see
-  MARKETING_AND_SYNTHETIC.md): low error tolerance does not cap the verdict, one regulated data
-  class rates low security risk, and a trivial job can still read "automate-bounded".
+- ~~Three suitability-rubric behaviours found by the synthetic suite~~: changed with owner approval
+  on 2026-11-02 (see MARKETING_AND_SYNTHETIC.md). All 50 synthetic workloads now agree.
 - Teams model catalog: Anthropic entries re-verified 2026-11-02 against Anthropic's pricing and
   models pages (Opus 5.5, Sonnet 5.5 and Haiku 5.5 added; Fable 5.1 context corrected to 1M).
   OpenAI and Google entries are still dated 2026-09-14 and show as stale: their pricing pages

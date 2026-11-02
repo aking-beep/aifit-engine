@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CASES } from './workloads.js';
 import { runSuite, formatReport } from './report.js';
+import { VERDICT_CAPS } from '@aifit/teams-core';
+import { RULES } from '@aifit/decision-core';
 
 const suite = runSuite();
 
@@ -34,4 +36,8 @@ test('every miss against the expected answer has been reviewed', () => {
 test('no recorded disagreement has gone stale', () => {
   const stale = suite.results.filter((r) => !r.misses.length && r.knownDisagreement);
   assert.deepEqual(stale.map((r) => r.id), [], 'the engine now agrees: delete the knownDisagreement note');
+});
+
+test('the suitability rubric and the decision engine agree on what counts as negligible work', () => {
+  assert.equal(VERDICT_CAPS.negligibleHoursPerMonth, RULES.thresholds.negligibleHoursPerMonth);
 });

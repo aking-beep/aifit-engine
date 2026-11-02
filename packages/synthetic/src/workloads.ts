@@ -161,7 +161,6 @@ export const CASES: SyntheticCase[] = [
     workload: wl('coding', { name: 'Assign billing codes to visit notes', task: ['classify', 'extract'], units: 1200, minutes: 2, rate: 35, errorTolerance: 'low', dataClasses: ['phi'], regulated: ['hipaa'], dataResidency: 'on_prem', structured: true, team: { engineers: 2, hasSecurityReview: true } }),
     expect: { verdict: ['assisted', 'not-yet'], flags: ['HIPAA'], minRisk: 'moderate' },
     rationale: 'PHI, audited codes, on-prem only. Suggest codes for a coder to confirm.',
-    knownDisagreement: 'Low error tolerance does not cap the verdict: suitability.ts decideVerdict caps at assisted only when errorTolerance is none, so a low-tolerance job with suggest autonomy still reads automate-bounded. Regulated data alone rates low security risk: security.ts adds 10 points per sensitive class and low runs to 21. The HIPAA/PCI flags and blocking controls are still present; the headline level understates.',
   },
   {
     id: 'fnol-triage', industry: 'Insurance',
@@ -174,7 +173,6 @@ export const CASES: SyntheticCase[] = [
     workload: wl('cvs', { name: 'First-pass CV screening', task: ['classify'], units: 450, minutes: 4, errorTolerance: 'low', dataClasses: ['pii'], regulated: ['gdpr', 'eu_ai_act'], dataResidency: 'eu' }),
     expect: { verdict: ['assisted', 'not-yet'], flags: ['GDPR'] },
     rationale: 'Employment decisions are high-risk under the EU AI Act. A person must decide.',
-    knownDisagreement: 'Low error tolerance does not cap the verdict: suitability.ts decideVerdict caps at assisted only when errorTolerance is none, so a low-tolerance job with suggest autonomy still reads automate-bounded.',
   },
   {
     id: 'family-law-intake', industry: 'Legal',
@@ -193,14 +191,12 @@ export const CASES: SyntheticCase[] = [
     workload: wl('priorauth', { name: 'Draft prior-authorisation letters', task: ['generate', 'summarize'], units: 500, minutes: 20, rate: 38, errorTolerance: 'low', dataClasses: ['phi'], regulated: ['hipaa'], sources: ['EHR'], retrieval: true, team: { engineers: 2, hasSecurityReview: true } }),
     expect: { verdict: ['assisted', 'not-yet'], flags: ['HIPAA'], minRisk: 'moderate' },
     rationale: 'Clinician signs every letter; PHI needs a BAA.',
-    knownDisagreement: 'Low error tolerance does not cap the verdict: suitability.ts decideVerdict caps at assisted only when errorTolerance is none, so a low-tolerance job with suggest autonomy still reads automate-bounded. Regulated data alone rates low security risk: security.ts adds 10 points per sensitive class and low runs to 21. The HIPAA/PCI flags and blocking controls are still present; the headline level understates.',
   },
   {
     id: 'kyc-extract', industry: 'Banking',
     workload: wl('kyc', { name: 'Extract fields from ID documents for KYC', task: ['extract'], units: 2000, minutes: 6, errorTolerance: 'low', dataClasses: ['sensitive_pii'], regulated: ['glba'], structured: true, autonomy: 'approve', team: { engineers: 4, hasSecurityReview: true } }),
     expect: { verdict: ['assisted', 'automate-bounded', 'not-yet'], minRisk: 'moderate' },
     rationale: 'Government IDs: tightly controlled extraction with review.',
-    knownDisagreement: 'Regulated data alone rates low security risk: security.ts adds 10 points per sensitive class and low runs to 21. The HIPAA/PCI flags and blocking controls are still present; the headline level understates.',
   },
   {
     id: 'ap-invoices', industry: 'Logistics',
@@ -213,14 +209,12 @@ export const CASES: SyntheticCase[] = [
     workload: wl('disputes', { name: 'Triage card chargeback disputes', task: ['classify', 'extract'], units: 3000, minutes: 7, errorTolerance: 'low', dataClasses: ['pci', 'financial'], regulated: ['pci'], team: { engineers: 3, hasSecurityReview: true } }),
     expect: { verdict: ['assisted', 'not-yet', 'automate-bounded'], flags: ['PCI DSS'], minRisk: 'moderate' },
     rationale: 'Cardholder data must stay out of prompts; triage with review is plausible.',
-    knownDisagreement: 'Regulated data alone rates low security risk: security.ts adds 10 points per sensitive class and low runs to 21. The HIPAA/PCI flags and blocking controls are still present; the headline level understates.',
   },
   {
     id: 'patient-messages', industry: 'Healthcare',
     workload: wl('ptmsg', { name: 'Triage patient portal messages by urgency', task: ['classify'], units: 6000, minutes: 3, rate: 45, errorTolerance: 'low', dataClasses: ['phi'], regulated: ['hipaa'], team: { engineers: 3, hasSecurityReview: true } }),
     expect: { verdict: ['assisted', 'not-yet'], flags: ['HIPAA'], minRisk: 'moderate' },
     rationale: 'A missed urgent message is a safety event. Nurse confirms every routing.',
-    knownDisagreement: 'Low error tolerance does not cap the verdict: suitability.ts decideVerdict caps at assisted only when errorTolerance is none, so a low-tolerance job with suggest autonomy still reads automate-bounded. Regulated data alone rates low security risk: security.ts adds 10 points per sensitive class and low runs to 21. The HIPAA/PCI flags and blocking controls are still present; the headline level understates.',
   },
 
   // --- Good automation candidates ----------------------------------------------
@@ -329,7 +323,6 @@ export const CASES: SyntheticCase[] = [
     workload: wl('worksfine', { name: 'Route shared-inbox emails to teams', task: ['classify'], units: 120, minutes: 0.2, rate: 30, planning: { currentWorksWell: true } }),
     expect: { verdict: ['not-ai', 'not-yet', 'assisted'], outcome: ['no_change', 'conventional_automation', 'conventional_software'] },
     rationale: 'Under half an hour a month and the current rules work. Leave it.',
-    knownDisagreement: 'A trivial job (about 24 minutes a month) still scores 72+ on suitability because value and volume are two of seven dimensions. The decision engine correctly picks no_change; the verdict line reads automate-bounded.',
   },
   {
     id: 'no-hosted-no-team', industry: 'Government',

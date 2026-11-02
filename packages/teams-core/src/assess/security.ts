@@ -31,13 +31,24 @@ export interface SecurityAssessment {
 
 const SENSITIVE: DataClass[] = ['pii', 'sensitive_pii', 'phi', 'pci', 'financial', 'credentials', 'trade_secret', 'minors'];
 
+/**
+ * Risk points per sensitive data class. Regulated classes (health, cardholder,
+ * government ID, children) carry legal duties on their own, so any one of them
+ * reaches at least "moderate" (22) without any other risk factor.
+ */
+export const SECURITY_WEIGHTS = {
+  regulatedClass: 22,
+  sensitiveClass: 10,
+} as const;
+const REGULATED: DataClass[] = ['phi', 'pci', 'sensitive_pii', 'minors'];
+
 export function assessSecurity(w: Workload, pattern: Pattern): SecurityAssessment {
   const drivers: string[] = [];
   const controls: Control[] = [];
   let score = 0;
 
   const sensitive = w.dataClasses.filter((d) => SENSITIVE.includes(d));
-  score += sensitive.length * 10;
+  score += sensitive.reduce((n, d) => n + (REGULATED.includes(d) ? SECURITY_WEIGHTS.regulatedClass : SECURITY_WEIGHTS.sensitiveClass), 0);
   const modelFree = pattern === 'deterministic-automation';
   if (sensitive.length) {
     drivers.push(`Sensitive data in the ${modelFree ? 'data flow' : 'prompt path'}: ${sensitive.join(', ')}.`);

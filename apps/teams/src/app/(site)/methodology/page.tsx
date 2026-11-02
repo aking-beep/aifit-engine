@@ -1,5 +1,5 @@
 import { Panel, CardTable, BasisTag } from '@/components/kit';
-import { ASSESS_API_LIMITS, CALL_SHAPE, PATTERN_LABEL, SUITABILITY_RUBRIC, type Pattern } from '@aifit/teams-core';
+import { ASSESS_API_LIMITS, CALL_SHAPE, PATTERN_LABEL, SECURITY_WEIGHTS, SUITABILITY_RUBRIC, VERDICT_CAPS, type Pattern } from '@aifit/teams-core';
 
 export const metadata = { title: 'Methodology — AI Fit Teams' };
 
@@ -83,6 +83,12 @@ export default function Methodology() {
           alone would let a high volume score paper over a workload that must be exactly right. It does not:
           a small number of conditions are hard blockers that cap the verdict regardless of the total, and
           the report lists them by name. Totals below 40 are not-ai, below 58 not yet, below 72 assisted.
+          Above that, two more caps hold a workload at assisted: zero error tolerance, or low tolerance while a
+          person still does or approves the work; and work worth less than{' '}
+          {VERDICT_CAPS.negligibleHoursPerMonth} hours a month, which is not worth automating. For security,
+          health, cardholder, government-ID and children&apos;s data each add{' '}
+          {SECURITY_WEIGHTS.regulatedClass} risk points (other sensitive data {SECURITY_WEIGHTS.sensitiveClass}), so
+          any one of them rates at least moderate.
         </p>
       </Panel>
 

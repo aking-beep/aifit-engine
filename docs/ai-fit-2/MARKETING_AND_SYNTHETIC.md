@@ -67,22 +67,23 @@ it as part of `test:teams` and writes the report to the job summary. A new miss 
 someone reviews it. A recorded disagreement that the engine no longer shows also fails CI, so the
 note cannot go stale.
 
-### Results at commit time
+### Results
 
-- 50 cases, 0 invariant failures.
-- 43 agree with the expected answer; 7 are reviewed disagreements.
+- 50 cases, 0 invariant failures, and all 50 agree with the expected answer.
 - The engine says no where it should: not-ai on all 8 deterministic jobs, and not-yet on all 6
   blocker cases (irreversible actions under autonomy, credentials in the flow, zero tolerance with
   autonomous action).
 
-The 7 disagreements come from three rubric behaviours. They are reported here instead of being
-changed silently, because changing them moves verdicts that customers already see:
+The first run found 7 disagreements, all from three rubric behaviours. The owner approved changing
+all three on 2026-11-02. These changes move some verdicts customers could already see:
 
-| Behaviour | Cases | Proposed change |
+| Behaviour found | Cases | Change applied |
 |---|---|---|
-| Low error tolerance does not cap the verdict. Only `none` caps at "assisted", so a low-tolerance PHI triage with suggest-only autonomy reads "automate-bounded" | clinic-coding, prior-auth, patient-messages, cv-screening | Cap at "assisted" when tolerance is `low` **and** autonomy is suggest or approve |
-| One regulated data class rates "low" security risk (+10 points; "low" runs to 21). The HIPAA/PCI flags and blocking controls are still there; only the headline level understates | clinic-coding, prior-auth, patient-messages, kyc-extract, card-disputes | Weight PHI, PCI, sensitive PII and minors at 22+ so any one of them alone is at least "moderate" |
-| A trivial job (about 24 minutes a month) can still score 72+ on suitability. The decision engine correctly says no_change; the verdict line disagrees | works-fine | Cap the verdict at "assisted" when monthly hours are below the decision engine's negligible threshold |
+| Low error tolerance did not cap the verdict: only `none` capped at "assisted", so a low-tolerance PHI triage with suggest-only autonomy read "automate-bounded" | clinic-coding, prior-auth, patient-messages, cv-screening | Low tolerance with suggest or approve autonomy now caps at "assisted" (`suitability.ts`) |
+| One regulated data class rated "low" security risk (+10 points; "low" runs to 21) | clinic-coding, prior-auth, patient-messages, kyc-extract, card-disputes | PHI, PCI, sensitive PII and minors now add 22 points each, so any one alone is at least "moderate" (`SECURITY_WEIGHTS` in `security.ts`) |
+| A trivial job (about 24 minutes a month) could still read "automate-bounded" | works-fine | Work under 0.5 hours a month caps at "assisted" (`VERDICT_CAPS`); a test checks the threshold matches decision-core's `negligibleHoursPerMonth` |
+
+The methodology page describes all three caps, rendered from the same constants the engine reads.
 
 What this proves and what it does not: the engines are consistent, refuse where they should, and
 never contradict themselves. It does not show that customers agree with the answers. That needs

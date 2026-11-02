@@ -224,12 +224,29 @@ export function assessSuitability(w: Workload): Suitability {
   };
 }
 
+/**
+ * Caps on the verdict that the weighted score alone does not capture.
+ *
+ * - Low error tolerance with a person doing or approving the work stays
+ *   "assisted": the person in the loop is the control, not an option.
+ * - Work worth less than `negligibleHoursPerMonth` is not worth automating.
+ *   Must match decision-core's rules (thresholds.negligibleHoursPerMonth);
+ *   packages/synthetic checks the two agree.
+ */
+export const VERDICT_CAPS = {
+  negligibleHoursPerMonth: 0.5,
+} as const;
+
 function decideVerdict(w: Workload, score: number, blockers: string[], onlyDeterministic: boolean): Verdict {
   if (onlyDeterministic) return 'not-ai';
   if (blockers.length > 0) return 'not-yet';
   if (score < 40) return 'not-ai';
   if (score < 58) return 'not-yet';
   if (score < 72 || w.errorTolerance === 'none') return 'assisted';
+  const humanInLoop = w.autonomy === 'suggest' || w.autonomy === 'approve';
+  if (w.errorTolerance === 'low' && humanInLoop) return 'assisted';
+  const mins = w.current.minutesPerUnit;
+  if (mins !== undefined && (mins * w.volume.unitsPerMonth) / 60 < VERDICT_CAPS.negligibleHoursPerMonth) return 'assisted';
 
   const risky = w.actions.some((a) => a.blastRadius !== 'reversible' && a.blastRadius !== 'none');
   if (risky || w.autonomy === 'bounded') return 'automate-bounded';
