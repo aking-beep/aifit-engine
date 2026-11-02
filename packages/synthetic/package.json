@@ -1,0 +1,21 @@
+{
+  "name": "@aifit/synthetic",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Synthetic workload suite for AI Fit Teams: realistic workloads with expected answers, run through the real engines, plus invariants every report must satisfy.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.json && node --test dist/*.test.js",
+    "report": "tsc -p tsconfig.json && node dist/report-cli.js"
+  },
+  "dependencies": {
+    "@aifit/decision-core": "*",
+    "@aifit/teams-core": "*"
+  },
+  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.9.0" }
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Banner, PageHeader, PricingCard, plansFor } from "@/design";
+import { Banner, PageHeader, PricingCard, plansFor, trackConversion } from "@/design";
 import { useAccount } from "@/components/app/account-context";
 import { account, AccountApiError } from "@/lib/account";
 
@@ -23,6 +23,7 @@ export default function Upgrade() {
     setBusy(true);
     setError(null);
     try {
+      trackConversion("checkout_started", { app: "ai-fit", product: "consumer-pro" });
       window.location.assign((await account.checkout()).url);
     } catch (err) {
       setError(err instanceof AccountApiError ? err.message : "Could not start checkout.");

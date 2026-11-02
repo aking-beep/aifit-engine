@@ -72,6 +72,27 @@ export default function PrivacyPage() {
       </Card>
       <Card>
         <CardHeader>
+          <CardTitle>Follow-up requests, analytics and email</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
+          <p>
+            If you send the &quot;Get a follow-up from ARC&quot; form, we keep your email, the optional name, company,
+            role and message, what you are interested in, the page you sent it from and the campaign that brought you
+            (for example utm_source). ARC Transformation Group uses it only to reply, and may forward it to its CRM.
+          </p>
+          <p>
+            Page views and a few named events (quiz started, results viewed, form sent, booking link clicked) are counted
+            with Vercel Web Analytics, which uses no cookies and does not identify you. The campaign that first brought
+            you here is remembered in this browser only.
+          </p>
+          <p>
+            Advertising pixels (Meta, Google, LinkedIn) load only if the operator configured them and you accept them in
+            the cookie banner. Account email (password reset, receipts) is plain text with no tracking.
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
           <CardTitle>Delete and export</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">

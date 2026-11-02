@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Banner, Button, TextInput } from "@/design";
+import { Banner, Button, TextInput, trackConversion } from "@/design";
 import { account, AccountApiError, type Status } from "@/lib/account";
 
 /** Only same-site paths are followed after sign-in. */
@@ -31,7 +31,10 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
     setBusy(true);
     setError(null);
     try {
-      if (mode === "signup") await account.signup(email, password, name);
+      if (mode === "signup") {
+        await account.signup(email, password, name);
+        trackConversion("signup_completed", { app: "ai-fit" });
+      }
       else await account.login(email, password);
       router.replace(next);
     } catch (err) {
@@ -75,7 +78,11 @@ export function AuthForm({ mode }: { mode: "signin" | "signup" }) {
         {mode === "signup" ? (
           <>Already have an account? <Link className="text-accent underline underline-offset-2" href={`/signin?next=${encodeURIComponent(next)}`}>Sign in</Link></>
         ) : (
-          <>New here? <Link className="text-accent underline underline-offset-2" href={`/signup?next=${encodeURIComponent(next)}`}>Create an account</Link></>
+          <>
+            New here? <Link className="text-accent underline underline-offset-2" href={`/signup?next=${encodeURIComponent(next)}`}>Create an account</Link>
+            {" · "}
+            <Link className="text-accent underline underline-offset-2" href="/reset">Forgot password?</Link>
+          </>
         )}
       </p>
     </div>

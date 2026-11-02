@@ -1,5 +1,6 @@
 'use client';
 
+import { trackConversion } from '@/design';
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -22,6 +23,7 @@ export function AuthForm({ mode, next }: { mode: 'signin' | 'signup'; next: stri
     const res = await api(mode === 'signup' ? '/api/auth/signup' : '/api/auth/login', { body });
     setBusy(false);
     if (!res.ok) return setError(res.data.error ?? 'That did not work. Try again.');
+    if (mode === 'signup') trackConversion('signup_completed', { app: 'ai-fit-teams' });
     router.push(next);
     router.refresh();
   }
@@ -63,9 +65,14 @@ export function AuthForm({ mode, next }: { mode: 'signin' | 'signup'; next: stri
             I already have an account
           </Link>
         ) : (
-          <Link href={`/signup?next=${encodeURIComponent(next)}`} className="text-sm text-fg-2 underline underline-offset-2 hover:text-fg">
-            Create an account
-          </Link>
+          <>
+            <Link href={`/signup?next=${encodeURIComponent(next)}`} className="text-sm text-fg-2 underline underline-offset-2 hover:text-fg">
+              Create an account
+            </Link>
+            <Link href="/reset" className="text-sm text-fg-2 underline underline-offset-2 hover:text-fg">
+              Forgot password?
+            </Link>
+          </>
         )}
       </div>
     </form>

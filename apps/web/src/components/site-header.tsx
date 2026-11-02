@@ -8,6 +8,7 @@ import { ReadingLevelToggle } from "@/components/reading-level";
 import { ThemeToggle } from "@/components/theme";
 import { AccountLink } from "@/components/app/account-link";
 import { Button } from "@/components/ui/button";
+import { ARC_LINKS } from "@/lib/arc";
 
 const links = [
   { href: "/assessment", label: "Try it" },
@@ -96,13 +97,19 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border/80 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
         <p>Free, anonymous, and for anyone. Delete your session anytime.</p>
-        <div className="flex gap-4">
+        <nav aria-label="Footer" className="flex flex-wrap gap-x-4 gap-y-2">
+          <Link href="/for/professionals" className="hover:text-foreground">For professionals</Link>
+          <Link href="/for/developers" className="hover:text-foreground">For developers</Link>
+          <Link href="/for/creators" className="hover:text-foreground">For creators</Link>
           <Link href="/privacy" className="hover:text-foreground">
             Privacy
           </Link>
+          <Link href="/terms" className="hover:text-foreground">Terms</Link>
+          <Link href="/refunds" className="hover:text-foreground">Refunds</Link>
           <Link href="/methodology" className="hover:text-foreground">
             How it works
           </Link>
+          <a href={ARC_LINKS.site} className="hover:text-foreground">ARC Transformation Group</a>
           <a
             href="https://github.com/aking-beep/aifit-engine"
             className="hover:text-foreground"
@@ -111,7 +118,7 @@ export function SiteFooter() {
           >
             Source
           </a>
-        </div>
+        </nav>
       </div>
     </footer>
   );

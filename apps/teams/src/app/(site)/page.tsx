@@ -1,7 +1,8 @@
 import Link from 'next/link';
+import { ARC_LINKS } from '@/lib/arc';
 import { assess, FIXTURES } from '@aifit/teams-core';
 import { OUTCOME_LABEL } from '@aifit/decision-core';
-import { EvidenceLabel, Panel, VERDICT_META, VerdictChip, verdictFromOutcome, type Verdict } from '@/design';
+import { ArcCta, EvidenceLabel, LeadForm, Panel, VERDICT_META, VerdictChip, verdictFromOutcome, type Verdict } from '@/design';
 import { PublicPlanCards } from '@/components/plan-cards';
 import { decisionFor } from '@/server/assessments';
 import { encodeWorkload } from '@/lib/encode';
@@ -104,6 +105,9 @@ export default async function Landing() {
         <p className="mt-1 text-body-md text-fg-muted">Prices shown from plan configuration. Payment is on Stripe’s hosted checkout.</p>
         <div className="mt-4"><PublicPlanCards signedIn={Boolean(viewer)} /></div>
       </section>
+
+      <ArcCta links={ARC_LINKS} app="ai-fit-teams" placement="landing" />
+      <LeadForm endpoint="/api/leads" app="ai-fit-teams" page="landing" />
     </div>
   );
 }

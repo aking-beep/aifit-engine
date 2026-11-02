@@ -123,8 +123,8 @@ No data migrations: new account data lives under new `acct_` keys.
 | Stage | Ready? | What is missing |
 |---|---|---|
 | Internal testing | **Yes** for anonymous flows on the previews, and for every flow locally (`npm run dev` plus uvicorn) | Upstash on the previews for accounts |
-| Private beta | **Not yet** | Upstash on both projects; Stripe test keys and one real test-card run of each product; password reset; the Teams dependency upgrades |
-| Paid pilot | **No** | Everything above, plus: live Stripe keys and `BILLING_ALLOW_LIVE=1` (owner approval required); terms of service, privacy policy and refund policy reviewed by counsel; prices confirmed; transactional email (receipts, password reset, invites); support channel; error alerting |
+| Private beta | **Not yet** | Upstash on both projects; Stripe test keys and one real test-card run of each product; Resend for reset and receipts |
+| Paid pilot | **No** | Everything above, plus: live Stripe keys and `BILLING_ALLOW_LIVE=1` (owner approval required); terms of service, privacy policy and refund policy reviewed by counsel; prices confirmed; a verified Resend sending domain; support channel; error alerting |
 | Public commercial release | **No** | Everything above, plus: security review or penetration test; manual accessibility audit; load test; MFA, and SSO for Teams; tax handling; data-processing agreement; incident runbook; recommendation weights validated against outcomes |
 
 ## Outstanding work
@@ -135,11 +135,17 @@ No data migrations: new account data lives under new `acct_` keys.
 - Live billing is deliberately not enabled and needs the owner's approval.
 
 **High priority:**
-- Teams dependency upgrades: zod 3 → 4 (DoS advisory) and Next 15 → 16 (bundled PostCSS advisories).
-  Do these as their own PR with the full Teams suite.
-- Password reset and transactional email, on both products.
-- The Teams model catalog prices are dated 2026-09-14 and were due for re-verification by today,
-  2026-10-29. The weekly verifier flags stale entries; a person still has to confirm prices.
+- ~~Teams dependency upgrades~~ and ~~password reset and transactional email~~: done; see
+  [MARKETING_AND_SYNTHETIC.md](./MARKETING_AND_SYNTHETIC.md). Email needs `RESEND_API_KEY` and
+  `EMAIL_FROM` on each project.
+- Three suitability-rubric behaviours found by the synthetic suite need an owner decision (see
+  MARKETING_AND_SYNTHETIC.md): low error tolerance does not cap the verdict, one regulated data
+  class rates low security risk, and a trivial job can still read "automate-bounded".
+- Teams model catalog: Anthropic entries re-verified 2026-11-02 against Anthropic's pricing and
+  models pages (Opus 5.5, Sonnet 5.5 and Haiku 5.5 added; Fable 5.1 context corrected to 1M).
+  OpenAI and Google entries are still dated 2026-09-14 and show as stale: their pricing pages
+  were not reachable from the build session. A person must confirm them (or run the weekly
+  verifier with ANTHROPIC_API_KEY set). GPT-5.6 Sol's promotional rate ends 2026-11-21.
 - Teams has no in-app billing portal. Consumer has one.
 
 **Accepted limitations:**

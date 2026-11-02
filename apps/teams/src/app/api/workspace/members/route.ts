@@ -1,3 +1,4 @@
+import { sendInvite } from '@/server/email';
 import { ROLES, changeRole, createInvite, listMembers, removeMember, PlatformError, type Role } from '@aifit/platform';
 import { assertSameOrigin, errorResponse, json, readBody, requireStore, requireViewer } from '@/server/platform';
 
@@ -13,9 +14,9 @@ export async function GET() {
 }
 
 /**
- * Invite by email. No email is sent by this build: the response carries the
- * link's path, and the browser prefixes its own origin (the server cannot know
- * which public host the admin is using behind a proxy).
+ * Invite by email. When email is set up (RESEND_API_KEY, EMAIL_FROM, APP_URL)
+ * the invite is also emailed; the response always carries the link's path so
+ * the admin can copy it, and the browser prefixes its own origin.
  */
 export async function POST(req: Request) {
   try {
@@ -25,7 +26,8 @@ export async function POST(req: Request) {
     const role = String(body.role ?? 'member');
     if (role !== 'viewer' && role !== 'member' && role !== 'admin') throw new PlatformError('invalid', 'Role must be viewer, member or admin.');
     const { token, invite } = await createInvite(requireStore(), v.ctx, String(body.email ?? ''), role);
-    return json({ invite: { email: invite.email, role: invite.role, expiresAt: invite.expiresAt }, path: `/invite#token=${token}` }, { status: 201 });
+    const emailed = await sendInvite(invite.email, v.org.name, v.user.name, token).catch(() => false);
+    return json({ invite: { email: invite.email, role: invite.role, expiresAt: invite.expiresAt }, path: `/invite#token=${token}`, emailed }, { status: 201 });
   } catch (e) {
     return errorResponse(e);
   }

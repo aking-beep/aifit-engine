@@ -68,3 +68,24 @@ export async function createCheckoutSession(cfg: BillingConfig, req: CheckoutReq
   }
   return { id: body.id, url: body.url };
 }
+
+/**
+ * A Stripe customer-portal link where an admin updates the card, downloads
+ * invoices or cancels the workspace plan. Needs the portal configured once in
+ * the Stripe dashboard (test mode has its own settings). Changes made there
+ * reach this app only through the subscription webhooks, as with Checkout.
+ */
+export async function createPortalSession(cfg: BillingConfig, customerId: string, fetchImpl: typeof fetch = fetch): Promise<{ url: string }> {
+  if (!cfg.enabled || !cfg.secretKey) throw new PlatformError('unavailable', cfg.reason);
+  if (!/^cus_[A-Za-z0-9]+$/.test(customerId)) throw new PlatformError('invalid', 'No Stripe customer is recorded for this workspace.');
+  const res = await fetchImpl('https://api.stripe.com/v1/billing_portal/sessions', {
+    method: 'POST',
+    headers: { authorization: `Bearer ${cfg.secretKey}`, 'content-type': 'application/x-www-form-urlencoded' },
+    body: form({ customer: customerId, return_url: `${cfg.appUrl}/workspace/billing` }),
+  });
+  const body = (await res.json().catch(() => ({}))) as { url?: string; error?: { message?: string } };
+  if (!res.ok || !body.url) {
+    throw new PlatformError('unavailable', `Stripe did not open the billing portal${body.error?.message ? `: ${body.error.message}` : ''}.`);
+  }
+  return { url: body.url };
+}

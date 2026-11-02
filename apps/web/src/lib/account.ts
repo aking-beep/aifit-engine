@@ -95,6 +95,8 @@ export const account = {
   login: (email: string, password: string) => post<Me>("/v1/account/login", { email, password }),
   logout: () => post<{ signed_out: boolean }>("/v1/account/logout"),
   me: () => call<Me>("/v1/account/me"),
+  requestReset: (email: string) => post<{ sent: boolean; message: string }>("/v1/account/password/reset", { email }),
+  completeReset: (token: string, password: string) => post<{ reset: boolean }>("/v1/account/password/reset/complete", { token, password }),
   update: (fields: { name?: string; role?: Role }) => call<Me>("/v1/account/me", { method: "PATCH", body: JSON.stringify(fields) }),
   changePassword: (current: string, next: string) => post<{ changed: boolean }>("/v1/account/password", { current, new: next }),
   saveQuiz: (events: InteractionEvent[], notes: QuizNote[] = [], label = "") =>

@@ -1,5 +1,6 @@
 'use client';
 
+import { trackConversion } from '@/design';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DANGER, ErrorText, INPUT, PRIMARY, SECONDARY, api } from './ui';
@@ -59,6 +60,7 @@ export function CheckoutButton({ product, assessmentId, label }: { product: 'tea
         onClick={async () => {
           setBusy(true);
           setError(null);
+          trackConversion('checkout_started', { app: 'ai-fit-teams', product });
           const res = await api<{ url: string }>('/api/billing/checkout', { body: { product, assessmentId } });
           if (!res.ok || !res.data.url) {
             setBusy(false);

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { can, listAssessments, paymentHistory, readEntitlements, subscriptionState } from '@aifit/platform';
 import { Banner, EmptyState, PageHeader, Panel, PanelHeader, type BillingStatus } from '@/design';
-import { BillingPlans } from '@/components/workspace/billing-plans';
+import { BillingPlans, ManageBilling } from '@/components/workspace/billing-plans';
 import { billing, currentViewer, storeResolution } from '@/server/platform';
 
 export const dynamic = 'force-dynamic';
@@ -37,6 +37,8 @@ export default async function BillingPage() {
       ) : null}
       {state === 'expired' ? <Banner tone="danger" title="The workspace plan has expired">No renewal was confirmed after the paid period ended. Renew to restore workspace-wide access.</Banner> : null}
       {state === 'canceling' ? <Banner tone="info" title="Plan ends at the close of the paid period">Access continues until {renews ?? 'the period end'}.</Banner> : null}
+
+      {manage && cfg.enabled && ent.subscription?.customerId ? <ManageBilling /> : null}
 
       <BillingPlans status={STATE[state]} renewsOn={renews} canManage={manage} enabled={cfg.enabled} current={state === 'active' || state === 'canceling' ? 'teams-workspace' : null} />
 
@@ -85,7 +87,7 @@ export default async function BillingPage() {
         )}
       </Panel>
       <p className="text-body-sm text-fg-muted">
-        To change the card or cancel, use the Stripe receipt links or contact support; a self-serve billing portal is not set up yet.
+        {manage ? 'Admins and owners change the card or cancel with Manage billing, once a workspace plan exists.' : 'Admins and owners manage the plan and the card.'}{' '}
         Return page after checkout: <Link href="/billing" className="underline underline-offset-2">/billing</Link>.
       </p>
     </div>

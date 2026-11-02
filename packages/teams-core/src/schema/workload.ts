@@ -125,7 +125,7 @@ export const Workload = z.object({
     costPerUnitUsd: z.number().nonnegative().optional(),
     /** How often the humans doing it today get it wrong. The honest baseline. */
     humanErrorRate: z.number().min(0).max(1).optional(),
-  }).default({}),
+  }).prefault({}),
 
   /**
    * Planning constraints for the build-vs-buy-vs-automate decision
@@ -139,7 +139,7 @@ export const Workload = z.object({
     /** False when a third-party hosted tool is not acceptable for this work. */
     offTheShelfAcceptable: z.boolean().optional(),
     currentWorksWell: z.boolean().optional(),
-  }).default({}),
+  }).prefault({}),
 
   /** Team that would own it. Small teams change the architecture answer. */
   team: z.object({
@@ -147,7 +147,7 @@ export const Workload = z.object({
     hasMlExperience: z.boolean().default(false),
     hasSecurityReview: z.boolean().default(false),
     canOperate247: z.boolean().default(false),
-  }).default({}),
+  }).prefault({}),
 });
 export type Workload = z.infer<typeof Workload>;
 

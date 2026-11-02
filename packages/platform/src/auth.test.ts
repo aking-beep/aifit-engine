@@ -59,3 +59,24 @@ describe('accounts and sessions', () => {
     assert.equal(await resolveSession(store, undefined), null);
   });
 });
+
+test('password reset: one use, expires, signs out every session, does not reveal accounts', async () => {
+  const { MemoryStore } = await import('./store/memory.js');
+  const { createUser, createSession, resolveSession, authenticate, createPasswordReset, completePasswordReset, RESET_TTL_SECONDS } = await import('./auth.js');
+  const store = new MemoryStore();
+  await createUser(store, { email: 'r@example.com', password: 'correct horse battery staple', name: 'R' }, 'org_r');
+  const user = (await authenticate(store, { email: 'r@example.com', password: 'correct horse battery staple' }));
+  const { token: sessionToken } = await createSession(store, user.id);
+  assert.equal(await createPasswordReset(store, 'nobody@example.com'), null);
+  assert.equal(await createPasswordReset(store, 'not-an-email'), null);
+  const reset = await createPasswordReset(store, ' R@Example.com ');
+  assert.ok(reset);
+  await assert.rejects(completePasswordReset(store, { token: reset!.token, password: 'short' }), /12 characters/);
+  const again = await createPasswordReset(store, 'r@example.com');
+  await completePasswordReset(store, { token: again!.token, password: 'a brand new long password' });
+  assert.equal(await resolveSession(store, sessionToken), null);
+  await assert.rejects(completePasswordReset(store, { token: again!.token, password: 'another long password!!' }), /expired or was already used/);
+  await authenticate(store, { email: 'r@example.com', password: 'a brand new long password' });
+  const late = await createPasswordReset(store, 'r@example.com');
+  await assert.rejects(completePasswordReset(store, { token: late!.token, password: 'yet another long password' }, new Date(Date.now() + (RESET_TTL_SECONDS + 5) * 1000)), /expired/);
+});

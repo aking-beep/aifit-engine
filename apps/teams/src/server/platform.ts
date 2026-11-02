@@ -1,6 +1,9 @@
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import {
+  alertConfig,
+  raiseAlert,
+  type AlertKind,
   PlatformError,
   SESSION_TTL_SECONDS,
   billingConfig,
@@ -113,11 +116,32 @@ export function clientKey(req: Request): string {
 }
 
 /** Uniform JSON errors. Unexpected errors are logged and answered generically. */
-export function errorResponse(e: unknown): NextResponse {
+/**
+ * Tell the operator, after the response is sent, when something breaks.
+ * Off unless ALERT_WEBHOOK_URL or ALERT_EMAIL is set; throttled per kind.
+ */
+export function alertLater(kind: AlertKind, detail: string) {
+  const cfg = alertConfig(process.env);
+  if (!cfg.enabled) return;
+  try {
+    after(() => raiseAlert(cfg, storeResolution().store, { app: 'ai-fit-teams', kind, detail }));
+  } catch {
+    /* outside a request (tests, build): nothing to report to */
+  }
+}
+
+/**
+ * `alert` names a route whose 5xx means money or a customer is affected
+ * (Stripe webhooks, checkout, the billing portal). Any unexpected error alerts.
+ */
+export function errorResponse(e: unknown, alert?: { kind: AlertKind; route: string }): NextResponse {
   if (e instanceof PlatformError) {
+    if (alert && e.status >= 500) alertLater(alert.kind, `${alert.route}: ${e.status} ${e.message}`);
     return NextResponse.json({ error: e.message, code: e.code }, { status: e.status, headers: { 'cache-control': 'no-store' } });
   }
   console.error('[teams] unexpected error', e);
+  const err = e instanceof Error ? `${e.name}: ${e.message}` : 'non-Error thrown';
+  alertLater(alert?.kind ?? 'server_error', `${alert?.route ?? 'a route'}: 500 ${err}`);
   return NextResponse.json({ error: 'Something went wrong on our side.', code: 'internal' }, { status: 500 });
 }
 

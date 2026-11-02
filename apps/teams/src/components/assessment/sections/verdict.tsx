@@ -1,13 +1,14 @@
 import Link from 'next/link';
 import { can } from '@aifit/platform';
 import type { Verdict } from '@aifit/teams-core';
-import { Banner, Panel, PanelHeader, ProgressBar, cn } from '@/design';
+import { ArcCta, Banner, Panel, PanelHeader, ProgressBar, TrackOnView, cn } from '@/design';
 import { DecisionSection } from '@/components/report-decision';
 import { ExplainDecision } from '@/components/agent-assist';
 import { ReportWorkspaceActions } from '@/components/report-workspace';
 import { MeasureSample } from '@/components/measure-sample';
 import { ReportFooter } from '@/components/report-footer';
 import { CheckoutButton, DeleteAssessmentButton, DownloadLink, SendToControlButton } from '@/components/workspace/controls';
+import { ARC_LINKS } from '@/lib/arc';
 import { measureEnabled } from '@/lib/measure';
 import { agents } from '@/server/agents';
 import { deliverableAccess, type AssessmentView } from '@/server/assessment-view';
@@ -83,6 +84,7 @@ export async function VerdictSection({ view }: { view: AssessmentView }) {
       ) : null}
 
       <DecisionSection d={decision} verdict={a.suitability.verdict} />
+      <TrackOnView event="report_viewed" props={{ app: 'ai-fit-teams', verdict: a.suitability.verdict, saved: Boolean(saved) }} />
       {agents().enabled ? <ExplainDecision encoded={view.source.encoded} /> : null}
 
       {saved ? deliverables : (
@@ -142,6 +144,16 @@ export async function VerdictSection({ view }: { view: AssessmentView }) {
           <p className="mt-4 text-body-sm text-fg-muted">{a.trust.caveat}</p>
         </div>
       </Panel>
+
+      <ArcCta
+        links={ARC_LINKS}
+        app="ai-fit-teams"
+        placement={saved ? 'saved-report' : 'report'}
+        title={notAi ? 'Want help with the non-AI route?' : 'Want ARC to turn this into a delivery plan?'}
+        body={notAi
+          ? 'ARC Transformation Group can scope the software or automation this workload actually needs, and check the figures against your systems.'
+          : 'ARC Transformation Group runs the assessment with your team, checks the cost and risk figures against your systems, and takes the blueprint into delivery.'}
+      />
 
       {saved ? <Versions view={view} /> : <ReportFooter edit={{ href: view.intakeHref, label: 'Edit answers' }} />}
     </div>

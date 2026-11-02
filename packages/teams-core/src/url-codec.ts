@@ -1,4 +1,4 @@
-import type { ZodType, ZodTypeDef } from 'zod';
+import type { ZodType } from 'zod';
 
 /**
  * MY AI for teams stores nothing.
@@ -24,10 +24,10 @@ export interface UrlCodec<T> {
   decode(encoded: string): T | null;
 }
 
-// The third type argument is the schema's *input* type, which differs from its
+// The second type argument is the schema's *input* type, which differs from its
 // output wherever `.default()` is used — which, in Workload, is nearly
 // everywhere. Pinning it open is what lets this accept both schemas.
-export function urlCodec<T>(schema: ZodType<T, ZodTypeDef, any>): UrlCodec<T> {
+export function urlCodec<T>(schema: ZodType<T, any>): UrlCodec<T> {
   return {
     encode(value) {
       return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');

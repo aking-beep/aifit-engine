@@ -2,10 +2,11 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { OUTCOME_LABEL } from '@aifit/decision-core';
 import { can, readAudit, readEntitlements, readOrgProfile, subscriptionState } from '@aifit/platform';
-import { Banner, EmptyState, EvidenceLabel, PageHeader, Panel, PanelHeader, VerdictChip, verdictFromOutcome, VERDICT_META, type Verdict } from '@/design';
+import { ArcCta, Banner, EmptyState, EvidenceLabel, PageHeader, Panel, PanelHeader, VerdictChip, verdictFromOutcome, VERDICT_META, type Verdict } from '@/design';
 import { compactUsd } from '@/components/assessment/bits';
 import { billing, currentViewer, storeResolution } from '@/server/platform';
 import { portfolio } from '@/server/portfolio';
+import { ARC_LINKS } from '@/lib/arc';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Workspace — AI Fit Teams' };
@@ -96,6 +97,8 @@ export default async function WorkspaceOverview() {
           </Panel>
         </>
       )}
+
+      <ArcCta links={ARC_LINKS} app="ai-fit-teams" placement="workspace-dashboard" title="Bring ARC in on a workload" body="ARC Transformation Group can review a saved assessment with your team, validate the figures against your systems, and deliver the build." />
 
       {auditRows ? (
         <Panel>

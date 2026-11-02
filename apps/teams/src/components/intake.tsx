@@ -1,5 +1,6 @@
 'use client';
 
+import { trackConversion } from '@/design';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { encodeWorkloadClient } from '@/lib/encode';
@@ -132,10 +133,12 @@ export function Intake({
 
   function next() {
     if (!canAdvance) return;
+    if (step === 0) trackConversion('assessment_started', { app: 'ai-fit-teams' });
     if (!isLast) return go(step + 1);
     const workload = workloadFromState(state);
     if (!workload) return;
     clearSaved(sessionStore());
+    trackConversion('assessment_completed', { app: 'ai-fit-teams', scope: 'full' });
     router.push(`/report?w=${encodeWorkloadClient(workload)}${reassess ? `&reassess=${encodeURIComponent(reassess)}` : ''}`);
   }
 
@@ -144,6 +147,7 @@ export function Intake({
     const workload = shortCircuitWorkload(state);
     if (!workload) return;
     clearSaved(sessionStore());
+    trackConversion('assessment_completed', { app: 'ai-fit-teams', scope: 'verdict' });
     router.push(`/report?w=${encodeWorkloadClient(workload)}&scope=verdict`);
   }
 

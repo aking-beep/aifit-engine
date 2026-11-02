@@ -1,8 +1,8 @@
 /**
  * Model catalog.
  *
- * Prices verified against vendor and aggregator sources on 2026-09-14 and
- * stamped with `asOf`. They WILL go stale — several entries below are
+ * Prices verified against vendor and aggregator sources and stamped per entry
+ * with `asOf` (Anthropic 2026-11-02; OpenAI, Google and local 2026-09-14). They WILL go stale — several entries below are
  * explicitly promotional and dated. `staleEntries()` exists so the UI can nag
  * rather than quietly serving old numbers as fact.
  *
@@ -41,31 +41,55 @@ export interface ModelEntry {
 }
 
 export const CATALOG: ModelEntry[] = [
-  // ---- Anthropic (verified 2026-09-14) ----
+  // ---- Anthropic (verified 2026-11-02 against platform.claude.com/docs/en/about-claude/pricing
+  //      and /models/overview) ----
   {
     id: 'claude-fable-5.1', provider: 'anthropic', displayName: 'Claude Fable 5.1', tier: 'frontier',
-    inputPer1M: 10, outputPer1M: 50, cachedInputPer1M: 0.25, contextWindow: 200_000,
+    inputPer1M: 10, outputPer1M: 50, cachedInputPer1M: 0.25, contextWindow: 1_000_000,
     capabilities: ['text', 'vision', 'structured_output', 'tool_use', 'reasoning', 'long_context', 'batch', 'caching'],
-    latencyClass: 'slow', asOf: '2026-09-14',
+    latencyClass: 'slow', asOf: '2026-11-02',
+  },
+  {
+    id: 'claude-opus-5.5', provider: 'anthropic', displayName: 'Claude Opus 5.5', tier: 'frontier',
+    inputPer1M: 4, outputPer1M: 20, cachedInputPer1M: 0.2, contextWindow: 1_000_000,
+    capabilities: ['text', 'vision', 'structured_output', 'tool_use', 'reasoning', 'long_context', 'batch', 'caching'],
+    latencyClass: 'standard', asOf: '2026-11-02',
+    notes: 'Cache reads bill at 5% of input.',
   },
   {
     id: 'claude-opus-5', provider: 'anthropic', displayName: 'Claude Opus 5', tier: 'frontier',
     inputPer1M: 5, outputPer1M: 25, cachedInputPer1M: 0.5, contextWindow: 200_000,
     capabilities: ['text', 'vision', 'structured_output', 'tool_use', 'reasoning', 'long_context', 'batch', 'caching'],
-    latencyClass: 'slow', asOf: '2026-09-14',
+    latencyClass: 'slow', asOf: '2026-11-02',
+    notes: 'Legacy model; Claude Opus 5.5 is current and cheaper.',
+  },
+  {
+    id: 'claude-sonnet-5.5', provider: 'anthropic', displayName: 'Claude Sonnet 5.5', tier: 'mid',
+    inputPer1M: 2, outputPer1M: 10, cachedInputPer1M: 0.1, contextWindow: 1_000_000,
+    capabilities: ['text', 'vision', 'structured_output', 'tool_use', 'reasoning', 'long_context', 'batch', 'caching'],
+    latencyClass: 'fast', asOf: '2026-11-02',
+    notes: 'Cache reads bill at 5% of input.',
   },
   {
     id: 'claude-sonnet-5', provider: 'anthropic', displayName: 'Claude Sonnet 5', tier: 'mid',
     inputPer1M: 2, outputPer1M: 10, cachedInputPer1M: 0.2, contextWindow: 200_000,
     capabilities: ['text', 'vision', 'structured_output', 'tool_use', 'reasoning', 'long_context', 'batch', 'caching'],
-    latencyClass: 'standard', asOf: '2026-09-14',
-    notes: 'Launch introductory rate became the standard rate; the scheduled $3/$15 increase was cancelled.',
+    latencyClass: 'standard', asOf: '2026-11-02',
+    notes: 'Legacy model. Launch introductory rate became the standard rate; the scheduled $3/$15 increase was cancelled.',
+  },
+  {
+    id: 'claude-haiku-5.5', provider: 'anthropic', displayName: 'Claude Haiku 5.5', tier: 'small',
+    inputPer1M: 0.1, outputPer1M: 0.5, cachedInputPer1M: 0.01, contextWindow: 1_000_000,
+    capabilities: ['text', 'vision', 'structured_output', 'tool_use', 'long_context', 'batch', 'caching'],
+    latencyClass: 'fast', asOf: '2026-11-02',
+    notes: 'Rates shown are for prompts up to 100,000 tokens; longer prompts bill at $0.50 in / $2.50 out per 1M.',
   },
   {
     id: 'claude-haiku-4.5', provider: 'anthropic', displayName: 'Claude Haiku 4.5', tier: 'small',
     inputPer1M: 1, outputPer1M: 5, cachedInputPer1M: 0.1, contextWindow: 200_000,
     capabilities: ['text', 'vision', 'structured_output', 'tool_use', 'batch', 'caching'],
-    latencyClass: 'fast', asOf: '2026-09-14',
+    latencyClass: 'fast', asOf: '2026-11-02',
+    notes: 'Legacy model.',
   },
 
   // ---- OpenAI (verified 2026-09-14) ----

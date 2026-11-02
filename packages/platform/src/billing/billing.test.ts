@@ -4,7 +4,7 @@ import { MemoryStore } from '../store/index.js';
 import { signup } from '../account.js';
 import { contextFor } from '../orgs.js';
 import { billingConfig } from './config.js';
-import { createCheckoutSession } from './stripe.js';
+import { createCheckoutSession, createPortalSession } from './stripe.js';
 import { handleStripeEvent, signStripePayload, verifyStripeSignature, WK, type StripeEvent } from './webhook.js';
 import { checkEntitlement, readEntitlements, requireEntitlement } from '../entitlements.js';
 import { saveAssessment } from '../assessments.js';
@@ -201,5 +201,31 @@ describe('entitlement checks', () => {
   test('viewers cannot download even when entitled', async () => {
     const { store, ctx, rec } = await paidOrg();
     await assert.rejects(checkEntitlement(store, { ...ctx, role: 'viewer' }, billingConfig({}), 'blueprint', rec.rootId), { code: 'forbidden' });
+  });
+});
+
+describe('billing portal', () => {
+  test('opens a portal session for the recorded customer and returns to the workspace billing page', async () => {
+    let captured: { url: string; body: URLSearchParams } | null = null;
+    const fetchImpl = (async (url: unknown, init?: RequestInit) => {
+      captured = { url: String(url), body: new URLSearchParams(String(init!.body)) };
+      return new Response(JSON.stringify({ url: 'https://billing.stripe.com/p/session/test_1' }), { status: 200 });
+    }) as typeof fetch;
+    const out = await createPortalSession(billingConfig(TEST_ENV), 'cus_ABC123', fetchImpl);
+    assert.equal(out.url, 'https://billing.stripe.com/p/session/test_1');
+    assert.equal(captured!.url, 'https://api.stripe.com/v1/billing_portal/sessions');
+    assert.equal(captured!.body.get('customer'), 'cus_ABC123');
+    assert.equal(captured!.body.get('return_url'), 'https://teams.example/workspace/billing');
+  });
+
+  test('refuses when billing is off, or without a real customer id', async () => {
+    await assert.rejects(createPortalSession(billingConfig({}), 'cus_ABC123'), { code: 'unavailable' });
+    const never = (async () => { throw new Error('must not call Stripe'); }) as typeof fetch;
+    await assert.rejects(createPortalSession(billingConfig(TEST_ENV), 'not-a-customer', never), { code: 'invalid' });
+  });
+
+  test('reports Stripe errors instead of returning a broken link', async () => {
+    const fetchImpl = (async () => new Response(JSON.stringify({ error: { message: 'No configuration provided' } }), { status: 400 })) as typeof fetch;
+    await assert.rejects(createPortalSession(billingConfig(TEST_ENV), 'cus_ABC123', fetchImpl), (e: Error & { code?: string }) => e.code === 'unavailable' && /No configuration provided/.test(e.message));
   });
 });

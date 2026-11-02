@@ -53,6 +53,13 @@ jobs:
       - run: node scripts/sync-design.mjs --check
       # Contract fixtures, teams-core (engine, calibration client), ui, then the app's own tests.
       - run: npm run test:teams
+      # Synthetic workload suite: verdicts, outcomes and invariants for 50 workloads, in the job summary.
+      - name: Synthetic suite report
+        if: always()
+        run: |
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          node packages/synthetic/dist/report-cli.js >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
       - run: npm run typecheck:teams
       # No ARK_CONTROL_URL: the build must not need Control.
       - run: npm run build:teams
