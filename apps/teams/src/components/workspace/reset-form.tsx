@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { useLinkToken } from '@/design';
+import { forgetLinkToken, useLinkToken } from '@/design';
 import { ErrorText, Field, INPUT, PRIMARY, api } from './ui';
 
 /** Step 1 asks for the email; step 2 (with #token= from the emailed link) sets the new password. */
@@ -24,6 +24,7 @@ export function ResetForm({ emailEnabled }: { emailEnabled: boolean }) {
       : await api('/api/auth/reset', { body: { email: form.get('email') } });
     setBusy(false);
     if (!res.ok) return setError(res.data.error ?? 'That did not work. Try again.');
+    if (token) forgetLinkToken();
     setDone(token ? 'Password changed. Every other session was signed out.' : String(res.data.message ?? 'Check your email.'));
   }
 

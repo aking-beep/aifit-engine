@@ -68,3 +68,19 @@ def test_webhook_on_a_billing_off_deployment_alerts_the_operator(monkeypatch):
     res = TestClient(main.app).post("/v1/billing/webhook", content=b"{}", headers={"stripe-signature": "t=1,v1=x"})
     assert res.status_code == 503
     assert sent and sent[0][0] == "webhook_failed"
+
+
+def test_unhandled_errors_keep_their_traceback_in_the_logs(monkeypatch, caplog):
+    sent: list[tuple[str, str]] = []
+    monkeypatch.setattr(main, "_alert", lambda kind, detail: sent.append((kind, detail)) or True)
+
+    @main.app.get("/__test_unhandled")
+    def _boom():
+        raise RuntimeError("boom")
+
+    with caplog.at_level("ERROR", logger="aifit.api"):
+        res = TestClient(main.app, raise_server_exceptions=False).get("/__test_unhandled")
+    assert res.status_code == 500
+    assert sent and sent[0][0] == "server_error"
+    record = next(r for r in caplog.records if r.name == "aifit.api")
+    assert record.exc_info and "boom" in str(record.exc_info[1])

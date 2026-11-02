@@ -315,8 +315,17 @@ export function AdPixels({ ids }: { ids: PixelIds }) {
     }
     load()
     const off = onConsentChange((c) => c === 'granted' && load())
+    // A visit that starts on a reset or invite link loads pixels once the visitor has moved on.
+    const wait = isSecretLinkPath(window.location.pathname)
+      ? window.setInterval(() => {
+          if (isSecretLinkPath(window.location.pathname)) return
+          window.clearInterval(wait!)
+          load()
+        }, 1000)
+      : null
     return () => {
       off()
+      if (wait !== null) window.clearInterval(wait)
       unregister?.()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

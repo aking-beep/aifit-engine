@@ -4,6 +4,7 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 import os
 import secrets
 import sys
@@ -1115,8 +1116,13 @@ def _alert(kind: alert_mod.AlertKind, detail: str) -> bool:
     return alert_mod.raise_alert(ALERTS, RESULT_STORE, kind, detail, env=dict(os.environ))
 
 
+_log = logging.getLogger("aifit.api")
+
+
 @app.exception_handler(Exception)
 async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
+    # This handler replaces Starlette's default one, so it must log the traceback itself.
+    _log.exception("Unhandled error on %s %s", request.method, request.url.path)
     _alert("server_error", f"{request.method} {request.url.path}: 500 {type(exc).__name__}: {exc}")
     return JSONResponse(status_code=500, content={"detail": "Something went wrong on our side."})
 

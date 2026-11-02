@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Banner, Button, TextInput, useLinkToken } from "@/design";
+import { Banner, Button, TextInput, forgetLinkToken, useLinkToken } from "@/design";
 import { account, AccountApiError } from "@/lib/account";
 
 /** Without #token: ask for the email. With it (from the emailed link): choose the new password. */
@@ -23,6 +23,7 @@ export function ResetForm() {
     try {
       if (token) {
         await account.completeReset(token, value);
+        forgetLinkToken();
         setDone("Password changed. Every session was signed out, so sign in again.");
       } else {
         setDone((await account.requestReset(value)).message);
