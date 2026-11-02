@@ -1,4 +1,4 @@
-import { PlatformError, forwardLead, parseLead, rateLimit, saveLead, type Lead } from '@aifit/platform';
+import { MemoryStore, PlatformError, forwardLead, parseLead, rateLimit, saveLead, type Lead } from '@aifit/platform';
 import { notifyLead } from './email';
 import { currentViewer, storeResolution } from './platform';
 
@@ -13,10 +13,17 @@ export function leadsEnabled(): { enabled: boolean; reason: string } {
   return { enabled: false, reason: 'Lead capture needs a durable store (Upstash) or LEAD_WEBHOOK_URL.' };
 }
 
+/**
+ * Webhook-only mode has no durable store, but must still be rate limited or a
+ * script could flood the CRM and the notification inbox. This limit holds per
+ * server instance: weaker than the store-backed one, never absent.
+ */
+const instanceLimiter = new MemoryStore();
+
 export async function acceptLead(raw: unknown, clientKey: string): Promise<{ stored: boolean; forwarded: boolean; spam: boolean }> {
   const { store } = storeResolution();
   const { lead, spam } = parseLead(raw);
-  if (store) await rateLimit(store, 'lead', clientKey, 5, 60 * 60);
+  await rateLimit(store ?? instanceLimiter, 'lead', clientKey, 5, 60 * 60);
   // Bots that fill the honeypot get the same answer as people, and nothing is kept.
   if (spam) return { stored: false, forwarded: false, spam: true };
   const viewer = await currentViewer().catch(() => null);

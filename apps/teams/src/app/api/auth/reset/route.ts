@@ -1,10 +1,11 @@
+import { after } from 'next/server';
 import { createPasswordReset, rateLimit } from '@aifit/platform';
 import { email, sendReset } from '@/server/email';
 import { assertSameOrigin, clientKey, errorResponse, json, readBody, requireStore } from '@/server/platform';
 
 export const dynamic = 'force-dynamic';
 
-/** Always the same answer, whether or not the email has an account. */
+/** Always the same answer, in about the same time, whether or not the email has an account. */
 export async function POST(req: Request) {
   try {
     assertSameOrigin(req);
@@ -15,7 +16,9 @@ export async function POST(req: Request) {
     await rateLimit(store, 'reset-ip', clientKey(req), 10, 3600);
     await rateLimit(store, 'reset-email', address, 3, 3600);
     const reset = await createPasswordReset(store, address);
-    if (reset) await sendReset(reset.user.email, reset.token);
+    // Sent after the response: waiting on the email provider only for real accounts would let
+    // response time reveal which addresses are registered.
+    if (reset) after(() => sendReset(reset.user.email, reset.token).catch(() => false));
     return json({ sent: true, message: 'If an account uses that email, a reset link is on its way. It works for 30 minutes.' });
   } catch (e) {
     return errorResponse(e);

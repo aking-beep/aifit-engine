@@ -15,7 +15,7 @@ from typing import Annotated, Any
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "packages/core/src"))
 
-from fastapi import Body, FastAPI, Header, HTTPException, Request
+from fastapi import BackgroundTasks, Body, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ValidationError
@@ -1198,7 +1198,7 @@ class ResetCompleteBody(BaseModel):
 
 
 @app.post("/v1/account/password/reset")
-def account_reset_request(request: Request, payload: ResetRequestBody):
+def account_reset_request(request: Request, payload: ResetRequestBody, background: BackgroundTasks):
     _require_accounts()
     _same_origin(request)
     if not MAIL.enabled:
@@ -1211,7 +1211,8 @@ def account_reset_request(request: Request, payload: ResetRequestBody):
     if started:
         user, token = started
         subject, text = mailer.password_reset(f"{MAIL.app_url}/reset?token={token}", acct.RESET_MINUTES)
-        mailer.send(MAIL, user["email"], subject, text)
+        # After the response: waiting on the email provider only for real accounts would reveal them.
+        background.add_task(mailer.send, MAIL, user["email"], subject, text)
     message = f"If an account uses that email, a reset link is on its way. It works for {acct.RESET_MINUTES} minutes."
     return {"sent": True, "message": message}
 

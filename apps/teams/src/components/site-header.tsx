@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { Logo, ThemeToggle, arcUtm, cn, trackConversion, withUtm } from '@/design';
+import { Logo, ThemeToggle, arcUtm, captureAttribution, cn, trackConversion, withUtm } from '@/design';
 import { ARC_LINKS } from '@/lib/arc';
 
-const BOOKING = withUtm(ARC_LINKS.booking, arcUtm('ai-fit-teams', 'header', null));
+const bookingHref = () => withUtm(ARC_LINKS.booking, arcUtm('ai-fit-teams', 'header', typeof window === 'undefined' ? null : captureAttribution()));
 
 /**
  * Public header. The current route is marked for assistive technology and
@@ -13,6 +14,9 @@ const BOOKING = withUtm(ARC_LINKS.booking, arcUtm('ai-fit-teams', 'header', null
  */
 export function SiteHeader({ controlUrl, account }: { controlUrl: string; account: 'workspace' | 'signin' | null }) {
   const pathname = usePathname() ?? '/';
+  // The server render has no attribution; after mount the link carries the campaign that brought the visitor.
+  const [booking, setBooking] = useState(() => withUtm(ARC_LINKS.booking, arcUtm('ai-fit-teams', 'header', null)));
+  useEffect(() => setBooking(bookingHref()), [pathname]);
   const items = [
     { href: '/assess', label: 'New assessment' },
     { href: '/methodology', label: 'Methodology' },
@@ -46,7 +50,7 @@ export function SiteHeader({ controlUrl, account }: { controlUrl: string; accoun
             })}
             <li>
               <a
-                href={BOOKING}
+                href={booking}
                 target="_blank"
                 rel="noopener"
                 onClick={() => trackConversion('booking_clicked', { app: 'ai-fit-teams', placement: 'header' })}

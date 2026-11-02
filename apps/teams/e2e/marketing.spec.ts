@@ -81,3 +81,12 @@ test('password reset says plainly when email is not set up', async ({ page }) =>
   await expect(page).toHaveURL(/\/reset/);
   await expect(page.getByText('Password reset by email is not set up on this deployment yet.')).toBeVisible();
 });
+
+test('the header Talk to ARC link carries the campaign that brought the visitor', async ({ page }) => {
+  await page.goto('/for/operations?utm_source=linkedin&utm_medium=paid&utm_campaign=ops-q4');
+  const header = page.getByRole('banner').getByRole('link', { name: 'Talk to ARC' });
+  await expect(header).toHaveAttribute('href', /utm_campaign=ops-q4/);
+  await expect(header).toHaveAttribute('href', /utm_content=header/);
+  await page.goto('/methodology');
+  await expect(header).toHaveAttribute('href', /utm_campaign=ops-q4/);
+});
