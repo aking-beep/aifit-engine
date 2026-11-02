@@ -90,3 +90,10 @@ test('the header Talk to ARC link carries the campaign that brought the visitor'
   await page.goto('/methodology');
   await expect(header).toHaveAttribute('href', /utm_campaign=ops-q4/);
 });
+
+test('a reset link keeps its token in the fragment and clears it from the address bar', async ({ page }) => {
+  await page.goto('/reset#token=abcdefghijklmnopqrstuvwxyz012345');
+  await expect(page.getByRole('heading', { level: 1, name: 'Choose a new password' })).toBeVisible();
+  await expect(page.getByLabel('New password')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.location.href)).not.toContain('token');
+});

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next";
 import { track } from "@vercel/analytics";
 import {
-  AdPixels, AttributionCapture, ConsentBanner, LinkProvider, ThemeProvider, ToastProvider, anyPixel, registerTracker, validPixels, type LinkLike,
+  AdPixels, AttributionCapture, ConsentBanner, LinkProvider, ThemeProvider, ToastProvider, anyPixel, redactUrl, registerTracker, validPixels, type LinkLike,
 } from "@/design";
 
 const NextLink: LinkLike = ({ href, ...rest }) => <Link href={href} {...rest} />;
@@ -31,7 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       </LinkProvider>
       <AttributionCapture />
       <Tracking />
-      <Analytics />
+      <Analytics beforeSend={(e) => ({ ...e, url: redactUrl(e.url) })} />
       <AdPixels ids={PIXELS} />
       <ConsentBanner needed={anyPixel(PIXELS)} />
     </ThemeProvider>

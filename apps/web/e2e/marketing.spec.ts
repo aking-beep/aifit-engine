@@ -72,3 +72,10 @@ test("SEO surfaces, legal pages and the reset page", async ({ page, request }) =
   await send.click();
   await expect(page.getByText(/not set up on this deployment/)).toBeVisible();
 });
+
+test("a reset link keeps its token in the fragment and clears it from the address bar", async ({ page }) => {
+  await page.goto("/reset#token=abcdefghijklmnopqrstuvwxyz012345");
+  await expect(page.getByRole("heading", { level: 1, name: "Choose a new password" })).toBeVisible();
+  await expect(page.getByLabel("New password")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.location.href)).not.toContain("token");
+});

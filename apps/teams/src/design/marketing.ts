@@ -218,3 +218,39 @@ export interface LeadInput {
   website?: string
   source: { app: 'ai-fit' | 'ai-fit-teams'; page: string; attribution: Attribution | null }
 }
+
+// Secrets in URLs ------------------------------------------------------------
+
+/** Pages whose links carry a one-time secret (password reset, invites). No ad pixel loads on them. */
+export const SECRET_LINK_PATHS = ['/reset', '/invite'] as const
+
+export function isSecretLinkPath(pathname: string): boolean {
+  return SECRET_LINK_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+}
+
+/** Drops the fragment and any `token` parameter, so analytics never records a one-time secret. */
+export function redactUrl(url: string): string {
+  try {
+    const u = new URL(url)
+    u.hash = ''
+    u.searchParams.delete('token')
+    return u.toString()
+  } catch {
+    return url.split('#')[0]!.replace(/([?&])token=[^&]*/g, '$1').replace(/[?&]$/, '')
+  }
+}
+
+/** Reads a one-time `token` from the URL fragment (or the query, for links sent before the fragment form). */
+export function readLinkToken(): string | null {
+  if (typeof window === 'undefined') return null
+  const raw = new URLSearchParams(window.location.hash.slice(1)).get('token') ?? new URLSearchParams(window.location.search).get('token')
+  return raw && /^[A-Za-z0-9_-]{20,200}$/.test(raw) ? raw : null
+}
+
+/** Clears the token from the address bar once read, so later page views and analytics never see it. */
+export function clearLinkToken(): void {
+  if (typeof window === 'undefined') return
+  const u = new URL(window.location.href)
+  if (!u.hash && !u.searchParams.has('token')) return
+  window.history.replaceState(window.history.state, '', window.location.pathname)
+}

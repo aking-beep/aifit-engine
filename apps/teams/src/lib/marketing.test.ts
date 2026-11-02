@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { arcLinks, arcUtm, parseAttribution, withUtm } from '../design/marketing.ts';
+import { arcLinks, arcUtm, isSecretLinkPath, parseAttribution, redactUrl, withUtm } from '../design/marketing.ts';
 
 test('campaign parameters are read, cleaned and kept only when present', () => {
   const a = parseAttribution('https://x.example/for/ops?utm_source=linkedin&utm_campaign=q4%20ops&gclid=abc<script>&other=1', 'https://news.example/post', new Date('2026-10-29T00:00:00Z'));
@@ -25,4 +25,14 @@ test('outbound links carry our source and the original campaign, without overwri
 test('ARC links default to the public site and accept overrides', () => {
   assert.equal(arcLinks().booking, 'https://calendly.com/aking-arctransformationgroup/30min');
   assert.equal(arcLinks({ site: 'https://arc.example/' }).aiFitPage, 'https://arc.example/ai-fit');
+});
+
+test('one-time secrets in links never reach analytics or ad pixels', () => {
+  assert.equal(redactUrl('https://x.example/reset#token=abc123'), 'https://x.example/reset');
+  assert.equal(redactUrl('https://x.example/reset?token=abc123&utm_source=g'), 'https://x.example/reset?utm_source=g');
+  assert.equal(redactUrl('https://x.example/for/ops?utm_campaign=q4'), 'https://x.example/for/ops?utm_campaign=q4');
+  assert.equal(isSecretLinkPath('/reset'), true);
+  assert.equal(isSecretLinkPath('/invite'), true);
+  assert.equal(isSecretLinkPath('/resetting'), false);
+  assert.equal(isSecretLinkPath('/'), false);
 });

@@ -6,23 +6,9 @@ import { storeResolution } from '@/server/platform';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Reset password — AI Fit Teams', robots: { index: false } };
 
-export default async function Reset({ searchParams }: { searchParams: Promise<{ token?: string }> }) {
-  const raw = (await searchParams).token;
-  const token = raw && /^[A-Za-z0-9_-]{20,200}$/.test(raw) ? raw : null;
+/** The reset token rides in the URL fragment (#token=), so it never reaches this server or its logs. */
+export default function Reset() {
   const { store, reason } = storeResolution();
   if (!store) return <WorkspacesUnavailable reason={reason} />;
-  const mail = email();
-  return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-semibold text-fg">{token ? 'Choose a new password' : 'Reset your password'}</h1>
-      {!token && !mail.enabled ? (
-        <p className="max-w-2xl text-sm text-fg-2">Password reset by email is not set up on this deployment yet. Contact the workspace owner or support.</p>
-      ) : (
-        <>
-          {!token ? <p className="max-w-2xl text-sm text-fg-2">We email a link that works once, for 30 minutes.</p> : null}
-          <ResetForm token={token} />
-        </>
-      )}
-    </div>
-  );
+  return <ResetForm emailEnabled={email().enabled} />;
 }

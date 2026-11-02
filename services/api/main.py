@@ -1210,7 +1210,8 @@ def account_reset_request(request: Request, payload: ResetRequestBody, backgroun
     started = acct.start_password_reset(RESULT_STORE, email)
     if started:
         user, token = started
-        subject, text = mailer.password_reset(f"{MAIL.app_url}/reset?token={token}", acct.RESET_MINUTES)
+        subject, text = mailer.password_reset(f"{MAIL.app_url}/reset#token={token}", acct.RESET_MINUTES)
+        # The token rides in the fragment, which browsers never send to a server or analytics.
         # After the response: waiting on the email provider only for real accounts would reveal them.
         background.add_task(mailer.send, MAIL, user["email"], subject, text)
     message = f"If an account uses that email, a reset link is on its way. It works for {acct.RESET_MINUTES} minutes."

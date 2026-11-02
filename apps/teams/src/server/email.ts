@@ -9,7 +9,7 @@ export function email() {
 
 export function sendReset(to: string, token: string) {
   const cfg = email();
-  return sendEmail(cfg, { to, ...templates.passwordReset(PRODUCT, `${cfg.appUrl}/reset?token=${encodeURIComponent(token)}`, 30) });
+  return sendEmail(cfg, { to, ...templates.passwordReset(PRODUCT, `${cfg.appUrl}/reset#token=${encodeURIComponent(token)}`, 30) });
 }
 
 export function sendPasswordChanged(to: string) {

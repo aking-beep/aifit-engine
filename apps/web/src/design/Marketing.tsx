@@ -10,6 +10,7 @@ import {
   LEAD_INTERESTS,
   arcUtm,
   captureAttribution,
+  isSecretLinkPath,
   onConsentChange,
   readConsent,
   registerTracker,
@@ -276,7 +277,8 @@ export function AdPixels({ ids }: { ids: PixelIds }) {
     let loaded = false
     let unregister: (() => void) | null = null
     const load = () => {
-      if (loaded || readConsent() !== 'granted') return
+      // A reset or invite link carries a one-time secret in the URL; pixels would report it.
+      if (loaded || readConsent() !== 'granted' || isSecretLinkPath(window.location.pathname)) return
       loaded = true
       const w = window as W
       if (v.meta) {

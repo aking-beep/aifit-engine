@@ -105,6 +105,8 @@ def test_password_reset_signs_out_everyone_and_is_single_use(mail):
     known = TestClient(main.app).post("/v1/account/password/reset", json={"email": "reset@example.com"}, headers=H).json()
     assert unknown == known  # does not reveal who has an account
     assert len(mail) == 1 and mail[0]["to"] == "reset@example.com"
+    # The token rides in the fragment, which browsers never send to a server, log or analytics.
+    assert "/reset#token=" in mail[0]["text"] and "?token=" not in mail[0]["text"]
     token = mail[0]["text"].split("token=")[1].split()[0]
     c = TestClient(main.app)
     assert c.post("/v1/account/password/reset/complete", json={"token": token, "password": "short"}, headers=H).status_code == 400

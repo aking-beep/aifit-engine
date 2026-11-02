@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { Banner, Button, TextInput } from "@/design";
+import { Banner, Button, TextInput, useLinkToken } from "@/design";
 import { account, AccountApiError } from "@/lib/account";
 
-/** Without ?token: ask for the email. With it: choose the new password. */
+/** Without #token: ask for the email. With it (from the emailed link): choose the new password. */
 export function ResetForm() {
-  const raw = useSearchParams().get("token");
-  const token = raw && /^[A-Za-z0-9_-]{20,200}$/.test(raw) ? raw : null;
+  // The token rides in the URL fragment, which never reaches a server or analytics; it is cleared once read.
+  const linkToken = useLinkToken();
+  const ready = linkToken !== undefined;
+  const token = linkToken ?? null;
   const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ export function ResetForm() {
   return (
     <div className="mx-auto w-full max-w-sm px-4 py-16">
       <h1 className="text-headline-lg text-fg">{token ? "Choose a new password" : "Reset your password"}</h1>
-      {done ? (
+      {!ready ? null : done ? (
         <div className="mt-6 space-y-4">
           <Banner tone="success" title={token ? "Done" : "Check your email"}>{done}</Banner>
           {token ? <Link href="/signin" className="text-accent underline underline-offset-2">Sign in</Link> : null}
