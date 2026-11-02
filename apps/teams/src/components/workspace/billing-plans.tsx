@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { BillingState, PricingCard, plansFor, type BillingStatus } from '@/design';
+import { BillingState, Button, PricingCard, plansFor, type BillingStatus } from '@/design';
 import { api, ErrorText } from './ui';
 
 /**
@@ -44,6 +44,29 @@ export function BillingPlans({ status, renewsOn, canManage, enabled, current }: 
         Assessment and Blueprint are bought for one workload, from that workload&apos;s locked sections or Deliverables. Payment happens on
         Stripe&apos;s hosted page; this app never sees card details, and access is granted only when Stripe confirms the payment.
       </p>
+    </div>
+  );
+}
+
+/** Opens the Stripe customer portal: card, invoices, cancellation. Shown to admins and owners once a plan exists. */
+export function ManageBilling() {
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  async function open() {
+    setBusy(true);
+    setError(null);
+    const res = await api<{ url: string }>('/api/billing/portal', { body: {} });
+    if (!res.ok || !res.data.url) {
+      setBusy(false);
+      return setError(res.data.error ?? 'The billing portal could not open.');
+    }
+    window.location.assign(res.data.url);
+  }
+  return (
+    <div className="space-y-2">
+      <Button variant="secondary" loading={busy} onClick={open}>Manage billing</Button>
+      <p className="text-body-sm text-fg-muted">Update the card, download invoices or cancel the workspace plan on Stripe&apos;s secure page.</p>
+      <ErrorText message={error} />
     </div>
   );
 }

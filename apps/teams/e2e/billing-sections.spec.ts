@@ -110,3 +110,18 @@ test('a failed checkout and a cancelled checkout grant nothing', async ({ page }
   await expect(history.getByText('failed')).toBeVisible();
   await expect(history.getByText('expired')).toBeVisible();
 });
+
+test('the billing portal is offered once a plan exists, and refuses cross-site requests', async ({ page }) => {
+  const a = await saved(page, 'portal');
+  const postPortal = () => page.evaluate(async () => (await fetch('/api/billing/portal', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })).status);
+  await page.goto('/workspace/billing');
+  await expect(page.getByRole('heading', { level: 1, name: 'Billing' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Manage billing' })).toHaveCount(0);
+  expect(await postPortal()).toBe(404);
+
+  await webhook(page.request, 'customer.subscription.updated', { id: 'sub_portal', customer: 'cus_portal', status: 'active', current_period_end: now() + 30 * 86400, metadata: { orgId: a.orgId, product: 'team' } });
+  await page.goto('/workspace/billing');
+  await expect(page.getByRole('button', { name: 'Manage billing' })).toBeVisible();
+  // Refused before any request to Stripe is built.
+  expect((await page.request.post('/api/billing/portal', { data: {}, headers: { origin: 'https://evil.example' } })).status()).toBe(403);
+});
